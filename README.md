@@ -1,6 +1,8 @@
 # GraphCap
 > **SPDX-License-Identifier: Apache-2.0**
 
+![Image](./docs/static/flow.png)
+
 **GraphCap** is a work-in-progress repository dedicated to experimenting with **structured outputs** and **scene-based captions** to support open-source dataset generation. By leveraging models capable of producing detailed annotations (including bounding boxes, attributes, relationships, and textual captions), GraphCap aims to streamline the creation of rich, shareable metadata for images.
 
 ## Key Ideas
@@ -19,3 +21,5 @@
 - **Experimental Code**: The repository is under active development, and many features or interfaces may change frequently.
 - **Licensing**: The project is made available under the [Apache-2.0 License](https://www.apache.org/licenses/LICENSE-2.0), ensuring open collaboration and usage.
 
+## Background
+Original RFC : [link](https://github.com/Open-Model-Initiative/OMI-Data-Pipeline/issues/134)
