@@ -3,8 +3,8 @@ name: GraphCap
 services:
   caption:
     build:
-      context: ..
-      dockerfile: ./docker/Dockerfile.caption
+      context: ./server
+      dockerfile: ./Dockerfile.server
     ports:
       - 32100:32100
     deploy:
@@ -25,7 +25,7 @@ services:
     develop:
       watch:
         - action: sync
-          path: ../GraphCap
+          path: ./GraphCap
           target: /app/GraphCap
 
   postgres:
