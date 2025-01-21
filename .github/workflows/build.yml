@@ -14,7 +14,26 @@ env:
   SERVER_IMAGE_NAME: ${{ github.repository }}/server
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff linting
+        run: ruff check --config ./server/ruff.toml
+
   build:
+    needs: lint
     runs-on: ubuntu-latest
     permissions:
       contents: read
