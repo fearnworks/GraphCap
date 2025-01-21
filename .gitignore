@@ -86,3 +86,4 @@ models_cache/
 *.session.sql
 
 /src
+docker-compose.override.yml

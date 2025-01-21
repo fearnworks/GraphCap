@@ -2,42 +2,25 @@
 version: '3'
 
 tasks:
-  outlines:
-    cmds:
-      - uv pip install git+https://github.com/dottxt-ai/outlines --upgrade
-
   build:
     cmds:
-      - docker compose -f ./docker/caption.docker-compose.yml build
+      - docker compose build
 
   rebuild:
     cmds:
-      - docker compose -f ./docker/caption.docker-compose.yml up --build
+      - docker compose up --build
 
   run:
     cmds:
-      - docker compose -f ./docker/caption.docker-compose.yml up
+      - docker compose up
 
-  mac:
-    cmds:
-      - docker compose -f ./docker/caption.mac-compose.yml up
-
-  mac:
-    cmds:
-      - uvicorn GraphCap.server.app:app --host "0.0.0.0" --port 32100 
-  mac-w:
-    cmds:
-      - uvicorn GraphCap.server.app:app --host "0.0.0.0" --port 32100 --reload --reload-dir ./GraphCap
-  db:
-    cmds:
-      - docker compose -f ./docker/db.compose.yml up
   watch:
     cmds:
-      - docker compose -f ./docker/caption.docker-compose.yml up --build --watch
+      - docker compose  up --build --watch
   logs:
     cmds:
-      - docker compose -f ./docker/caption.docker-compose.yml logs -f
+      - docker compose  logs -f
   stop:
     cmds:
-      - docker compose -f ./docker/caption.docker-compose.yml down
+      - docker compose down
 
