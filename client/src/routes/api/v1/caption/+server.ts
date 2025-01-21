@@ -5,14 +5,14 @@ import { saveCaption } from '$lib/db/database';
 import type { ImageData, GraphCapResponse } from '$lib/api/graphcaps';
 import { createCaption, deleteCaption, getCaptionsForImage, updateCaption } from '$lib/api/caption';
 
-const STRUCTSIGHT_ENDPOINT = `${env.API_URL}/agents/generate_caption`;
+const GRAPHCAP_ENDPOINT = `${env.API_URL}/agents/generate_caption`;
 
 // Generate caption
 export const POST: RequestHandler = async ({ request }) => {
     console.log("v1/caption POST");
     try {
         const formData = await request.formData();
-        const response = await fetch(STRUCTSIGHT_ENDPOINT, {
+        const response = await fetch(GRAPHCAP_ENDPOINT, {
             method: 'POST',
             body: formData
         });

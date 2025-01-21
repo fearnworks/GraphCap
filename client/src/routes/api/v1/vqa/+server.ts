@@ -4,7 +4,7 @@ import { env } from '$env/dynamic/private';
 import type { ImageData, GraphCapResponse } from '$lib/api/graphcaps';
 import { generateReasoning, getReasoningForImage } from '$lib/api/chain_of_thought';
 
-const STRUCTSIGHT_ENDPOINT = `${env.API_URL}/agents/generate_reasoning`;
+const GRAPHCAP_ENDPOINT = `${env.API_URL}/agents/generate_reasoning`;
 
 // Generate reasoning
 export const POST: RequestHandler = async ({ request }) => {
@@ -17,7 +17,7 @@ export const POST: RequestHandler = async ({ request }) => {
             throw error(400, 'Question is required');
         }
 
-        const response = await fetch(STRUCTSIGHT_ENDPOINT, {
+        const response = await fetch(GRAPHCAP_ENDPOINT, {
             method: 'POST',
             body: formData
         });
