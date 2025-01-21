@@ -1,0 +1,102 @@
+<Svelte>
+Full Svelte 5 documentation can be found in the repository at ./docs/ai_docs/frontend
+
+- For events use the new svelte 5 syntax of onclick instead of on:click
+- Use drizzle for orm
+
+Structure : 
+root : knowledge-viewer
+src/lib ($lib alias): Contains shared business logic and components 
+src/lib/api: Contains business logic for working with the api, should not handle ui specific logic
+src/lib/components : Contains shared components
+src/lib/db : Contains logic for connecting to the database
+src/lib/db/schemas : Contains the drizzle schemas for postgres
+src/routes/: contains the pages of the application and ui logic
+src/routes/api: public api logic for connecting to external apis 
+
+# Svelte 5 Reminders
+
+## 1. Overview
+- **Version 5 Enhancements**: Introduces revamped syntax and reactivity system
+- **Compatibility**: Supports both Svelte 4 and 5 syntax; components can be mixed
+- **Migration Tools**: Provides migration script (`npx sv migrate svelte-5`) for automatic upgrades
+
+## 2. Reactivity Syntax Changes
+### Runes API
+Core of reactivity using functions prefixed with `$`
+
+### State Variables
+- Svelte 4: `let count = 0;` (implicitly reactive)
+- Svelte 5: `let count = $state(0);` (explicitly reactive)
+
+### Derived State
+- Svelte 4: `$: double = count * 2;`
+- Svelte 5: `const double = $derived(count * 2);`
+
+### Effects
+- Svelte 4: `$: if (count > 5) alert('High!');`
+- Svelte 5: `$effect(() => { if (count > 5) alert('High!'); });`
+
+## 3. Component Properties
+### Exporting Props
+- Svelte 4: `export let prop;`
+- Svelte 5: `let { prop } = $props();`
+
+### Advanced Prop Handling
+- Renaming: `let { class: klass } = $props();`
+- Spreading: `let { foo, bar, ...rest } = $props();`
+- All Props: `let props = $props();`
+
+## 4. Event Handling
+### Event Attributes
+- Svelte 4: `on:click={handler}`
+- Svelte 5: `onclick={handler}`
+
+### Multiple Handlers
+- **Combine handlers**: `<button onclick={(e) => { one(e); two(e); }}>...</button>`
+- **Event Modifiers**: Use function wrappers: `<button onclick={once(preventDefault(handler))}>...</button>`
+- **Component Events**: Replace createEventDispatcher with callback props
+
+## 5. Slots and Snippets
+- **Slots Deprecated**: Replaced by more powerful snippets
+- **Default Content**:
+  - Svelte 4: `<slot />`
+  - Svelte 5: `{@render children()}`
+- **Multiple Placeholders**: Use named props and `{@render ...}` instead of named slots
+
+## 6. Migration Script Features
+### Automated Changes
+- Updates syntax to runes (`let` to `$state`)
+- Converts event directives to attributes
+- Transforms slots to snippets
+- Adjusts component instantiation
+
+### Manual Adjustments Needed
+- createEventDispatcher usage
+- Lifecycle methods (beforeUpdate, afterUpdate)
+- Class-based components to function-based
+
+## 7. Breaking Changes
+- **Component Instantiation**:
+  - Svelte 4: `new Component({ target: ... })`
+  - Svelte 5: `mount(Component, { target: ... })`
+- **Server API**: Use `render` from svelte/server
+- **Typing Changes**: Replace SvelteComponent with Component type
+- **bind:this Behavior**: Returns instance exports
+- **Whitespace Handling**: Simplified rules
+- **Browser Requirements**: Modern browsers only (no IE)
+
+## 8. Compiler Options Changes
+- **Removed/Changed Options**:
+  - css option values updated
+  - hydratable, enableSourcemap, tag removed
+- **Namespace Restrictions**: Limited to html, mathml, and svg
+
+## 9. Additional Changes
+- **Attribute Syntax**: Strict quoting for complex values
+- **HTML Structure**: Stricter enforcement (e.g., required `<tbody>`)
+- **Contenteditable**: Bindings take full control
+- **Hydration**: Uses comments for efficient hydration
+- **CSS Handling**: Scoped CSS uses `:where(...)` for specificity
+</Svelte 5 Reminders>
+</Svelte>

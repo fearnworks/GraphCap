@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: Apache-2.0
+version: '3'
+
+tasks:
+  outlines:
+    cmds:
+      - uv pip install git+https://github.com/dottxt-ai/outlines --upgrade
+
+  build:
+    cmds:
+      - docker compose -f ./docker/caption.docker-compose.yml build
+
+  rebuild:
+    cmds:
+      - docker compose -f ./docker/caption.docker-compose.yml up --build
+
+  run:
+    cmds:
+      - docker compose -f ./docker/caption.docker-compose.yml up
+
+  mac:
+    cmds:
+      - docker compose -f ./docker/caption.mac-compose.yml up
+
+  mac:
+    cmds:
+      - uvicorn GraphCap.server.app:app --host "0.0.0.0" --port 32100 
+  mac-w:
+    cmds:
+      - uvicorn GraphCap.server.app:app --host "0.0.0.0" --port 32100 --reload --reload-dir ./GraphCap
+  db:
+    cmds:
+      - docker compose -f ./docker/db.compose.yml up
+  watch:
+    cmds:
+      - docker compose -f ./docker/caption.docker-compose.yml up --build --watch
+  logs:
+    cmds:
+      - docker compose -f ./docker/caption.docker-compose.yml logs -f
+  stop:
+    cmds:
+      - docker compose -f ./docker/caption.docker-compose.yml down
+

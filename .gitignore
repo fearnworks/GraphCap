@@ -1,0 +1,88 @@
+# .gitignore
+*.zip
+.env.keys
+.env.deployment
+# System files
+.DS_Store
+Thumbs.db
+*.tmp
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+*.egg
+*.log
+*.pot
+*.pyc
+.pytest_cache/
+
+# Virtual environment
+venv
+*.venv
+*venv*
+.server_venv/
+venv.bak/
+.env
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# IDEs and editors
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+# Build artifacts
+build/
+*.class
+
+# Dependency directories
+node_modules/
+
+# Log files
+*.log
+
+# Unit test / coverage reports
+.coverage
+.htmlcov/
+.tox/
+coverage.xml
+
+# Packaging
+*.tar.gz
+dist/
+# Backup files
+*~
+*.bak
+
+# Other
+*.swp
+*.swo
+
+sandbox.ipynb
+notebooks/*
+local/
+
+server.pid
+
+# Huggingface
+models_cache/
+
+# Embedding models
+**/models--**
+./legacy
+*.session.sql
+
+/src

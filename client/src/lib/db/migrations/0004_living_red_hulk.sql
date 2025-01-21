@@ -1,0 +1,1 @@
+ALTER TABLE "chain_of_thought_annotations" ADD COLUMN "question" text;
