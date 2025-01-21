@@ -52,9 +52,3 @@ api_version = "/api/v1"
 app.include_router(prefix=api_version, router=server_router)
 app.include_router(prefix=api_version, router=agents_router)
 
-
-
-if __name__ == "__main__":
-    logger.info("Starting the application")
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
