@@ -1,16 +1,14 @@
 # src/embedding/retrieve_router.py
-from fastapi import APIRouter, Body, Path, HTTPException
-from typing import List, Dict
-from pydantic import BaseModel
+from typing import List
 
 import torch
+from fastapi import APIRouter, Body, HTTPException, Path
+from pydantic import BaseModel
 
 # Import your service functions or classes here
-from GraphCap.agents.DenseGraphCaption import DenseGraphCaption
-from GraphCap.server import app
-from GraphCap.utils.logger import logger
-from fastapi import HTTPException
 from GraphCap.config.server_controller import controller
+from GraphCap.utils.logger import logger
+
 router = APIRouter(prefix="/server", tags=["server"])
 
 @router.get("/health")

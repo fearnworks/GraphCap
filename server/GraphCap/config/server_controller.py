@@ -1,17 +1,20 @@
-from typing import Optional, List, Dict
 from threading import Lock
-from GraphCap.agents.DenseGraphCaption import DenseGraphCaption, ImageData
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel
+
 from GraphCap.agents.BasicReasoner.BasicReasoner import BasicReasoner
+from GraphCap.agents.BasicReasoner.schemas import ChainOfThought
+from GraphCap.agents.DenseGraphCaption import DenseGraphCaption, ImageData
+from GraphCap.config.schema_library import SchemaEntry, SchemaLibrary
 from GraphCap.models.get_vision_model import get_vision_model
 from GraphCap.utils.logger import logger
-from GraphCap.config.schema_library import SchemaLibrary, SchemaEntry
-from GraphCap.agents.BasicReasoner.schemas import ChainOfThought
-from pydantic import BaseModel
+
 
 class ServerController:
     _instance = None
     _lock = Lock()
-    
+
     def __new__(cls):
         with cls._lock:
             if cls._instance is None:
@@ -22,7 +25,7 @@ class ServerController:
     def __init__(self):
         if self._initialized:
             return
-            
+
         with self._lock:
             self._agents: Dict[str, Optional[object]] = {
                 'DenseGraphCaption': None,
@@ -42,7 +45,7 @@ class ServerController:
             try:
                 # Create shared vision model
                 self._model = get_vision_model()
-                
+
                 # Initialize DenseGraphCaption
                 if self._agents['DenseGraphCaption'] is None:
                     await self._schema_library.register_schema(
@@ -50,13 +53,13 @@ class ServerController:
                         ImageData,
                         dependencies=[]
                     )
-                    
+
                     caption_generator = await self._schema_library.create_generator(
                         "dense_caption",
                         self._model,
                         temperature=0.5
                     )
-                    
+
                     self._agents['DenseGraphCaption'] = DenseGraphCaption(
                         model=self._model,
                         generator=caption_generator
@@ -70,19 +73,19 @@ class ServerController:
                         ChainOfThought,
                         dependencies=[]
                     )
-                    
+
                     reasoning_generator = await self._schema_library.create_generator(
                         "chain_of_thought",
                         self._model,
                         temperature=0.7
                     )
-                    
+
                     self._agents['BasicReasoner'] = BasicReasoner(
                         model=self._model,
                         generator=reasoning_generator
                     )
                     logger.info("BasicReasoner model initialized successfully")
-                    
+
             except Exception as e:
                 logger.error(f"Error initializing models: {str(e)}")
                 raise

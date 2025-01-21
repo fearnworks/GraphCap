@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 version: '3'
-
+includes:
+  server: ./server/Taskfile.server.yml
 tasks:
   build:
     cmds:

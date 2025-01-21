@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-from pydantic import BaseModel, Field
-from typing import List
-from typing_extensions import Annotated
-
 from enum import StrEnum
+from typing import List
+
+from pydantic import BaseModel, Field
 
 
 class TagType(StrEnum):

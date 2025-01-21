@@ -1,6 +1,7 @@
 # src/embedding/retrieve_router.py
-from fastapi import APIRouter, File, UploadFile, HTTPException, Form
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from PIL import Image
+
 from GraphCap.config.server_controller import controller
 from GraphCap.utils.logger import logger
 
@@ -30,7 +31,7 @@ async def generate_caption_endpoint(
     except Exception as e:
         logger.error(f"Error during caption generation: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
-    
+
 @router.post("/generate_reasoning")
 async def generate_reasoning_endpoint(
     file: UploadFile = File(...),
@@ -56,5 +57,4 @@ async def generate_reasoning_endpoint(
     except Exception as e:
         logger.error(f"Error during reasoning generation: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
-    
-    
+

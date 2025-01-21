@@ -1,14 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
-from PIL import Image
 import time
-import outlines
-import outlines.samplers
-import json
-import re
+
+from PIL import Image
+
 from GraphCap.agents.BasicReasoner.schemas import ChainOfThought
-from GraphCap.utils.logger import logger
 from GraphCap.models.get_vision_model import VisionModel
-from GraphCap.schemas.caption import ImageData
+from GraphCap.utils.logger import logger
 
 instruction = """<Task>You are a visual reasoning agent. Analyze the given image and answer the following question: {question}</Task>
 
@@ -41,23 +38,23 @@ class BasicReasoner:
         self.generator = generator
         model_time = time.time() - start_model
         logger.info(f"Model initialization completed in {model_time:.2f} seconds")
-            
+
         total_time = time.time() - start_total
         logger.info(f"Total BasicReasoner initialization took {total_time:.2f} seconds")
         logger.debug("BasicReasoner initialized successfully")
-        
+
     def __call__(
-        self, 
-        image: Image.Image, 
+        self,
+        image: Image.Image,
         question: str,
-        instruction: str = instruction, 
+        instruction: str = instruction,
         **kwargs
     ) -> ChainOfThought:
         logger.info("Generating reasoning for image")
-        
+
         instruction = self.model.format_instruction(instruction.format(question=question), [image])
         logger.debug(f"Instruction: {instruction}")
-        
+
         try:
             result = self.generator(
                 instruction,

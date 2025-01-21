@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional, Union
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import BaseModel
 
 
 class VLLMFunction(BaseModel):

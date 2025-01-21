@@ -2,15 +2,9 @@
 """
 Use JoyCaption to caption images.
 """
-import dataclasses
-import json
 import logging
-import os
-import random
 from pathlib import Path
-from typing import Dict, Any, List
 
-import PIL.Image
 import torch
 import torch.amp
 import torchvision.transforms.functional as TVF
@@ -23,6 +17,7 @@ from transformers import (
 
 from GraphCap.agents.joycap.prompt_builder import Prompt
 
+
 class ImageDataset(Dataset):
 	def __init__(self, prompts: list[Prompt], paths: list[Path], tokenizer: PreTrainedTokenizer | PreTrainedTokenizerFast, image_token_id: int, image_seq_length: int):
 		self.prompts = prompts
@@ -31,13 +26,13 @@ class ImageDataset(Dataset):
 		self.image_token_id = image_token_id
 		self.image_seq_length = image_seq_length
 		self.pad_token_id = tokenizer.pad_token_id
-		
+
 		# Create all image-prompt combinations
 		self.combinations = [(path, prompt) for path in paths for prompt in prompts]
-	
+
 	def __len__(self):
 		return len(self.combinations)
-	
+
 	def __getitem__(self, idx: int) -> dict:
 		path, prompt = self.combinations[idx]
 
@@ -78,7 +73,7 @@ class ImageDataset(Dataset):
 				input_tokens.extend([self.image_token_id] * self.image_seq_length)
 			else:
 				input_tokens.append(token)
-		
+
 		input_ids = torch.tensor(input_tokens, dtype=torch.long)
 		attention_mask = torch.ones_like(input_ids)
 

@@ -1,16 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
-from fastapi import FastAPI, File, UploadFile, HTTPException, Body, Form
-from fastapi.middleware.cors import CORSMiddleware
-from PIL import Image
-import torch
-import threading
-from GraphCap.utils.logger import logger
-import time
 import asyncio
+import time
 
-from GraphCap.agents.DenseGraphCaption import DenseGraphCaption
-from GraphCap.config.server_controller import ServerController
+import torch
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from GraphCap.config.router import router as server_router
+from GraphCap.config.server_controller import ServerController
+from GraphCap.utils.logger import logger
+
 
 async def initialize():
     start_time = time.time()
@@ -21,7 +20,7 @@ async def initialize():
     logger.info(f"Device name: {torch.cuda.get_device_name(0)}")
 
     app = FastAPI()
-    
+
     # Get the singleton instance and initialize the model
     logger.info("Initializing server controller...")
     controller = ServerController()
@@ -36,13 +35,13 @@ async def initialize():
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    
+
     # Add routers to the app
     app.include_router(server_router)
-    
+
     initialization_time = time.time() - start_time
     logger.info(f"Server initialization completed in {initialization_time:.2f} seconds")
-    
+
     return app, controller
 
 # Create an event loop and run the initialization

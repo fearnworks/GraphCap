@@ -1,9 +1,8 @@
 # prompt_config_library.py
 
-from typing import List
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 
 class CaptionMode(Enum):
@@ -138,7 +137,7 @@ class PromptConfigLibrary:
                 exclude_text=True,
                 use_case="Detailed MidJourney Prompt",
                 description="Provides detailed MidJourney prompts incorporating composition, lighting, and depth of field."
-            ),            
+            ),
         ]
 
     @staticmethod

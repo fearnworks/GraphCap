@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
-from typing import List
-from copy import deepcopy
-from GraphCap.schemas.vllm_schemas import Interaction, VLLMRequest, VLLMResponse
-from GraphCap.utils.logger import logger
-import os
 import logging
+import os
+from copy import deepcopy
+from typing import List
+
+from GraphCap.schemas.vllm_schemas import Interaction, VLLMRequest
+from GraphCap.utils.logger import logger
 
 
 def configure_logger(output_log_dir: str) -> logging.Logger:

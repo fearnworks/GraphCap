@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 import base64
-from typing import Optional, Union
-from PIL import Image
 import io
 import time
-import asyncio
+from typing import Optional, Union
+
 from openai import AsyncOpenAI
+from PIL import Image
+
+from GraphCap.schemas.vllm_schemas import Interaction, VLLMRequest, VLLMResponse
 from GraphCap.utils.logger import logger
-from GraphCap.schemas.vllm_schemas import VLLMResponse, VLLMRequest, Interaction
 from GraphCap.utils.message_logger import MessageLogger
 
 

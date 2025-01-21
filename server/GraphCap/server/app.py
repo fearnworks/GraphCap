@@ -1,21 +1,23 @@
 # SPDX-License-Identifier: Apache-2.0
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, File, UploadFile, HTTPException, Body, Form
-from fastapi.middleware.cors import CORSMiddleware
-from PIL import Image
-import torch
-from GraphCap.utils.logger import logger
 import time
+from contextlib import asynccontextmanager
 
-from GraphCap.config.server_controller import controller
-from GraphCap.config.router import router as server_router
+import torch
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from GraphCap.agents.router import router as agents_router
+from GraphCap.config.router import router as server_router
+from GraphCap.config.server_controller import controller
+from GraphCap.utils.logger import logger
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     start_time = time.time()
     logger.info("Starting server initialization...")
-    
+
     # Check for MPS availability on Mac
     if torch.backends.mps.is_available():
         device = torch.device("mps")
@@ -27,7 +29,7 @@ async def lifespan(app: FastAPI):
         if torch.cuda.is_available():
             logger.info(f"Current device: {torch.cuda.current_device()}")
             logger.info(f"Device name: {torch.cuda.get_device_name(0)}")
-    
+
     logger.info("Initializing server controller...")
     await controller.initialize_model()
     initialization_time = time.time() - start_time

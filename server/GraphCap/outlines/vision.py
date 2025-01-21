@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
-from PIL import Image
+from io import BytesIO
 from pathlib import Path
 from urllib.request import urlopen
-from io import BytesIO
+
+from PIL import Image
 
 
 def load_image(image_path, max_edge_size=1920) -> Image.Image:

@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from enum import Enum
+from typing import Dict, List, Optional
+
+from GraphCap.agents.joycap.prompt_config_library import CaptionMode, PromptConfig, ToneStyle
 from GraphCap.utils.logger import logger
-from typing import Optional, List, Dict
-from GraphCap.agents.joycap.prompt_config_library import PromptConfigLibrary, CaptionMode, ToneStyle, PromptConfig
+
 
 @dataclass
 class Prompt:
@@ -38,65 +39,65 @@ def build_base_prompt(config: PromptConfig) -> str:
         base += f" within {config.word_count} words"
     elif config.length:
         base += f". Keep it {config.length}"
-    
+
     return base
 
 
 def build_extra_instructions(config: PromptConfig) -> List[str]:
     """Build list of extra instructions based on config"""
     instructions = []
-    
+
     if config.character_name:
         instructions.append(f"If there is a person/character in the image you must refer to them as {config.character_name}")
-    
+
     if config.exclude_unchangeable_attributes:
         instructions.append("Do NOT include information about people/characters that cannot be changed (like ethnicity, gender, etc), but do still include changeable attributes (like hair style)")
-    
+
     if config.include_lighting:
         instructions.append("Include information about lighting")
-    
+
     if config.include_camera_angle:
         instructions.append("Include information about camera angle")
-    
+
     if config.include_watermark_info:
         instructions.append("Include information about whether there is a watermark or not")
-    
+
     if config.include_artifact_info:
         instructions.append("Include information about whether there are JPEG artifacts or not")
-    
+
     if config.include_camera_details:
         instructions.append("If it is a photo you MUST include information about what camera was likely used and details such as aperture, shutter speed, ISO, etc")
-    
+
     if config.keep_pg:
         instructions.append("Do NOT include anything sexual; keep it PG")
-    
+
     if config.exclude_resolution:
         instructions.append("Do NOT mention the image's resolution")
-    
+
     if config.include_quality_assessment:
         instructions.append("You MUST include information about the subjective aesthetic quality of the image from low to very high")
-    
+
     if config.include_composition:
         instructions.append("Include information on the image's composition style, such as leading lines, rule of thirds, or symmetry")
-    
+
     if config.exclude_text:
         instructions.append("Do NOT mention any text that is in the image")
-    
+
     if config.include_depth_of_field:
         instructions.append("Specify the depth of field and whether the background is in focus or blurred")
-    
+
     if config.include_lighting_source:
         instructions.append("If applicable, mention the likely use of artificial or natural lighting sources")
-    
+
     if config.avoid_ambiguity:
         instructions.append("Do NOT use any ambiguous language")
-    
+
     if config.include_sfw_rating:
         instructions.append("Include whether the image is sfw, suggestive, or nsfw")
-    
+
     if config.only_important_elements:
         instructions.append("ONLY describe the most important elements of the image")
-    
+
     return instructions
 
 
@@ -104,7 +105,7 @@ def build_prompt(config: Optional[PromptConfig] = None) -> Prompt:
     """Build a complete prompt with the given configuration"""
     if config is None:
         config = get_default_config()
-    
+
     # Build base prompt
     prompt_parts = [build_base_prompt(config)]
     logger.info(f"Built base prompt: {prompt_parts[0]}")
@@ -115,7 +116,7 @@ def build_prompt(config: Optional[PromptConfig] = None) -> Prompt:
         logger.info(f"Built extra instructions: {extra_instructions}")
     # Join all parts with periods
     final_prompt = ". ".join(prompt_parts) + "."
-    
+
     return Prompt(
         prompt_config=config,
         config_name=config.config_name,

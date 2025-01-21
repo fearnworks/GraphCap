@@ -1,17 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
+
 from GraphCap.schemas.vllm_schemas import (
-    VLLMFunction,
-    VLLMTool,
-    VLLMRequestMessage,
-    VLLMRequest,
-    ToolCall,
-    VLLMMessage,
-    VLLMChoice,
-    VLLMUsage,
-    VLLMResponse,
     Interaction,
+    ToolCall,
+    VLLMChoice,
+    VLLMFunction,
+    VLLMMessage,
+    VLLMRequest,
+    VLLMRequestMessage,
+    VLLMResponse,
+    VLLMTool,
+    VLLMUsage,
 )
 
 

@@ -2,14 +2,15 @@
 """
 CLI interface for JoyCaption image captioning.
 """
-import click
 import logging
-from pathlib import Path
 from typing import Optional
 
+import click
+
 from GraphCap.agents.joycap.cap import caption_images, none_or_type
-from GraphCap.agents.joycap.prompt_builder import build_prompts, get_preset_configs
+from GraphCap.agents.joycap.prompt_builder import build_prompts
 from GraphCap.agents.joycap.prompt_config_library import PromptConfigLibrary
+
 TESTING_INPUTS = {
 	"glob": "*.jpg,*.jpeg,*.png,*.webp",
 	"directory": "/./datasets/cc_selected",
@@ -66,7 +67,7 @@ def caption(
     """Caption images using JoyCaption"""
     # Setup logging
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
-    
+
     if test:
         logging.info("Using test configuration")
         config = TESTING_INPUTS.copy()
@@ -84,11 +85,11 @@ def caption(
             "num_workers": num_workers,
             "model": model,
             "prompts": [{"prompt": prompt, "weight": 1.0}] if prompt else None,
-            "prompt_file": prompt_file, 
+            "prompt_file": prompt_file,
             "directory": directory or ".",
             "output_dir": output
         }
-    
+
     try:
         caption_images(config)
     except Exception as e:

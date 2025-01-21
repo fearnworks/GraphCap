@@ -1,13 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
-from PIL import Image
 import time
-import outlines
-import outlines.samplers
-import json
-import re
-from GraphCap.utils.logger import logger
+
+from PIL import Image
+
 from GraphCap.models.get_vision_model import VisionModel
 from GraphCap.schemas.caption import ImageData
+from GraphCap.utils.logger import logger
 
 instruction = """<Task>You are a structured image analysis agent. Generate comprehensive tag list, caption, and dense caption for an image classification system.</Task>
 <TagCategories requirement="You should generate a minimum of 1 tag for each category." confidence="Confidence score for the tag, between 0 (exclusive) and 1 (inclusive).">
@@ -63,22 +61,22 @@ class DenseGraphCaption:
         self.generator = generator
         model_time = time.time() - start_model
         logger.info(f"Model initialization completed in {model_time:.2f} seconds")
-            
+
         total_time = time.time() - start_total
         logger.info(f"Total DenseGraphCaption initialization took {total_time:.2f} seconds")
         logger.debug("DenseGraphCaption initialized successfully")
-        
+
     def __call__(
-        self, 
-        image: Image.Image, 
-        instruction: str = instruction, 
+        self,
+        image: Image.Image,
+        instruction: str = instruction,
         **kwargs
     ) -> ImageData:
         logger.info("Generating caption for image")
-        
+
         instruction = self.model.format_instruction(instruction, [image])
         logger.debug(f"Instruction: {instruction}")
-        
+
         try:
             result = self.generator(
                 instruction,

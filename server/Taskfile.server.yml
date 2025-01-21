@@ -1,0 +1,39 @@
+version: '3'
+
+tasks:
+  lint:
+    desc: Run Ruff linter on all Python files (using ruff.toml config)
+    cmds:
+      - ruff check --config server/ruff.toml
+
+  lint:fix:
+    desc: Run Ruff linter with auto-fix on all Python files
+    cmds:
+      - ruff check --fix --config server/ruff.toml
+
+  format:
+    desc: Run Ruff formatter on all Python files
+    cmds:
+      - ruff format --config server/ruff.toml
+
+  check:all:
+    desc: Run both linter and formatter in check mode (no changes)
+    cmds:
+      - ruff check --config server/ruff.toml
+      - ruff format --check --config server/ruff.toml
+
+  fix:all:
+    desc: Run both linter and formatter with fixes
+    cmds:
+      - ruff check --fix --config server/ruff.toml
+      - ruff format --config server/ruff.toml
+
+  watch:
+    desc: Run Ruff in watch mode to check files on change
+    cmds:
+      - ruff check --watch --config server/ruff.toml
+
+  test:
+    desc: Run pytest
+    cmds:
+      - uv run pytest -v -c server/pytest.ini

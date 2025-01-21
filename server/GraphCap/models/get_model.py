@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
+import os
+
+import outlines
 from vllm import LLM
 from vllm.sampling_params import SamplingParams
-import outlines
-import os
 
 
 def get_text_model(context=8096):

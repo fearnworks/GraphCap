@@ -2,20 +2,17 @@
 """
 Use JoyCaption to caption images.
 """
-import dataclasses
 import json
 import logging
-import os
-import random
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
-import PIL.Image
+import pandas as pd
 import torch
 import torch.amp
 import torchvision.transforms.functional as TVF
-from PIL import Image
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import (
 	AutoTokenizer,
@@ -24,10 +21,9 @@ from transformers import (
 	PreTrainedTokenizerFast,
 )
 
-from GraphCap.agents.joycap.prompt_builder import build_prompt, Prompt
 from GraphCap.agents.joycap.ImageDataset import ImageDataset
-import pandas as pd
-from datetime import datetime
+from GraphCap.agents.joycap.prompt_builder import Prompt
+
 
 def none_or_type(value, desired_type):
 	if value == "None":
@@ -45,17 +41,17 @@ def caption_images(config: Dict[str, Any]):
 	output_base = Path(config['output_dir'])
 	output_dir = output_base / timestamp
 	output_dir.mkdir(parents=True, exist_ok=True)
-	
+
 	# Save prompt configurations
 	save_prompt_configs(config['prompts'], output_dir)
-	
+
 	# Find the images
 	image_paths = find_images(config.get('glob'), config.get('filelist'), Path(config.get('directory')))
 	if len(image_paths) == 0:
 		logging.warning("No images found")
 		return
 	logging.info(f"Found {len(image_paths)} images")
-	
+
 	# Load JoyCaption
 	tokenizer = AutoTokenizer.from_pretrained(config['model'], use_fast=True)
 	assert isinstance(tokenizer, PreTrainedTokenizer) or isinstance(tokenizer, PreTrainedTokenizerFast)
@@ -71,7 +67,7 @@ def caption_images(config: Dict[str, Any]):
 
 	# Create a dictionary to store captions by image path
 	image_captions = {}
-	
+
 	pbar = tqdm(total=len(image_paths) * len(prompts), desc="Captioning images...", dynamic_ncols=True)
 	for batch in dataloader:
 		vision_dtype = llava_model.vision_tower.vision_model.embeddings.patch_embedding.weight.dtype
@@ -120,9 +116,9 @@ def caption_images(config: Dict[str, Any]):
 					'timestamp': datetime.now().isoformat()
 				}
 			image_captions[path_str][prompt.config_name] = caption
-		
+
 		pbar.update(len(captions))
-	
+
 	# Write results
 	write_results(image_captions, output_dir)
 
@@ -134,15 +130,15 @@ def trim_off_prompt(input_ids: list[int], eoh_id: int, eot_id: int) -> list[int]
 			i = input_ids.index(eoh_id)
 		except ValueError:
 			break
-		
+
 		input_ids = input_ids[i + 1:]
-	
+
 	# Trim off the end
 	try:
 		i = input_ids.index(eot_id)
 	except ValueError:
 		return input_ids
-	
+
 	return input_ids[:i]
 
 
@@ -152,11 +148,11 @@ def write_results(captions: Dict[str, Dict[str, str]], output_dir: Path):
 		# Write Excel file
 		excel_path = output_dir / "captions.xlsx"
 		write_captions_excel(captions, excel_path)
-		
+
 		# Write JSON file with full data
 		json_path = output_dir / "captions.json"
 		write_captions_json(captions, json_path)
-		
+
 	except Exception as e:
 		logging.error(f"Failed to write results: {e}")
 		raise
@@ -167,11 +163,11 @@ def write_captions_excel(captions: Dict[str, Dict[str, str]], excel_path: Path):
 	try:
 		# Convert dictionary to DataFrame
 		df = pd.DataFrame.from_dict(captions, orient='index')
-		
+
 		# Reorder columns to ensure image_path and timestamp are first
 		columns = ['image_path', 'timestamp'] + [col for col in df.columns if col not in ['image_path', 'timestamp']]
 		df = df[columns]
-		
+
 		# Write to Excel
 		df.to_excel(excel_path, index=False, engine='openpyxl')
 		logging.info(f"Wrote captions to Excel file: {excel_path}")
@@ -187,7 +183,7 @@ def write_captions_json(captions: Dict[str, Dict[str, str]], json_path: Path):
 		json_data = {
 			str(path): data for path, data in captions.items()
 		}
-		
+
 		with open(json_path, 'w', encoding='utf-8') as f:
 			json.dump(json_data, f, indent=2, ensure_ascii=False)
 		logging.info(f"Wrote captions to JSON file: {json_path}")
@@ -230,7 +226,7 @@ def save_prompt_configs(prompts: List[Prompt], output_dir: Path):
 				'generated_prompt': prompt.prompt
 			}
 			configs.append(config_dict)
-		
+
 		config_path = output_dir / "prompt_configs.json"
 		with open(config_path, 'w', encoding='utf-8') as f:
 			json.dump(configs, f, indent=2, ensure_ascii=False)
@@ -246,15 +242,15 @@ def parse_prompts(prompt_str: str | None, prompt_file: str | None) -> list[Promp
 
 	if prompt_str is not None:
 		return [Prompt(prompt=prompt_str, weight=1.0)]
-	
+
 	if prompt_file is None:
 		raise ValueError("Must specify either --prompt or --prompt-file")
-	
+
 	data = json.loads(Path(prompt_file).read_text())
 
 	if not isinstance(data, list):
 		raise ValueError("Expected JSON file to contain a list of prompts")
-	
+
 	prompts = []
 
 	for item in data:
@@ -264,24 +260,24 @@ def parse_prompts(prompt_str: str | None, prompt_file: str | None) -> list[Promp
 			prompts.append(Prompt(prompt=item["prompt"], weight=item["weight"]))
 		else:
 			raise ValueError(f"Invalid prompt in JSON file. Should be either a string or an object with 'prompt' and 'weight' fields: {item}")
-	
+
 	if len(prompts) == 0:
 		raise ValueError("No prompts found in JSON file")
-	
+
 	if sum(p.weight for p in prompts) <= 0.0:
 		raise ValueError("Prompt weights must sum to a positive number")
-	
+
 	return prompts
 
 
 def find_images(glob: str | None, filelist: str | Path | None, directory: Path) -> list[Path]:
 	if glob is None and filelist is None:
 		raise ValueError("Must specify either --glob or --filelist")
-	
+
 	paths = []
 	logging.info("All files in directory:")
 	logging.info(list(directory.glob("*")))
-	
+
 	if glob is not None:
 		# Split the glob pattern and search for each pattern
 		patterns = glob.split(',')
@@ -291,7 +287,7 @@ def find_images(glob: str | None, filelist: str | Path | None, directory: Path) 
 			found = list(directory.glob(pattern))
 			paths.extend(found)
 			logging.info(f"Found {len(found)} images with pattern: {pattern}")
-	
+
 	if filelist is not None:
 		logging.info(f"Searching for images with filelist: {filelist}")
 		paths.extend((Path(line.strip()) for line in Path(filelist).read_text().strip().splitlines() if line.strip() != ""))
@@ -303,6 +299,6 @@ def find_images(glob: str | None, filelist: str | Path | None, directory: Path) 
 		if path not in seen:
 			seen.add(path)
 			unique_paths.append(path)
-	
+
 	return unique_paths
 

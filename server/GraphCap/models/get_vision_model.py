@@ -1,15 +1,17 @@
 # SPDX-License-Identifier: Apache-2.0
-import torch
-from transformers import (
-    LlavaForConditionalGeneration,
-    Qwen2VLForConditionalGeneration,
-    PreTrainedModel,
-    AutoProcessor,
-)
-import outlines
 import os
-from outlines.models.transformers_vision import TransformersVision
 from typing import Type
+
+import outlines
+import torch
+from outlines.models.transformers_vision import TransformersVision
+from transformers import (
+    AutoProcessor,
+    LlavaForConditionalGeneration,
+    PreTrainedModel,
+    Qwen2VLForConditionalGeneration,
+)
+
 from GraphCap.utils.logger import logger
 
 
@@ -30,7 +32,7 @@ class VisionModel:
             # "device_map": "auto",
         }
         processor_kwargs = {
-           
+
         }
         model = outlines.models.transformers_vision(
             self.model_name,
