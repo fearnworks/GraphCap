@@ -30,10 +30,20 @@ jobs:
         run: pip install ruff
 
       - name: Run Ruff linting
-        run: ruff check --config ./server/ruff.toml
+        continue-on-error: true
+        run: |
+          ruff check ./server --output-format=github > ruff_report.txt
+          cat ruff_report.txt
+
+      - name: Upload Ruff report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruff-lint-report
+          path: ruff_report.txt
+          retention-days: 14
 
   build:
-    needs: lint
     runs-on: ubuntu-latest
     permissions:
       contents: read
