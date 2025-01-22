@@ -18,6 +18,7 @@ class SchemaStatus(str, Enum):
     LOADED = "loaded"
     ERROR = "error"
 
+
 class SchemaMetadata(BaseModel):
     name: str
     version: str
@@ -33,6 +34,7 @@ class SchemaEntry(BaseModel):
     fsm: Optional[Any] = None
     generator: Optional[Callable] = None
 
+
 class SchemaLibrary:
     def __init__(self, max_workers: int = 4):
         self.schemas: Dict[str, SchemaEntry] = {}
@@ -40,31 +42,17 @@ class SchemaLibrary:
         self._lock = asyncio.Lock()
         logger.info(f"Initialized SchemaLibrary with {max_workers} workers")
 
-    async def register_schema(
-        self,
-        name: str,
-        schema: Type[BaseModel],
-        dependencies: List[str] = []
-    ) -> SchemaEntry:
+    async def register_schema(self, name: str, schema: Type[BaseModel], dependencies: List[str] = []) -> SchemaEntry:
         async with self._lock:
             entry = SchemaEntry(
-                metadata=SchemaMetadata(
-                    name=name,
-                    version="1.0.0",
-                    dependencies=dependencies
-                ),
-                schema=schema
+                metadata=SchemaMetadata(name=name, version="1.0.0", dependencies=dependencies), schema=schema
             )
             self.schemas[name] = entry
             logger.info(f"Registered schema: {name}")
             return entry
 
     async def create_generator(
-        self,
-        name: str,
-        model: VisionModel,
-        temperature: float = 0.5,
-        **generator_kwargs
+        self, name: str, model: VisionModel, temperature: float = 0.5, **generator_kwargs
     ) -> Callable:
         """Create a generator for a schema with the given model."""
         logger.info(f"Creating generator for schema: {name}")
@@ -77,12 +65,7 @@ class SchemaLibrary:
                     raise RuntimeError(f"Failed to compile schema: {name}")
 
             sampler = outlines.samplers.multinomial(temperature=temperature)
-            generator = outlines.generate.json(
-                model.model,
-                entry.schema,
-                sampler=sampler,
-                **generator_kwargs
-            )
+            generator = outlines.generate.json(model.model, entry.schema, sampler=sampler, **generator_kwargs)
 
             # Store the generator in the schema entry
             async with self._lock:
@@ -108,11 +91,7 @@ class SchemaLibrary:
                 await self.wait_for_schema(dep)
 
             # Compile schema in thread pool
-            fsm = await asyncio.get_event_loop().run_in_executor(
-                self.executor,
-                self._compile_fsm,
-                entry.schema
-            )
+            fsm = await asyncio.get_event_loop().run_in_executor(self.executor, self._compile_fsm, entry.schema)
 
             async with self._lock:
                 entry.fsm = fsm
@@ -143,11 +122,7 @@ class SchemaLibrary:
         entry = await self.get_schema(name)
         return entry.generator
 
-    async def wait_for_schema(
-        self,
-        name: str,
-        timeout: float = 30.0
-    ) -> bool:
+    async def wait_for_schema(self, name: str, timeout: float = 30.0) -> bool:
         try:
             start_time = datetime.now()
             while (datetime.now() - start_time).total_seconds() < timeout:

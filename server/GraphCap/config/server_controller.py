@@ -27,10 +27,7 @@ class ServerController:
             return
 
         with self._lock:
-            self._agents: Dict[str, Optional[object]] = {
-                'DenseGraphCaption': None,
-                'BasicReasoner': None
-            }
+            self._agents: Dict[str, Optional[object]] = {"DenseGraphCaption": None, "BasicReasoner": None}
             self._schema_library = SchemaLibrary()
             self._initialized = True
             logger.info("ServerController singleton initialized")
@@ -47,43 +44,27 @@ class ServerController:
                 self._model = get_vision_model()
 
                 # Initialize DenseGraphCaption
-                if self._agents['DenseGraphCaption'] is None:
-                    await self._schema_library.register_schema(
-                        "dense_caption",
-                        ImageData,
-                        dependencies=[]
-                    )
+                if self._agents["DenseGraphCaption"] is None:
+                    await self._schema_library.register_schema("dense_caption", ImageData, dependencies=[])
 
                     caption_generator = await self._schema_library.create_generator(
-                        "dense_caption",
-                        self._model,
-                        temperature=0.5
+                        "dense_caption", self._model, temperature=0.5
                     )
 
-                    self._agents['DenseGraphCaption'] = DenseGraphCaption(
-                        model=self._model,
-                        generator=caption_generator
+                    self._agents["DenseGraphCaption"] = DenseGraphCaption(
+                        model=self._model, generator=caption_generator
                     )
                     logger.info("DenseGraphCaption model initialized successfully")
 
                 # Initialize BasicReasoner
-                if self._agents['BasicReasoner'] is None:
-                    await self._schema_library.register_schema(
-                        "chain_of_thought",
-                        ChainOfThought,
-                        dependencies=[]
-                    )
+                if self._agents["BasicReasoner"] is None:
+                    await self._schema_library.register_schema("chain_of_thought", ChainOfThought, dependencies=[])
 
                     reasoning_generator = await self._schema_library.create_generator(
-                        "chain_of_thought",
-                        self._model,
-                        temperature=0.7
+                        "chain_of_thought", self._model, temperature=0.7
                     )
 
-                    self._agents['BasicReasoner'] = BasicReasoner(
-                        model=self._model,
-                        generator=reasoning_generator
-                    )
+                    self._agents["BasicReasoner"] = BasicReasoner(model=self._model, generator=reasoning_generator)
                     logger.info("BasicReasoner model initialized successfully")
 
             except Exception as e:
@@ -129,5 +110,6 @@ class ServerController:
     async def get_schema(self, name: str) -> SchemaEntry:
         """Get a schema by name"""
         return await self._schema_library.get_schema(name)
+
 
 controller = ServerController()

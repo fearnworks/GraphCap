@@ -43,17 +43,17 @@ instruction = """<Task>You are a structured image analysis agent. Generate compr
 <Verification note="The verification identifies issues with the extracted tags and simple caption where the tags do not match the visual content you can actually see. Be a critic.">
 <DenseCaption note="The dense caption is a descriptive but grounded narrative paragraph of the image content. Only reference items you are confident you can see in the image.It uses straightforward confident and clear language without overt flowery prose. It incorporates elements from each of the tag categories to provide a broad dense caption">"""
 
+
 class DenseGraphCaption:
     def __init__(self, model: VisionModel, generator):
         """Initialize DenseGraphCaption with required model and generator.
-        
+
         Args:
             model (VisionModel): The vision model to use for processing
             generator: The compiled generator to use for caption generation
         """
         start_total = time.time()
         logger.info("Initializing DenseGraphCaption")
-
 
         # Time model loading
         start_model = time.time()
@@ -66,12 +66,7 @@ class DenseGraphCaption:
         logger.info(f"Total DenseGraphCaption initialization took {total_time:.2f} seconds")
         logger.debug("DenseGraphCaption initialized successfully")
 
-    def __call__(
-        self,
-        image: Image.Image,
-        instruction: str = instruction,
-        **kwargs
-    ) -> ImageData:
+    def __call__(self, image: Image.Image, instruction: str = instruction, **kwargs) -> ImageData:
         logger.info("Generating caption for image")
 
         instruction = self.model.format_instruction(instruction, [image])
@@ -87,6 +82,3 @@ class DenseGraphCaption:
         except Exception as e:
             logger.error(f"Error generating caption: {str(e)}", exc_info=True)
             raise
-
-
-

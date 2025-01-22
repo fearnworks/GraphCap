@@ -9,4 +9,4 @@ bind = "0.0.0.0:32100"
 accesslog = "-"
 errorlog = "-"
 loglevel = "info"
-access_log_format = '{"time":"%(t)s", "remote_ip":"%(h)s", "request":"%(r)s", "status":"%(s)s", "response_length":%(b)s, "referer":"%(f)s", "user_agent":"%(a)s", "request_time":%(L)s}'
+access_log_format = '{"time":"%(t)s", "remote_ip":"%(h)s", "request":"%(r)s", "status":"%(s)s", "response_length":%(b)s'

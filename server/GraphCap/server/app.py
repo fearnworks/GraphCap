@@ -38,6 +38,7 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("Shutting down...")
 
+
 app = FastAPI(lifespan=lifespan)
 
 # Add CORS middleware
@@ -53,4 +54,3 @@ app.add_middleware(
 api_version = "/api/v1"
 app.include_router(prefix=api_version, router=server_router)
 app.include_router(prefix=api_version, router=agents_router)
-

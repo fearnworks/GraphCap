@@ -68,13 +68,9 @@ class MessageLogger:
         if not file_path:
             file_path = f"{self.output_dir}/message_interactions.json"
         try:
-            sanitized_interactions = [
-                interaction.dict(by_alias=True) for interaction in self.interactions
-            ]
+            sanitized_interactions = [interaction.dict(by_alias=True) for interaction in self.interactions]
             for interaction in sanitized_interactions:
-                interaction["request"] = self._sanitize_request(
-                    VLLMRequest(**interaction["request"])
-                ).model_dump()
+                interaction["request"] = self._sanitize_request(VLLMRequest(**interaction["request"])).model_dump()
 
             with open(file_path, "w") as f:
                 json.dump(sanitized_interactions, f, indent=4)

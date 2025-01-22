@@ -11,6 +11,7 @@ from GraphCap.utils.logger import logger
 
 router = APIRouter(prefix="/server", tags=["server"])
 
+
 @router.get("/health")
 async def health_check():
     logger.debug("Health check requested")
@@ -34,6 +35,7 @@ async def model_info():
         logger.error(f"Error getting model info: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error getting model info: {str(e)}")
 
+
 @router.get("/schemas")
 async def list_schemas():
     """Get list of all registered schemas and their status."""
@@ -45,12 +47,13 @@ async def list_schemas():
                 "status": entry.metadata.status,
                 "version": entry.metadata.version,
                 "last_updated": entry.metadata.last_updated,
-                "dependencies": entry.metadata.dependencies
+                "dependencies": entry.metadata.dependencies,
             }
         return schemas
     except Exception as e:
         logger.error(f"Error listing schemas: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error listing schemas: {str(e)}")
+
 
 @router.get("/schemas/{name}")
 async def get_schema_info(name: str = Path(..., description="Name of the schema")):
@@ -65,7 +68,7 @@ async def get_schema_info(name: str = Path(..., description="Name of the schema"
             "last_updated": entry.metadata.last_updated,
             "dependencies": entry.metadata.dependencies,
             "error_message": entry.metadata.error_message,
-            "has_fsm": entry.fsm is not None
+            "has_fsm": entry.fsm is not None,
         }
     except KeyError:
         raise HTTPException(status_code=404, detail=f"Schema {name} not found")
@@ -73,30 +76,26 @@ async def get_schema_info(name: str = Path(..., description="Name of the schema"
         logger.error(f"Error getting schema info: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error getting schema info: {str(e)}")
 
+
 class SchemaRegistration(BaseModel):
     """Schema for registering a new schema."""
+
     name: str
     schema: BaseModel
     dependencies: List[str] = []
+
 
 @router.post("/schemas")
 async def register_schema(schema_reg: SchemaRegistration = Body(...)):
     """Register a new schema."""
     logger.info(f"Registering new schema: {schema_reg.name}")
     try:
-        entry = await controller.register_schema(
-            schema_reg.name,
-            schema_reg.schema,
-            schema_reg.dependencies
-        )
-        return {
-            "name": entry.metadata.name,
-            "status": entry.metadata.status,
-            "version": entry.metadata.version
-        }
+        entry = await controller.register_schema(schema_reg.name, schema_reg.schema, schema_reg.dependencies)
+        return {"name": entry.metadata.name, "status": entry.metadata.status, "version": entry.metadata.version}
     except Exception as e:
         logger.error(f"Error registering schema: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error registering schema: {str(e)}")
+
 
 @router.post("/schemas/{name}/compile")
 async def compile_schema(name: str = Path(..., description="Name of the schema")):

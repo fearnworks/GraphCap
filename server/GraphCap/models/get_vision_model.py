@@ -31,9 +31,7 @@ class VisionModel:
             # "torch_dtype": torch_dtype,
             # "device_map": "auto",
         }
-        processor_kwargs = {
-
-        }
+        processor_kwargs = {}
         model = outlines.models.transformers_vision(
             self.model_name,
             model_class=self.model_class,
@@ -74,9 +72,7 @@ class PixtralVisionModel(VisionModel):
 
     def format_instruction(self, instruction: str, images: list):
         img_tokens = [self.img_token for _ in images]
-        return self.pixtral_format.format(
-            instruction=instruction, img_tokens=img_tokens
-        )
+        return self.pixtral_format.format(instruction=instruction, img_tokens=img_tokens)
 
 
 def get_vision_model(model_name: str | None = None) -> tuple[TransformersVision, AutoProcessor]:

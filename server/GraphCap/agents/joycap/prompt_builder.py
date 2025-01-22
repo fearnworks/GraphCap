@@ -48,10 +48,14 @@ def build_extra_instructions(config: PromptConfig) -> List[str]:
     instructions = []
 
     if config.character_name:
-        instructions.append(f"If there is a person/character in the image you must refer to them as {config.character_name}")
+        instructions.append(
+            f"If there is a person/character in the image you must refer to them as {config.character_name}"
+        )
 
     if config.exclude_unchangeable_attributes:
-        instructions.append("Do NOT include information about people/characters that cannot be changed (like ethnicity, gender, etc), but do still include changeable attributes (like hair style)")
+        instructions.append(
+            "Do NOT include information about people/characters that cannot be changed (like ethnicity, gender, etc), but do still include changeable attributes (like hair style)"
+        )
 
     if config.include_lighting:
         instructions.append("Include information about lighting")
@@ -66,7 +70,9 @@ def build_extra_instructions(config: PromptConfig) -> List[str]:
         instructions.append("Include information about whether there are JPEG artifacts or not")
 
     if config.include_camera_details:
-        instructions.append("If it is a photo you MUST include information about what camera was likely used and details such as aperture, shutter speed, ISO, etc")
+        instructions.append(
+            "If it is a photo you MUST include information about what camera was likely used and details such as aperture, shutter speed, ISO, etc"
+        )
 
     if config.keep_pg:
         instructions.append("Do NOT include anything sexual; keep it PG")
@@ -75,10 +81,14 @@ def build_extra_instructions(config: PromptConfig) -> List[str]:
         instructions.append("Do NOT mention the image's resolution")
 
     if config.include_quality_assessment:
-        instructions.append("You MUST include information about the subjective aesthetic quality of the image from low to very high")
+        instructions.append(
+            "You MUST include information about the subjective aesthetic quality of the image from low to very high"
+        )
 
     if config.include_composition:
-        instructions.append("Include information on the image's composition style, such as leading lines, rule of thirds, or symmetry")
+        instructions.append(
+            "Include information on the image's composition style, such as leading lines, rule of thirds, or symmetry"
+        )
 
     if config.exclude_text:
         instructions.append("Do NOT mention any text that is in the image")
@@ -117,12 +127,7 @@ def build_prompt(config: Optional[PromptConfig] = None) -> Prompt:
     # Join all parts with periods
     final_prompt = ". ".join(prompt_parts) + "."
 
-    return Prompt(
-        prompt_config=config,
-        config_name=config.config_name,
-        prompt=final_prompt,
-        weight=1.0
-    )
+    return Prompt(prompt_config=config, config_name=config.config_name, prompt=final_prompt, weight=1.0)
 
 
 def build_prompts(configs: List[PromptConfig]) -> List[Prompt]:
@@ -133,6 +138,7 @@ def build_prompts(configs: List[PromptConfig]) -> List[Prompt]:
         logger.info(f"Built prompt for config {config.config_name}: {prompt.prompt}")
         prompts.append(prompt)
     return prompts
+
 
 def get_default_config() -> PromptConfig:
     """Get the default prompt configuration"""
@@ -145,7 +151,7 @@ def get_default_config() -> PromptConfig:
         exclude_text=True,
         only_important_elements=True,
         use_case="General Purpose",
-        description="Default configuration for general image description with formal tone and essential elements only."
+        description="Default configuration for general image description with formal tone and essential elements only.",
     )
 
 
@@ -157,7 +163,7 @@ def get_preset_configs() -> List[PromptConfig]:
             mode=CaptionMode.DESCRIPTIVE,
             tone=ToneStyle.FORMAL,
             use_case="Content Description",
-            description="Formal description focusing on key elements of the image. Ideal for accessibility, content indexing, and general documentation."
+            description="Formal description focusing on key elements of the image. Ideal for accessibility, content indexing, and general documentation.",
         ),
         PromptConfig(
             config_name="art_critic",
@@ -166,7 +172,7 @@ def get_preset_configs() -> List[PromptConfig]:
             include_lighting=True,
             include_quality_assessment=True,
             use_case="Art Analysis",
-            description="Detailed artistic analysis including composition, lighting, and quality assessment. Suitable for art collections, galleries, and educational contexts."
+            description="Detailed artistic analysis including composition, lighting, and quality assessment. Suitable for art collections, galleries, and educational contexts.",
         ),
         PromptConfig(
             config_name="technical_photo",
@@ -177,7 +183,7 @@ def get_preset_configs() -> List[PromptConfig]:
             include_depth_of_field=True,
             include_composition=True,
             use_case="Photography Technical Analysis",
-            description="Technical analysis of photographic elements including camera settings, lighting, and composition. Useful for photography education and archival purposes."
+            description="Technical analysis of photographic elements including camera settings, lighting, and composition. Useful for photography education and archival purposes.",
         ),
         PromptConfig(
             config_name="social_media",
@@ -187,7 +193,7 @@ def get_preset_configs() -> List[PromptConfig]:
             keep_pg=True,
             include_sfw_rating=True,
             use_case="Social Media Content",
-            description="Engaging, casual descriptions suitable for social media posts. Includes content rating and maintains family-friendly content."
+            description="Engaging, casual descriptions suitable for social media posts. Includes content rating and maintains family-friendly content.",
         ),
         PromptConfig(
             config_name="product_listing",
@@ -197,7 +203,7 @@ def get_preset_configs() -> List[PromptConfig]:
             avoid_ambiguity=True,
             exclude_text=True,
             use_case="E-commerce",
-            description="Product-focused descriptions highlighting key features and quality. Ideal for e-commerce listings and product catalogs."
+            description="Product-focused descriptions highlighting key features and quality. Ideal for e-commerce listings and product catalogs.",
         ),
         PromptConfig(
             config_name="training_data",
@@ -207,17 +213,20 @@ def get_preset_configs() -> List[PromptConfig]:
             include_quality_assessment=True,
             exclude_text=True,
             use_case="AI Training Data",
-            description="Detailed descriptions formatted for AI training purposes. Includes technical aspects while maintaining clean, consistent formatting."
-        )
+            description="Detailed descriptions formatted for AI training purposes. Includes technical aspects while maintaining clean, consistent formatting.",
+        ),
     ]
 
 
 def list_available_configs() -> List[Dict[str, str]]:
     """List all available preset configurations with their use cases and descriptions"""
     configs = get_preset_configs()
-    return [{
-        'name': config.config_name,
-        'mode': config.mode.value,
-        'use_case': config.use_case or "Not specified",
-        'description': config.description or "No description available"
-    } for config in configs]
+    return [
+        {
+            "name": config.config_name,
+            "mode": config.mode.value,
+            "use_case": config.use_case or "Not specified",
+            "description": config.description or "No description available",
+        }
+        for config in configs
+    ]

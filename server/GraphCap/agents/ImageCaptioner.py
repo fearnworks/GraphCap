@@ -30,9 +30,7 @@ class ImageCaptioner:
         self.max_size = max_size
         self.repetition_penalty = repetition_penalty
         self.message_logger = message_logger
-        logger.info(
-            f"ImageCaptioner initialized with model_name: {self.model_name} and base_url: {vllm_server_url}"
-        )
+        logger.info(f"ImageCaptioner initialized with model_name: {self.model_name} and base_url: {vllm_server_url}")
 
     def encode_image(self, image_path: str) -> str:
         with Image.open(image_path) as img:
@@ -85,9 +83,7 @@ class ImageCaptioner:
             timestamp_end = time.time()
             duration = timestamp_end - timestamp_start
 
-            self._log_interaction(
-                messages, vllm_response, timestamp_start, timestamp_end, duration
-            )
+            self._log_interaction(messages, vllm_response, timestamp_start, timestamp_end, duration)
             return vllm_response
 
         except Exception as e:
@@ -95,9 +91,7 @@ class ImageCaptioner:
             error_response = self._create_error_response(str(e))
             timestamp_end = time.time()
             duration = timestamp_end - timestamp_start
-            self._log_interaction(
-                messages, error_response, timestamp_start, timestamp_end, duration
-            )
+            self._log_interaction(messages, error_response, timestamp_start, timestamp_end, duration)
             return error_response
 
     def _convert_to_vllm_response(self, openai_response) -> VLLMResponse:

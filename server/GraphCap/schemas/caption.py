@@ -18,14 +18,10 @@ class TagType(StrEnum):
 
 class ImageTag(BaseModel):
     category: TagType
-    tag: str = Field(
-        description=("Descriptive keyword or phrase representing the tag.")
-    )
+    tag: str = Field(description=("Descriptive keyword or phrase representing the tag."))
     confidence: float = Field(
         0.0,
-        description=(
-            "Confidence score for the tag, between 0 (exclusive) and 1 (inclusive)."
-        ),
+        description=("Confidence score for the tag, between 0 (exclusive) and 1 (inclusive)."),
     )
 
 

@@ -7,6 +7,7 @@ from GraphCap.utils.logger import logger
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 
+
 @router.post("/generate_caption")
 async def generate_caption_endpoint(
     file: UploadFile = File(...),
@@ -21,7 +22,7 @@ async def generate_caption_endpoint(
 
     try:
         logger.info("Generating caption")
-        caption = controller['DenseGraphCaption'](image)
+        caption = controller["DenseGraphCaption"](image)
         logger.info("Caption generated successfully")
         if caption is None:
             logger.error("Failed to generate caption")
@@ -31,6 +32,7 @@ async def generate_caption_endpoint(
     except Exception as e:
         logger.error(f"Error during caption generation: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @router.post("/generate_reasoning")
 async def generate_reasoning_endpoint(
@@ -47,7 +49,7 @@ async def generate_reasoning_endpoint(
 
     try:
         logger.info("Generating reasoning")
-        reasoning = controller['BasicReasoner'](image, question)
+        reasoning = controller["BasicReasoner"](image, question)
         logger.info("Reasoning generated successfully")
         if reasoning is None:
             logger.error("Failed to generate reasoning")
@@ -57,4 +59,3 @@ async def generate_reasoning_endpoint(
     except Exception as e:
         logger.error(f"Error during reasoning generation: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
-

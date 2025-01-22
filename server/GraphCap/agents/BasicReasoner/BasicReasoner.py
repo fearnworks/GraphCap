@@ -7,7 +7,8 @@ from GraphCap.agents.BasicReasoner.schemas import ChainOfThought
 from GraphCap.models.get_vision_model import VisionModel
 from GraphCap.utils.logger import logger
 
-instruction = """<Task>You are a visual reasoning agent. Analyze the given image and answer the following question: {question}</Task>
+instruction = """<Task>You are a visual reasoning agent. Analyze the given image and answer the following question:
+{question}</Task>
 
 <ScratchPad>
 1. Problem Analysis: Analyze the question and break it down into key components.
@@ -20,17 +21,18 @@ instruction = """<Task>You are a visual reasoning agent. Analyze the given image
 Provide a clear and concise answer to the question based on your analysis.
 </Response>
 """
+
+
 class BasicReasoner:
     def __init__(self, model: VisionModel, generator):
         """Initialize BasicReasoner with required model and generator.
-        
+
         Args:
             model (VisionModel): The vision model to use for processing
             generator: The compiled generator to use for reasoning
         """
         start_total = time.time()
         logger.info("Initializing BasicReasoner")
-
 
         # Time model loading
         start_model = time.time()
@@ -43,13 +45,7 @@ class BasicReasoner:
         logger.info(f"Total BasicReasoner initialization took {total_time:.2f} seconds")
         logger.debug("BasicReasoner initialized successfully")
 
-    def __call__(
-        self,
-        image: Image.Image,
-        question: str,
-        instruction: str = instruction,
-        **kwargs
-    ) -> ChainOfThought:
+    def __call__(self, image: Image.Image, question: str, instruction: str = instruction, **kwargs) -> ChainOfThought:
         logger.info("Generating reasoning for image")
 
         instruction = self.model.format_instruction(instruction.format(question=question), [image])
@@ -65,6 +61,3 @@ class BasicReasoner:
         except Exception as e:
             logger.error(f"Error generating reasoning: {str(e)}", exc_info=True)
             raise
-
-
-

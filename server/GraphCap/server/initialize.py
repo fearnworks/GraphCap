@@ -44,9 +44,11 @@ async def initialize():
 
     return app, controller
 
+
 # Create an event loop and run the initialization
 def create_app():
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(initialize())
+
 
 app, controller = create_app()

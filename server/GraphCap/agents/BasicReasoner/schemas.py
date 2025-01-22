@@ -7,6 +7,7 @@ class ScratchPad(BaseModel):
     solution_outline: str
     solution_plan: str
 
+
 class ChainOfThought(BaseModel):
     scratchpad: ScratchPad
     response: str

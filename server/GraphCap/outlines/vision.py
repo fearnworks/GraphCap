@@ -9,9 +9,7 @@ from PIL import Image
 def load_image(image_path, max_edge_size=1920) -> Image.Image:
     img = Image.open(image_path).convert("RGB")
     if max(img.size) > max_edge_size:
-        print(
-            f"Resizing image from {img.size} to fit within {max_edge_size}x{max_edge_size}"
-        )
+        print(f"Resizing image from {img.size} to fit within {max_edge_size}x{max_edge_size}")
         img.thumbnail((max_edge_size, max_edge_size), Image.LANCZOS)
     return img
 
@@ -23,10 +21,7 @@ def load_images(image_paths, max_edge_size=1920) -> list[Image.Image]:
 def load_images_from_directory(directory, max_edge_size=1920) -> list[Image.Image]:
     if not Path(directory).exists():
         raise FileNotFoundError(f"Directory {directory} does not exist")
-    return [
-        load_image(image_path, max_edge_size)
-        for image_path in Path(directory).glob("*.{jpg,png,jpeg}")
-    ]
+    return [load_image(image_path, max_edge_size) for image_path in Path(directory).glob("*.{jpg,png,jpeg}")]
 
 
 def load_img_from_url(url, max_edge_size=1920) -> Image.Image:
@@ -58,7 +53,4 @@ def load_png_images_from_directory(directory, max_edge_size=1920) -> dict[Image.
     if not png_files:
         print(f"Warning: No PNG files found in {directory}")
 
-    return {
-        image_path.stem: load_image(image_path, max_edge_size)
-        for image_path in png_files
-    }
+    return {image_path.stem: load_image(image_path, max_edge_size) for image_path in png_files}

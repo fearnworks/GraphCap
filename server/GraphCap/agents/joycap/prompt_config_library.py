@@ -66,7 +66,7 @@ class PromptConfigLibrary:
                 include_lighting=True,
                 exclude_resolution=True,
                 use_case="Booru Tags for Composition Analysis",
-                description="Generates Booru tags highlighting composition and lighting aspects of the image."
+                description="Generates Booru tags highlighting composition and lighting aspects of the image.",
             ),
             PromptConfig(
                 config_name="in_depth_art_critique",
@@ -79,7 +79,7 @@ class PromptConfigLibrary:
                 avoid_ambiguity=True,
                 exclude_text=True,
                 use_case="In-depth Art Critique",
-                description="An in-depth art critique including composition, lighting, quality assessment, depth of field, and lighting source, avoiding ambiguity."
+                description="An in-depth art critique including composition, lighting, quality assessment, depth of field, and lighting source, avoiding ambiguity.",
             ),
             PromptConfig(
                 config_name="artistic_training_prompt",
@@ -90,7 +90,7 @@ class PromptConfigLibrary:
                 exclude_text=True,
                 avoid_ambiguity=True,
                 use_case="Artistic AI Training Data",
-                description="A training prompt including artistic elements like lighting, composition, depth of field, avoiding ambiguity, and excluding text."
+                description="A training prompt including artistic elements like lighting, composition, depth of field, avoiding ambiguity, and excluding text.",
             ),
             PromptConfig(
                 config_name="descriptive_formal_detailed",
@@ -102,7 +102,7 @@ class PromptConfigLibrary:
                 exclude_text=True,
                 avoid_ambiguity=True,
                 use_case="Detailed Artistic Description",
-                description="A detailed formal description including lighting and composition, avoiding ambiguity and excluding text."
+                description="A detailed formal description including lighting and composition, avoiding ambiguity and excluding text.",
             ),
             PromptConfig(
                 config_name="art_critic_detailed",
@@ -112,7 +112,7 @@ class PromptConfigLibrary:
                 include_quality_assessment=True,
                 exclude_text=True,
                 use_case="Detailed Art Critic Analysis",
-                description="A detailed art critic analysis including composition, lighting, and quality assessment, excluding text."
+                description="A detailed art critic analysis including composition, lighting, and quality assessment, excluding text.",
             ),
             PromptConfig(
                 config_name="technical_photo_analysis",
@@ -124,7 +124,7 @@ class PromptConfigLibrary:
                 include_composition=True,
                 exclude_text=True,
                 use_case="Technical Photo Analysis",
-                description="Technical analysis including camera details, lighting, depth of field, composition, excluding text."
+                description="Technical analysis including camera details, lighting, depth of field, composition, excluding text.",
             ),
             PromptConfig(
                 config_name="artistic_midjourney_detailed",
@@ -136,7 +136,7 @@ class PromptConfigLibrary:
                 include_depth_of_field=True,
                 exclude_text=True,
                 use_case="Detailed MidJourney Prompt",
-                description="Provides detailed MidJourney prompts incorporating composition, lighting, and depth of field."
+                description="Provides detailed MidJourney prompts incorporating composition, lighting, and depth of field.",
             ),
         ]
 
