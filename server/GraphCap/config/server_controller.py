@@ -1,14 +1,13 @@
 from threading import Lock
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel
-
 from GraphCap.agents.BasicReasoner.BasicReasoner import BasicReasoner
 from GraphCap.agents.BasicReasoner.schemas import ChainOfThought
 from GraphCap.agents.DenseGraphCaption import DenseGraphCaption, ImageData
 from GraphCap.config.schema_library import SchemaEntry, SchemaLibrary
 from GraphCap.models.get_vision_model import get_vision_model
 from GraphCap.utils.logger import logger
+from pydantic import BaseModel
 
 
 class ServerController:

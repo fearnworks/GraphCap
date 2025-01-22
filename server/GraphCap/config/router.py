@@ -3,11 +3,11 @@ from typing import List
 
 import torch
 from fastapi import APIRouter, Body, HTTPException, Path
-from pydantic import BaseModel
 
 # Import your service functions or classes here
 from GraphCap.config.server_controller import controller
 from GraphCap.utils.logger import logger
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/server", tags=["server"])
 

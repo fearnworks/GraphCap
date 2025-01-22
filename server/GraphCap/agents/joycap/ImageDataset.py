@@ -9,14 +9,13 @@ from pathlib import Path
 import torch
 import torch.amp
 import torchvision.transforms.functional as TVF
+from GraphCap.agents.joycap.prompt_builder import Prompt
 from PIL import Image
 from torch.utils.data import Dataset
 from transformers import (
     PreTrainedTokenizer,
     PreTrainedTokenizerFast,
 )
-
-from GraphCap.agents.joycap.prompt_builder import Prompt
 
 
 class ImageDataset(Dataset):

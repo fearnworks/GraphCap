@@ -1,9 +1,8 @@
 # src/embedding/retrieve_router.py
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
-from PIL import Image
-
 from GraphCap.config.server_controller import controller
 from GraphCap.utils.logger import logger
+from PIL import Image
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 

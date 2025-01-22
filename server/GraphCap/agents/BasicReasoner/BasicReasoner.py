@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 import time
 
-from PIL import Image
-
 from GraphCap.agents.BasicReasoner.schemas import ChainOfThought
 from GraphCap.models.get_vision_model import VisionModel
 from GraphCap.utils.logger import logger
+from PIL import Image
 
 instruction = """<Task>You are a visual reasoning agent. Analyze the given image and answer the following question:
 {question}</Task>

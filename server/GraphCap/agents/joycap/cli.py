@@ -7,7 +7,6 @@ import logging
 from typing import Optional
 
 import click
-
 from GraphCap.agents.joycap.cap import caption_images, none_or_type
 from GraphCap.agents.joycap.prompt_builder import build_prompts
 from GraphCap.agents.joycap.prompt_config_library import PromptConfigLibrary

@@ -6,10 +6,9 @@ from typing import Any, Callable, Dict, List, Optional, Type
 
 import outlines
 import outlines.samplers
-from pydantic import BaseModel, Field
-
 from GraphCap.models.get_vision_model import VisionModel
 from GraphCap.utils.logger import logger
+from pydantic import BaseModel, Field
 
 
 class SchemaStatus(str, Enum):

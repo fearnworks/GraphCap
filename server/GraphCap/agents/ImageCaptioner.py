@@ -4,12 +4,11 @@ import io
 import time
 from typing import Optional, Union
 
-from openai import AsyncOpenAI
-from PIL import Image
-
 from GraphCap.schemas.vllm_schemas import Interaction, VLLMRequest, VLLMResponse
 from GraphCap.utils.logger import logger
 from GraphCap.utils.message_logger import MessageLogger
+from openai import AsyncOpenAI
+from PIL import Image
 
 
 class ImageCaptioner:

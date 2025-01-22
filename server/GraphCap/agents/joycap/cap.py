@@ -13,6 +13,8 @@ import pandas as pd
 import torch
 import torch.amp
 import torchvision.transforms.functional as TVF
+from GraphCap.agents.joycap.ImageDataset import ImageDataset
+from GraphCap.agents.joycap.prompt_builder import Prompt
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import (
@@ -21,9 +23,6 @@ from transformers import (
     PreTrainedTokenizer,
     PreTrainedTokenizerFast,
 )
-
-from GraphCap.agents.joycap.ImageDataset import ImageDataset
-from GraphCap.agents.joycap.prompt_builder import Prompt
 
 
 def none_or_type(value, desired_type):
