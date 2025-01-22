@@ -27,7 +27,8 @@ def build_base_prompt(config: PromptConfig) -> str:
     elif config.mode == CaptionMode.BOORU_LIKE_TAGS:
         base = "Write a list of Booru-like tags for this image"
     elif config.mode == CaptionMode.ART_CRITIC:
-        base = "Analyze this image like an art critic would with information about its composition, style, symbolism, the use of color, light, any artistic movement it might belong to, etc"
+        base = """Analyze this image like an art critic would with information about its composition,
+         style, symbolism, the use of color, light, any artistic movement it might belong to, etc"""
     elif config.mode == CaptionMode.PRODUCT_LISTING:
         base = "Write a caption for this image as though it were a product listing"
     elif config.mode == CaptionMode.SOCIAL_MEDIA:
@@ -54,7 +55,8 @@ def build_extra_instructions(config: PromptConfig) -> List[str]:
 
     if config.exclude_unchangeable_attributes:
         instructions.append(
-            "Do NOT include information about people/characters that cannot be changed (like ethnicity, gender, etc), but do still include changeable attributes (like hair style)"
+            """Do NOT include information about people/characters that cannot be changed
+             (like ethnicity, gender, etc), but do still include changeable attributes (like hair style)"""
         )
 
     if config.include_lighting:
@@ -71,7 +73,8 @@ def build_extra_instructions(config: PromptConfig) -> List[str]:
 
     if config.include_camera_details:
         instructions.append(
-            "If it is a photo you MUST include information about what camera was likely used and details such as aperture, shutter speed, ISO, etc"
+            """If it is a photo you MUST include information about what camera was likely used
+             and details such as aperture, shutter speed, ISO, etc"""
         )
 
     if config.keep_pg:
@@ -163,7 +166,8 @@ def get_preset_configs() -> List[PromptConfig]:
             mode=CaptionMode.DESCRIPTIVE,
             tone=ToneStyle.FORMAL,
             use_case="Content Description",
-            description="Formal description focusing on key elements of the image. Ideal for accessibility, content indexing, and general documentation.",
+            description="""Formal description focusing on key elements of the image.
+             Ideal for accessibility, content indexing, and general documentation.""",
         ),
         PromptConfig(
             config_name="art_critic",
@@ -172,7 +176,8 @@ def get_preset_configs() -> List[PromptConfig]:
             include_lighting=True,
             include_quality_assessment=True,
             use_case="Art Analysis",
-            description="Detailed artistic analysis including composition, lighting, and quality assessment. Suitable for art collections, galleries, and educational contexts.",
+            description="""Detailed artistic analysis including composition, lighting, and quality assessment.
+             Suitable for art collections, galleries, and educational contexts.""",
         ),
         PromptConfig(
             config_name="technical_photo",
@@ -183,7 +188,8 @@ def get_preset_configs() -> List[PromptConfig]:
             include_depth_of_field=True,
             include_composition=True,
             use_case="Photography Technical Analysis",
-            description="Technical analysis of photographic elements including camera settings, lighting, and composition. Useful for photography education and archival purposes.",
+            description="""Technical analysis of photographic elements including camera settings,
+             lighting, and composition. Useful for photography education and archival purposes.""",
         ),
         PromptConfig(
             config_name="social_media",
@@ -193,7 +199,8 @@ def get_preset_configs() -> List[PromptConfig]:
             keep_pg=True,
             include_sfw_rating=True,
             use_case="Social Media Content",
-            description="Engaging, casual descriptions suitable for social media posts. Includes content rating and maintains family-friendly content.",
+            description="""Engaging, casual descriptions suitable for social media posts.
+             Includes content rating and maintains family-friendly content.""",
         ),
         PromptConfig(
             config_name="product_listing",
@@ -203,7 +210,8 @@ def get_preset_configs() -> List[PromptConfig]:
             avoid_ambiguity=True,
             exclude_text=True,
             use_case="E-commerce",
-            description="Product-focused descriptions highlighting key features and quality. Ideal for e-commerce listings and product catalogs.",
+            description="""Product-focused descriptions highlighting key features and quality.
+             Ideal for e-commerce listings and product catalogs.""",
         ),
         PromptConfig(
             config_name="training_data",
@@ -213,7 +221,8 @@ def get_preset_configs() -> List[PromptConfig]:
             include_quality_assessment=True,
             exclude_text=True,
             use_case="AI Training Data",
-            description="Detailed descriptions formatted for AI training purposes. Includes technical aspects while maintaining clean, consistent formatting.",
+            description="""Detailed descriptions formatted for AI training purposes.
+             Includes technical aspects while maintaining clean, consistent formatting.""",
         ),
     ]
 

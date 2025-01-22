@@ -270,7 +270,8 @@ def parse_prompts(prompt_str: str | None, prompt_file: str | None) -> list[Promp
             prompts.append(Prompt(prompt=item["prompt"], weight=item["weight"]))
         else:
             raise ValueError(
-                f"Invalid prompt in JSON file. Should be either a string or an object with 'prompt' and 'weight' fields: {item}"
+                f"""Invalid prompt in JSON file.
+                Should be either a string or an object with 'prompt' and 'weight' fields: {item}"""
             )
 
     if len(prompts) == 0:

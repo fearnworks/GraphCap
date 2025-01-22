@@ -3,7 +3,6 @@ import os
 from typing import Type
 
 import outlines
-import torch
 from outlines.models.transformers_vision import TransformersVision
 from transformers import (
     AutoProcessor,
@@ -23,10 +22,6 @@ class VisionModel:
         self.model = self.setup_model()
 
     def setup_model(self):
-        if "AWQ" in self.model_name:
-            torch_dtype = torch.float16
-        else:
-            torch_dtype = torch.bfloat16
         model_kwargs = {
             # "torch_dtype": torch_dtype,
             # "device_map": "auto",
