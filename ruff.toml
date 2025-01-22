@@ -24,7 +24,7 @@ exclude = [
 ]
 
 # Source directories
-src = ["server", "tests"]
+src = ["./server/server", "./server/tests"]
 
 # Same as Black.
 line-length = 120

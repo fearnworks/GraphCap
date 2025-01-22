@@ -3,6 +3,7 @@ import os
 from typing import Type
 
 import outlines
+from GraphCap.utils.logger import logger
 from outlines.models.transformers_vision import TransformersVision
 from transformers import (
     AutoProcessor,
@@ -10,8 +11,6 @@ from transformers import (
     PreTrainedModel,
     Qwen2VLForConditionalGeneration,
 )
-
-from GraphCap.utils.logger import logger
 
 
 class VisionModel:
