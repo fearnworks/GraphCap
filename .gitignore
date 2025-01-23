@@ -87,3 +87,4 @@ models_cache/
 
 /src
 docker-compose.override.yml
+test-results/

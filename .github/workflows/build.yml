@@ -44,6 +44,84 @@ jobs:
           path: ruff_report.txt
           retention-days: 14
 
+  client-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: pnpm install
+
+      - name: Run type check
+        working-directory: ./client
+        continue-on-error: true
+        run: |
+          pnpm check > typecheck_report.txt 2>&1
+          cat typecheck_report.txt
+
+      - name: Upload type check report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typecheck-report
+          path: ./client/typecheck_report.txt
+          retention-days: 14
+
+      - name: Run lint
+        working-directory: ./client
+        continue-on-error: true
+        run: |
+          pnpm lint > lint_report.txt 2>&1
+          cat lint_report.txt
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-lint-report
+          path: ./client/lint_report.txt
+          retention-days: 14
+
+      - name: Run build
+        working-directory: ./client
+        run: |
+          pnpm build > build_report.txt 2>&1
+          cat build_report.txt
+
+      - name: Upload build report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-report
+          path: ./client/build_report.txt
+          retention-days: 14
+
+      - name: Run unit tests
+        working-directory: ./client
+        run: |
+          pnpm test:unit > test_report.txt 2>&1
+          cat test_report.txt
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: ./client/test_report.txt
+          retention-days: 14
+
   build:
     runs-on: ubuntu-latest
     permissions:
