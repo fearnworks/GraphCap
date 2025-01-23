@@ -23,3 +23,30 @@
 
 ## Background
 Original RFC : [link](https://github.com/Open-Model-Initiative/OMI-Data-Pipeline/issues/134)
+
+
+## Deployment:
+
+Codebase is under major refactor for initial version. Deployment is not yet stable.
+
+On first run, you need to setup the docker network: 
+
+```
+docker network create gcap_network
+```
+
+docker compose up -d
+```
+
+To Stop:
+```
+docker compose down
+```
+
+To update environment configuration copy the docker compose override file and uncomment the services you want to modify with your desired configuration:
+
+```
+cp docker-compose.override.example.yml docker-compose.override.yml
+```
+
+
