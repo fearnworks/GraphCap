@@ -86,19 +86,22 @@ jobs:
           pnpm lint > lint_report.txt 2>&1
           cat lint_report.txt
 
-      - name: Upload lint report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: client-lint-report
-          path: ./client/lint_report.txt
-          retention-days: 14
-
       - name: Run build
         working-directory: ./client
+        env:
+          NODE_ENV: production
+          DATABASE_URL: postgresql://graphcap:graphcap@localhost:5432/graphcap
+          NEXT_PUBLIC_SERVER_HOST: http://localhost:32100/api/v1
         run: |
-          pnpm build > build_report.txt 2>&1
-          cat build_report.txt
+          # Create an empty .env file if it doesn't exist
+          touch .env
+          # Run build and capture all output including stderr
+          pnpm build 2>&1 | tee build_report.txt || true
+          # Check if build actually succeeded
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "Build failed - check build_report.txt for details"
+            exit 1
+          fi
 
       - name: Upload build report
         if: always()
