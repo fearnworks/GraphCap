@@ -1,10 +1,31 @@
 <script lang="ts">
     import { Button } from '$lib/components/ui/button';
-    import type { DatasetState } from '../dataset.svelte';
     import { enhance } from '$app/forms';
     import { toast } from 'svelte-sonner';
     import { Card } from '$lib/components/ui/card';
     import TagList from '$lib/components/TagList.svelte';
+    
+    // Define the DatasetState type inline or create a separate types file
+    type DatasetState = {
+        selectedImage?: {
+            info: {
+                id: string;
+            };
+            captions: Array<{
+                shortCaption: string;
+                denseCaption: string;
+                verification: string;
+                tags?: Array<{
+                    category: string;
+                    tag: string;
+                    confidence: number;
+                }>;
+            }>;
+        };
+        selectedMount?: {
+            id: string;
+        };
+    };
     
     const { datasetState } = $props<{ datasetState: DatasetState }>();
     

@@ -1,41 +1,41 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1732806063913,
-      "tag": "0000_foamy_next_avengers",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1732806084455,
-      "tag": "0001_medical_machine_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1732875190089,
-      "tag": "0002_melodic_madame_masque",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1732989977003,
-      "tag": "0003_equal_jamie_braddock",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1733071998837,
-      "tag": "0004_living_red_hulk",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1732806063913,
+			"tag": "0000_foamy_next_avengers",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1732806084455,
+			"tag": "0001_medical_machine_man",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1732875190089,
+			"tag": "0002_melodic_madame_masque",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1732989977003,
+			"tag": "0003_equal_jamie_braddock",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1733071998837,
+			"tag": "0004_living_red_hulk",
+			"breakpoints": true
+		}
+	]
 }

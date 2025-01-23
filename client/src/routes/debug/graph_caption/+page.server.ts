@@ -6,14 +6,14 @@ import type { Mount } from '$lib/db/schema/mounts';
 import { captionAnnotations, type CaptionAnnotation } from '$lib/db/schema/caption-annotations';
 
 export interface DatasetLoadData {
-    captions: CaptionAnnotation[];
+	captions: CaptionAnnotation[];
 }
 
 export const load: PageServerLoad<DatasetLoadData> = async () => {
-    console.log('Loading captions');
-    const captions = await getAllCaptions();
-    console.log(captions);  
-    return { captions: captions };
+	console.log('Loading captions');
+	const captions = await getAllCaptions();
+	console.log(captions);
+	return { captions: captions };
 };
 
-export const actions = {}
+export const actions = {};

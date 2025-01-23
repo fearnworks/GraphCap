@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ImageList  from './ImageList.svelte';
+	import ImageList from './ImageList.svelte';
 	import { DatasetState } from '$lib/context/dataset.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import CreateMountForm from './components/CreateMountForm.svelte';
@@ -18,10 +18,10 @@
 	});
 </script>
 
-<div class=" space-y-4 rounded-lg bg-slate-700 flex flex-col w-[310px] h-full ">
+<div class=" flex h-full w-[310px] flex-col space-y-4 rounded-lg bg-slate-700">
 	<header class="flex items-center justify-between gap-4">
 		<div class="flex flex-1 items-center gap-4">
-			<div class="w-full h-full flex-col">
+			<div class="h-full w-full flex-col">
 				<Button onclick={() => (showCreateForm = !showCreateForm)}>
 					{showCreateForm ? 'Cancel' : 'Add Dataset'}
 				</Button>
@@ -39,7 +39,7 @@
 	{#if showCreateForm}
 		<CreateMountForm />
 	{/if}
-	<div class="flex-shrink h-full overflow-y-auto">
+	<div class="h-full flex-shrink overflow-y-auto">
 		{#if datasetState.selectedMount}
 			<ImageList {datasetState} />
 		{/if}

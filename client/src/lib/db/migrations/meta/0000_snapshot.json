@@ -1,162 +1,158 @@
 {
-  "id": "2e5c4f21-b32a-46aa-b6e1-6703a86b955b",
-  "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {
-    "public.chain_of_thought": {
-      "name": "chain_of_thought",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "problem_analysis": {
-          "name": "problem_analysis",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "context_analysis": {
-          "name": "context_analysis",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "solution_outline": {
-          "name": "solution_outline",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "solution_plan": {
-          "name": "solution_plan",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "response": {
-          "name": "response",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.image_data": {
-      "name": "image_data",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "short_caption": {
-          "name": "short_caption",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "verification": {
-          "name": "verification",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dense_caption": {
-          "name": "dense_caption",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.image_tag": {
-      "name": "image_tag",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "category": {
-          "name": "category",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tag": {
-          "name": "tag",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "confidence": {
-          "name": "confidence",
-          "type": "numeric(5, 4)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "image_data_id": {
-          "name": "image_data_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "image_tag_image_data_id_image_data_id_fk": {
-          "name": "image_tag_image_data_id_image_data_id_fk",
-          "tableFrom": "image_tag",
-          "tableTo": "image_data",
-          "columnsFrom": [
-            "image_data_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    }
-  },
-  "enums": {},
-  "schemas": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
-  "views": {},
-  "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
+	"id": "2e5c4f21-b32a-46aa-b6e1-6703a86b955b",
+	"prevId": "00000000-0000-0000-0000-000000000000",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.chain_of_thought": {
+			"name": "chain_of_thought",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"problem_analysis": {
+					"name": "problem_analysis",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"context_analysis": {
+					"name": "context_analysis",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"solution_outline": {
+					"name": "solution_outline",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"solution_plan": {
+					"name": "solution_plan",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"response": {
+					"name": "response",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.image_data": {
+			"name": "image_data",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"short_caption": {
+					"name": "short_caption",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"verification": {
+					"name": "verification",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"dense_caption": {
+					"name": "dense_caption",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.image_tag": {
+			"name": "image_tag",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"category": {
+					"name": "category",
+					"type": "varchar(50)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"tag": {
+					"name": "tag",
+					"type": "varchar(255)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"confidence": {
+					"name": "confidence",
+					"type": "numeric(5, 4)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"image_data_id": {
+					"name": "image_data_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"image_tag_image_data_id_image_data_id_fk": {
+					"name": "image_tag_image_data_id_image_data_id_fk",
+					"tableFrom": "image_tag",
+					"tableTo": "image_data",
+					"columnsFrom": ["image_data_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
 }

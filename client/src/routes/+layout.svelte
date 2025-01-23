@@ -4,7 +4,7 @@
 	import Navbar from '$lib/layout/NavBar.svelte';
 	import Footer from '$lib/layout/Footer.svelte';
 	import { AppState } from '$lib/context/app-state.svelte';
-	let {data, children} = $props();
+	let { data, children } = $props();
 
 	let appState = $state(new AppState());
 	console.log(data);
@@ -16,12 +16,11 @@
 
 <Toaster />
 <div class="h-screen w-screen">
-
-  <main class="w-full h-full flex flex-col bg-slate-600 overflow-hidden">
-    <Navbar height="40px" />
-	<div id="main-content" style:height={`calc(100vh - 80px)`}>
-		{@render children()}
-	</div>
-	<Footer data={{height: '40px', appState}}/>
-  </main>
-</div>                         
+	<main class="flex h-full w-full flex-col overflow-hidden bg-slate-600">
+		<Navbar height="40px" />
+		<div id="main-content" style:height={`calc(100vh - 80px)`}>
+			{@render children()}
+		</div>
+		<Footer data={{ height: '40px', appState }} />
+	</main>
+</div>
