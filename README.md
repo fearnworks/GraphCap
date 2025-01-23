@@ -33,8 +33,6 @@ On first run, you need to setup the docker network:
 
 ```
 docker network create gcap_network
-```
-
 docker compose up -d
 ```
 
