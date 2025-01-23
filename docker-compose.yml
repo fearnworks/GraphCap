@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 name: GraphCap
 services:
-  caption:
+  gcap_server:
+    container_name: gcap_server
     build:
       context: ./server
       dockerfile: ./Dockerfile.server
@@ -27,8 +28,41 @@ services:
         - action: sync
           path: ./GraphCap
           target: /app/GraphCap
+  gcap_client:
+    container_name: gcap_client
+    build:
+      context: client
+      dockerfile: Dockerfile.client
+    ports:
+      - "32000:32000"
+    develop:
+      watch:
+        - action: sync
+          path: ./client/src
+          target: /app/src
+    volumes:
+      - ./.local/workspace:/workspace
+      - ./datasets:/workspace
+    
+    environment:
+      - API_URL=http://localhost:32100/api/v1
+      - NEXT_PUBLIC_SERVER_HOST=http://localhost:32100/api/v1
+      - WORKSPACE=./.local/workspace
+      - DATABASE_URL=postgresql://graphcap:graphcap@gcap_postgres:5432/graphcap
+      - NODE_ENV=development
+      - POSTGRES_URL=postgresql://graphcap:graphcap@gcap_postgres:5432/graphcap
+      - DB_HOST=gcap_postgres
+      - DB_USER=graphcap
+      - DB_PASSWORD=graphcap
+      - DB_NAME=graphcap
+      - DB_PORT=5432
+    networks:
+      - gcap_network
+    depends_on:
+      - gcap_server
 
-  postgres:
+
+  gcap_postgres:
     image: postgres:17
     environment:
       POSTGRES_USER: graphcap
@@ -37,8 +71,14 @@ services:
     ports:
       - "35432:5432"
     volumes:
-      - graphcap_data:/var/lib/postgresql/data
+      - gcap_data:/var/lib/postgresql/data
+    networks:
+      - gcap_network
 
 volumes:
-  graphcap_data:
-  graphcap_cache:
+  gcap_data:
+  graphcap_cache: # keeping until rework of model inference
+
+networks:
+  gcap_network:
+    driver: bridge

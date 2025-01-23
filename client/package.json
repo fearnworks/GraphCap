@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"dev": "vite dev --host 0.0.0.0",
+		"dev": "vite dev --host 0.0.0.0 --port 32000",
 		"build": "vite build",
 		"preview": "vite preview",
 		"test": "npm run test:integration && npm run test:unit",
@@ -16,6 +16,7 @@
 		"studio": "pnpm drizzle-kit studio --port 35400 --host 0.0.0.0 --verbose",
 		"generate": "pnpm drizzle-kit generate",
 		"migrate": "pnpm drizzle-kit migrate",
+		"devcontainer:entry": "pnpm generate && pnpm migrate && pnpm dev",
 		"push": "pnpm drizzle-kit push",
 		"up": "pnpm drizzle-kit up"
 	},

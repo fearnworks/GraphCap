@@ -1,0 +1,11 @@
+FROM node:20-alpine 
+ENV NEXT_TELEMETRY_DISABLED=1
+# Install pnpm
+RUN npm install -g pnpm
+
+WORKDIR /app
+COPY package*.json ./
+RUN pnpm install
+COPY . .
+EXPOSE 28080
+CMD ["pnpm", "run", "devcontainer:entry"]

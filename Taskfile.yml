@@ -25,3 +25,6 @@ tasks:
     cmds:
       - docker compose down
 
+  setup:
+    cmds:
+      - docker network create gcap_network
