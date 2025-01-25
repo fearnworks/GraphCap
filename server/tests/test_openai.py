@@ -1,10 +1,12 @@
+## This tests the unwrapped client. Should help indicate config vs code issues
+
 import os
 
 import pytest
 from dotenv import load_dotenv
 
 # Adjust imports as needed depending on your actual project structure
-from GraphCap.provider.providers.base_client import OpenAI
+from openai import OpenAI
 
 # Load environment variables from .env (if present)
 load_dotenv()

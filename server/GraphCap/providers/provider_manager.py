@@ -6,6 +6,7 @@ from loguru import logger
 from .gemini_client import GeminiClient
 from .ollama_client import OllamaClient
 from .openai_client import OpenAIClient
+from .openrouter_client import OpenRouterClient
 from .provider_config import load_provider_config
 from .vllm_client import VLLMClient
 
@@ -110,6 +111,8 @@ class ProviderManager:
                 client = VLLMClient(api_key=api_key, base_url=base_url)
             elif provider_name == "cloud.gemini":
                 client = GeminiClient(api_key=api_key, base_url=base_url)
+            elif provider_name == "cloud.openrouter":
+                client = OpenRouterClient(api_key=api_key, base_url=base_url)
             else:
                 logger.error(f"Unknown provider or not implemented: {provider_name}")
                 raise ValueError(f"Unknown provider or not implemented: {provider_name}")

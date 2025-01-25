@@ -3,6 +3,9 @@ from openai import OpenAI
 
 
 class OllamaClient(OpenAI):
+    name = "ollama"
+    default_model = "llama3.2-vision"
+
     def __init__(self, api_key: str, base_url: str):
         self.base_url = base_url
         super().__init__(api_key=api_key, base_url=base_url)

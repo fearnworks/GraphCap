@@ -7,6 +7,8 @@ from .base_client import BaseClient
 
 
 class GeminiClient(BaseClient):
+    name = "gemini"
+    default_model = "gemini-2.0-flash-exp"
     """Client for Google's Gemini API with OpenAI compatibility layer"""
 
     def __init__(self, api_key: str, base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"):

@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 
 class BaseClient(OpenAI, ABC):
+    name: str
     """Abstract base class for all provider clients"""
 
     def __init__(self, api_key: str, base_url: str):

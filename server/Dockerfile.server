@@ -16,11 +16,11 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Copy project configuration
 COPY  pyproject.toml uv.lock /app/
+RUN uv sync
 
 # Copy application code
 COPY  . /app
 
-RUN uv sync
 
 # Copy and set permissions for entrypoint script
 COPY --chmod=775 _scripts/endpoints-entrypoint.sh entrypoint.sh

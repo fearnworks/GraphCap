@@ -9,6 +9,8 @@ from .base_client import BaseClient
 
 
 class OpenAIClient(BaseClient):
+    name = "openai"
+    default_model = "gpt-4o-mini"
     """Client for OpenAI API"""
 
     def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:

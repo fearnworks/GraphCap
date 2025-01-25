@@ -6,6 +6,9 @@ from openai import OpenAI
 
 
 class OpenRouterClient(OpenAI):
+    name = "openrouter"
+    default_model = "openai/gpt-4o-mini"
+
     def __init__(
         self, api_key: str, base_url: str = "https://openrouter.ai/api/v1", app_url: str = None, app_title: str = None
     ):

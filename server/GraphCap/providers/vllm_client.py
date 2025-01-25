@@ -9,6 +9,9 @@ from .base_client import BaseClient
 class VLLMClient(BaseClient):
     """Client for VLLM API with OpenAI compatibility layer"""
 
+    name = "vllm"
+    default_model = "vision-worker"
+
     def __init__(self, api_key: Optional[str], base_url: str):
         # Ensure base_url doesn't end with a slash
         base_url = base_url.rstrip("/")

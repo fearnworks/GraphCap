@@ -5,12 +5,12 @@ from pathlib import Path
 import httpx
 import pytest
 from dotenv import load_dotenv
-from GraphCap.provider.providers.gemini_client import GeminiClient
-from GraphCap.provider.providers.ollama_client import OllamaClient
-from GraphCap.provider.providers.openai_client import OpenAIClient
-from GraphCap.provider.providers.openrouter_client import OpenRouterClient
-from GraphCap.provider.providers.provider_manager import ProviderManager
-from GraphCap.provider.providers.vllm_client import VLLMClient
+from GraphCap.providers.gemini_client import GeminiClient
+from GraphCap.providers.ollama_client import OllamaClient
+from GraphCap.providers.openai_client import OpenAIClient
+from GraphCap.providers.openrouter_client import OpenRouterClient
+from GraphCap.providers.provider_manager import ProviderManager
+from GraphCap.providers.vllm_client import VLLMClient
 
 # Load environment variables from .env
 load_dotenv()
