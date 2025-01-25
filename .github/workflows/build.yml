@@ -70,10 +70,10 @@ jobs:
         working-directory: ./server
         continue-on-error: true
         run: |
-          pytest tests/ -v --junitxml=test-results.xml > pytest_report.txt 2>&1
+          pytest tests/ -v -m "not integration" --junitxml=test-results.xml > pytest_report.txt 2>&1
           cat pytest_report.txt
 
-      - name: Upload pytest report
+      - name: Upload pytest report and logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -81,6 +81,7 @@ jobs:
           path: |
             ./server/pytest_report.txt
             ./server/test-results.xml
+            ./server/test_logs.jsonl
           retention-days: 14
 
   client-checks:

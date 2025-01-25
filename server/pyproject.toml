@@ -11,6 +11,7 @@ dependencies = [
     "fastapi>=0.115.6",
     "hf-transfer>=0.1.9",
     "httpx>=0.28.1",
+    "loguru>=0.7.3",
     "openai>=1.59.9",
     "outlines>=0.1.11",
     "pydantic>=2.10.5",

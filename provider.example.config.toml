@@ -8,22 +8,22 @@
 # 3. Save as 'provider.config.toml'
 # 4. Run 'docker compose build' and 'docker compose up -d' as normal
 
-# [provider.cloud.openai]
-# api_key = "OPENAI_API_KEY"
-# base_url = "https://api.openai.com/v1"
-# models = [
-#     "gpt-4o-mini",
-#     "gpt-4o",
-# ]
+[provider.cloud.openai]
+api_key = "OPENAI_API_KEY"
+base_url = "https://api.openai.com/v1"
+models = [
+    "gpt-4o-mini",
+    "gpt-4o",
+]
 
-# [provider.cloud.gemini]
-# # https://ai.google.dev/gemini-api/docs/openai?authuser=2
-# api_key = "GEMINI_API_KEY"
-# base_url = "https://generativelanguage.googleapis.com/v1beta"
-# models = [
-#     "gemini-2.0-flash-exp",
+[provider.cloud.gemini]
+# https://ai.google.dev/gemini-api/docs/openai?authuser=2
+api_key = "GEMINI_API_KEY"
+base_url = "https://generativelanguage.googleapis.com/v1beta"
+models = [
+    "gemini-2.0-flash-exp",
 
-# ]
+]
 
 # [provider.cloud.openrouter]
 # api_key = "OPENROUTER_KEY"
@@ -45,18 +45,13 @@
 # [providers.custom.ollama]
 # api_key = "CUSTOM_PROVIDER_1_KEY"
 # base_url = "http://localhost:11434"
-# models = [
-#     "model-1",
-#     "model-2"
-# ]
+# fetch_models = true
 
 # [providers.custom.my_provider_2]
 # api_key = "CUSTOM_PROVIDER_2_KEY"
-# base_url = "http://192.168.1.100:11434"
-# models = [
-#     "custom-model-a",
-#     "custom-model-b"
-# ]
+# base_url = "http://localhost:11435"
+# fetch_models = true
+
 
 # # Add more custom providers as needed following the same pattern:
 # # [providers.custom.provider_name]

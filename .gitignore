@@ -89,3 +89,4 @@ models_cache/
 docker-compose.override.yml
 test-results/
 provider.config.toml
+test_logs.jsonl
