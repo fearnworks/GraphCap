@@ -191,6 +191,33 @@ class TestOpenRouterProvider:
         model_ids = [model.id for model in models.data]
         assert any("gpt" in model_id for model_id in model_ids), "Should have GPT models available"
 
+    def test_openrouter_vision(self, test_logger):
+        """Test OpenRouter's vision capabilities"""
+        client = OpenRouterClient(
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url="https://openrouter.ai/api/v1",
+            app_url=os.getenv("APP_URL"),
+            app_title=os.getenv("APP_TITLE"),
+        )
+
+        # Get test image
+        image_path = Path(__file__).parent / "test_image.png"
+
+        completion = client.vision(
+            prompt="What's in this image? Describe it briefly.",
+            image=image_path,
+            model="google/gemini-2.0-flash-exp:free",  # Using a free vision model
+        )
+
+        # Log the response
+        test_logger("openrouter_vision", completion.model_dump())
+
+        assert hasattr(completion, "choices"), "Should have 'choices' attribute"
+        assert len(completion.choices) > 0, "Should have at least one choice"
+        assert hasattr(completion.choices[0], "message"), "Choice should have a message"
+        assert isinstance(completion.choices[0].message.content, str), "Message should be string"
+        assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
+
 
 @pytest.mark.integration
 def test_provider_manager_initialization(provider_manager):

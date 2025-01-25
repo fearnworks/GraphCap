@@ -1,13 +1,13 @@
-from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from loguru import logger
-from openai import OpenAI
+
+from .base_client import BaseClient
 
 
-class OpenRouterClient(OpenAI):
+class OpenRouterClient(BaseClient):
     name = "openrouter"
-    default_model = "openai/gpt-4o-mini"
+    default_model = "google/gemini-2.0-flash-exp:free"
 
     def __init__(
         self, api_key: str, base_url: str = "https://openrouter.ai/api/v1", app_url: str = None, app_title: str = None
@@ -67,18 +67,6 @@ class OpenRouterClient(OpenAI):
         except Exception as e:
             logger.error(f"Failed to create structured completion: {str(e)}")
             raise
-
-    def vision(self, prompt: str, image: Union[str, Path], model: str = "openai/gpt-4o-mini"):
-        """
-        Create a vision completion with the given prompt and image.
-
-        Args:
-            prompt: Text prompt to send with the image
-            image: Path to image file or base64 encoded image string
-            model: Model to use for completion (must support vision)
-            max_tokens: Maximum tokens in response
-        """
-        return super().vision(prompt=prompt, image=image, model=model)
 
     def get_available_models(self):
         """
