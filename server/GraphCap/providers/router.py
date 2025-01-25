@@ -55,7 +55,11 @@ async def get_provider(provider_name: str):
 
 
 @router.post("/{provider_name}/vision")
-async def analyze_image(provider_name: str, image: UploadFile):
+async def analyze_image(
+    provider_name: str,
+    image: UploadFile,
+    prompt: str = "What's in this image? Describe it briefly.",  # Added default prompt
+):
     """Analyze an image using the specified provider's default model"""
     try:
         # Add cloud. prefix if not provided
@@ -73,9 +77,9 @@ async def analyze_image(provider_name: str, image: UploadFile):
             f.write(contents)
 
         try:
-            # Use the provider's vision method with its default model
+            # Use the provider's vision method with its default model and user prompt
             completion = provider.vision(
-                prompt="What's in this image? Describe it briefly.",
+                prompt=prompt,  # Using the provided prompt
                 image=temp_path,
                 model=provider.default_model,
             )
