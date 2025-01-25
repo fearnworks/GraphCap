@@ -24,6 +24,8 @@ services:
       - ODR_TEXT_MODEL=${ODR_TEXT_MODEL:-Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8}
       - ODR_VISION_MODEL=${ODR_VISION_MODEL:-mistral-community/pixtral-12b}
       - HOST_PLATFORM=${HOST_PLATFORM:-linux}
+    env_file:
+      - .env
     develop:
       watch:
         - action: sync

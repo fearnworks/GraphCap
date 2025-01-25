@@ -2,6 +2,7 @@
 import time
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,6 +10,8 @@ from GraphCap.agents.router import router as agents_router
 from GraphCap.config.router import router as server_router
 from GraphCap.providers.router import router as providers_router
 from GraphCap.utils.logger import logger
+
+load_dotenv()
 
 
 @asynccontextmanager

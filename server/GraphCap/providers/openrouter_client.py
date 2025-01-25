@@ -1,8 +1,13 @@
+import os
 from typing import Dict, List
 
 from loguru import logger
 
 from .base_client import BaseClient
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+if OPENROUTER_API_KEY is None:
+    raise ValueError("OPENROUTER_API_KEY is not set")
 
 
 class OpenRouterClient(BaseClient):
@@ -10,7 +15,11 @@ class OpenRouterClient(BaseClient):
     default_model = "google/gemini-2.0-flash-exp:free"
 
     def __init__(
-        self, api_key: str, base_url: str = "https://openrouter.ai/api/v1", app_url: str = None, app_title: str = None
+        self,
+        api_key: str = OPENROUTER_API_KEY,
+        base_url: str = "https://openrouter.ai/api/v1",
+        app_url: str = None,
+        app_title: str = None,
     ):
         # Ensure base_url doesn't end with a slash
         base_url = base_url.rstrip("/")
@@ -18,7 +27,7 @@ class OpenRouterClient(BaseClient):
 
         self.app_url = app_url
         self.app_title = app_title
-        super().__init__(api_key=api_key, base_url=base_url)
+        super().__init__(api_key=OPENROUTER_API_KEY, base_url=base_url)
 
     def _prepare_request(self, request, *args, **kwargs):
         """Hook for modifying requests before they're sent"""

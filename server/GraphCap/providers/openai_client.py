@@ -1,4 +1,5 @@
 import base64
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Type, Union
 
@@ -7,11 +8,30 @@ from pydantic import BaseModel
 
 from .base_client import BaseClient
 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if OPENAI_API_KEY is None:
+    raise ValueError("OPENAI_API_KEY is not set")
+
 
 class OpenAIClient(BaseClient):
     name = "openai"
     default_model = "gpt-4o-mini"
     """Client for OpenAI API"""
+
+    def __init__(
+        self,
+        api_key: str = OPENAI_API_KEY,
+        base_url: str = "https://api.openai.com/v1",
+        app_url: str = None,
+        app_title: str = None,
+    ):
+        # Ensure base_url doesn't end with a slash
+        base_url = base_url.rstrip("/")
+        logger.info(f"OpenAIClient initialized with base_url: {base_url}")
+
+        self.app_url = app_url
+        self.app_title = app_title
+        super().__init__(api_key=OPENAI_API_KEY, base_url=base_url)
 
     def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:
         """Format vision content for OpenAI API"""
