@@ -4,7 +4,7 @@ A flexible provider management system for handling multiple AI service providers
 
 ## Overview
 
-This system provides a unified way to manage and interact with different AI providers, both cloud-based and custom implementations. It uses a TOML-based configuration system and provides OpenAI-compatible client interfaces for each provider.
+This system provides a unified way to manage and interact with different AI providers, including cloud-based and custom implementations. It supports standard chat completions, vision capabilities, and structured outputs across providers.
 
 ## Configuration
 
@@ -18,10 +18,25 @@ api_key = "OPENAI_API_KEY"
 base_url = "https://api.openai.com/v1"
 models = ["gpt-4-vision", "gpt-4"]
 
+[provider.cloud.gemini]
+api_key = "GOOGLE_API_KEY"
+base_url = "https://generativelanguage.googleapis.com/v1beta"
+models = ["gemini-2.0-flash-exp"]
+
+[provider.cloud.openrouter]
+api_key = "OPENROUTER_API_KEY"
+base_url = "https://openrouter.ai/api/v1"
+models = ["openai/gpt-4", "google/gemini-2.0-flash-exp:free"]
+
 [providers.custom.ollama]
-api_key = "CUSTOM_KEY"
+api_key = ""
 base_url = "http://localhost:11434"
 fetch_models = true
+
+[providers.custom.vllm-pixtral]
+api_key = ""
+base_url = "http://localhost:11435"
+models = ["vision-worker"]
 ```
 
 ### Provider Types
@@ -29,7 +44,7 @@ fetch_models = true
 1. Cloud Providers (`provider.cloud.*`)
    - OpenAI
    - Gemini
-   - OpenRouter (commented example)
+   - OpenRouter
 
 2. Custom Providers (`providers.custom.*`)
    - Ollama
@@ -41,7 +56,7 @@ fetch_models = true
 ### Basic Usage
 
 ```python
-from provider.providers.provider_manager import ProviderManager
+from GraphCap.providers.provider_manager import ProviderManager
 
 # Initialize the manager
 manager = ProviderManager("provider.config.toml")
@@ -51,48 +66,60 @@ clients = manager.clients()
 
 # Get a specific client
 openai_client = manager.get_client("cloud.openai")
-ollama_client = manager.get_client("custom.ollama")
+gemini_client = manager.get_client("cloud.gemini")
 ```
 
 ### Provider Clients
 
-All provider clients implement an OpenAI-compatible interface:
+All provider clients inherit from BaseClient and implement an OpenAI-compatible interface:
 
-- `OpenAI`: Standard OpenAI client
+- `OpenAIClient`: Standard OpenAI implementation
+- `GeminiClient`: Google's Gemini API implementation
+- `OpenRouterClient`: OpenRouter API implementation
 - `OllamaClient`: Ollama-specific implementation
 - `VLLMClient`: VLLM-specific implementation
-- `GeminiClient`: Google Gemini implementation
+
+### Vision Capabilities
+
+All providers support a unified vision interface:
+
+```python
+completion = client.vision(
+    prompt="What's in this image?",
+    image=image_path,
+    model=client.default_model
+)
+```
+
+### Structured Output
+
+Providers support structured completions using JSON schemas or Pydantic models:
+
+```python
+completion = client.create_structured_completion(
+    messages=messages,
+    schema=MyPydanticModel,
+    model="model-name"
+)
+```
 
 ## Features
 
 - **Unified Interface**: All providers use an OpenAI-compatible interface
-- **Configuration Management**: TOML-based configuration for easy customization
+- **Vision Support**: Standardized vision capabilities across providers
+- **Structured Output**: JSON schema and Pydantic model support
+- **Configuration Management**: TOML-based configuration
 - **Automatic Initialization**: Providers are initialized at startup
 - **Error Handling**: Robust error handling with detailed logging
 - **Caching**: Clients are cached after initialization
-- **Extensible**: Easy to add new provider implementations
 
-## Logging
+## REST API
 
-The system uses loguru for comprehensive logging:
+The system includes a FastAPI router with endpoints:
 
-- DEBUG: Detailed debugging information
-- INFO: General operational information
-- WARNING: Handled issues that don't prevent operation
-- ERROR: Serious issues that prevent proper operation
-
-## Adding New Providers
-
-1. Create a new provider client class that inherits from `OpenAI`
-2. Add the provider configuration to `provider.config.toml`
-3. Update the `get_client` method in `ProviderManager` to handle the new provider
-
-Example:
-```python
-class NewProvider(OpenAI):
-    def __init__(self, api_key: str, base_url: str):
-        super().__init__(api_key=api_key, base_url=base_url)
-```
+- `GET /providers/`: List all available providers
+- `GET /providers/{provider_name}`: Get provider details
+- `POST /providers/{provider_name}/vision`: Analyze image with provider
 
 ## Error Handling
 
@@ -100,26 +127,5 @@ The system includes comprehensive error handling:
 - Configuration validation
 - Client initialization errors
 - Runtime errors with detailed logging
+- API error responses
 
-## Dependencies
-
-- `openai`: Base client implementation
-- `loguru`: Logging system
-- `tomllib`: TOML configuration parsing
-- Provider-specific dependencies as needed
-
-## Best Practices
-
-1. Always use environment variables for API keys
-2. Keep the configuration file secure
-3. Monitor logs for initialization and runtime issues
-4. Handle provider-specific rate limits and quotas
-5. Implement proper error handling in your application
-
-## Contributing
-
-1. Follow the existing code structure
-2. Add comprehensive logging
-3. Implement proper error handling
-4. Add tests for new functionality
-5. Update documentation as needed
