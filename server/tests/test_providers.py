@@ -1,14 +1,16 @@
+import base64
 import os
+from pathlib import Path
 
 import httpx
 import pytest
 from dotenv import load_dotenv
 from GraphCap.provider.providers.gemini_client import GeminiClient
 from GraphCap.provider.providers.ollama_client import OllamaClient
+from GraphCap.provider.providers.openai_client import OpenAIClient
 from GraphCap.provider.providers.openrouter_client import OpenRouterClient
 from GraphCap.provider.providers.provider_manager import ProviderManager
 from GraphCap.provider.providers.vllm_client import VLLMClient
-from openai import OpenAI
 
 # Load environment variables from .env
 load_dotenv()
@@ -39,6 +41,31 @@ class TestGeminiProvider:
 
         # Log the response
         test_logger("gemini_chat_completion", completion.model_dump())
+
+        assert hasattr(completion, "choices"), "Should have 'choices' attribute"
+        assert len(completion.choices) > 0, "Should have at least one choice"
+        assert hasattr(completion.choices[0], "message"), "Choice should have a message"
+        assert isinstance(completion.choices[0].message.content, str), "Message should be string"
+        assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
+
+    def test_gemini_vision(self, test_logger):
+        """Test Gemini's multimodal capabilities"""
+        client = GeminiClient(
+            api_key=os.getenv("GOOGLE_API_KEY"), base_url="https://generativelanguage.googleapis.com/v1beta"
+        )
+
+        # Get test image
+        image_path = Path(__file__).parent / "test_image.png"
+
+        completion = client.vision(
+            prompt="What's in this image? Describe it briefly.",
+            image=image_path,
+            model="gemini-2.0-flash-exp",
+            max_tokens=100,
+        )
+
+        # Log the response
+        test_logger("gemini_vision", completion.model_dump())
 
         assert hasattr(completion, "choices"), "Should have 'choices' attribute"
         assert len(completion.choices) > 0, "Should have at least one choice"
@@ -104,6 +131,27 @@ class TestVLLMProvider:
         assert isinstance(completion.choices[0].message.content, str), "Message should be string"
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
+    def test_vllm_vision(self, test_logger):
+        """Test VLLM's vision capabilities"""
+        base_url = os.getenv("VLLM_BASE_URL", "http://localhost:11435")
+        client = VLLMClient(api_key=None, base_url=base_url)
+
+        # Get test image
+        image_path = Path(__file__).parent / "test_image.png"
+
+        completion = client.vision(
+            prompt="What's in this image? Describe it briefly.", image=image_path, model="vision-worker", max_tokens=100
+        )
+
+        # Log the response
+        test_logger("vllm_vision", completion.model_dump())
+
+        assert hasattr(completion, "choices"), "Should have 'choices' attribute"
+        assert len(completion.choices) > 0, "Should have at least one choice"
+        assert hasattr(completion.choices[0], "message"), "Choice should have a message"
+        assert isinstance(completion.choices[0].message.content, str), "Message should be string"
+        assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
+
 
 @pytest.mark.integration
 class TestOpenRouterProvider:
@@ -121,7 +169,7 @@ class TestOpenRouterProvider:
             app_title=os.getenv("APP_TITLE"),
         )
         completion = client.chat.completions.create(
-            model="openai/gpt-3.5-turbo",
+            model="openai/gpt-4o-mini",
             messages=[{"role": "user", "content": "Say hello in 5 words or less."}],
             max_tokens=20,
         )
@@ -155,7 +203,7 @@ def test_provider_manager_initialization(provider_manager):
         assert client is not None, f"Client for {provider_name} should not be None"
         # Verify client is an instance of the correct type
         if "openai" in provider_name:
-            assert isinstance(client, OpenAI)
+            assert isinstance(client, OpenAIClient)
         elif "gemini" in provider_name:
             assert isinstance(client, GeminiClient)
         elif "ollama" in provider_name:
@@ -164,3 +212,43 @@ def test_provider_manager_initialization(provider_manager):
             assert isinstance(client, VLLMClient)
         elif "openrouter" in provider_name:
             assert isinstance(client, OpenRouterClient)
+
+
+def get_base64_image(image_path: str) -> str:
+    """Helper function to convert image to base64"""
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode("utf-8")
+
+
+@pytest.mark.integration
+class TestOpenAIVisionProvider:
+    @pytest.fixture(autouse=True)
+    def check_openai_api_key(self):
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            pytest.skip("No OPENAI_API_KEY found. Skipping OpenAI Vision tests.")
+
+    def test_gpt4_vision(self, test_logger):
+        """Test GPT-4 Vision capabilities"""
+        client = OpenAIClient(api_key=os.getenv("OPENAI_API_KEY"), base_url="https://api.openai.com/v1")
+
+        # Get test image
+        image_path = Path(__file__).parent / "test_image.png"
+
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": client._format_vision_content(
+                        "What's in this image? Describe it briefly.", client._get_base64_image(image_path)
+                    ),
+                }
+            ],
+            max_tokens=300,
+        )
+
+        # Log the response
+        test_logger("openai_vision", completion.model_dump())
+
+        assert completion.choices[0].message.content, "Expected non-empty response"

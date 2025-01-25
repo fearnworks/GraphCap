@@ -2,10 +2,10 @@
 
 
 from loguru import logger
-from openai import OpenAI
 
 from .gemini_client import GeminiClient
 from .ollama_client import OllamaClient
+from .openai_client import OpenAIClient
 from .provider_config import load_provider_config
 from .vllm_client import VLLMClient
 
@@ -103,7 +103,7 @@ class ProviderManager:
 
         try:
             if provider_name == "cloud.openai":
-                client = OpenAI(api_key=api_key, base_url=base_url)
+                client = OpenAIClient(api_key=api_key, base_url=base_url)
             elif provider_name == "custom.ollama":
                 client = OllamaClient(api_key=api_key, base_url=base_url)
             elif provider_name == "custom.vllm-pixtral":

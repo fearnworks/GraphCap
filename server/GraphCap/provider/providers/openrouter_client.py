@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Dict, List, Union
+
 from loguru import logger
 from openai import OpenAI
 
@@ -30,6 +33,50 @@ class OpenRouterClient(OpenAI):
         # Call parent without extra_headers
         return super()._prepare_request(request, *args, **kwargs)
 
+    def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:
+        """Format vision content for OpenRouter API"""
+        return [
+            {"type": "text", "text": text},
+            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_data}"}},
+        ]
+
+    def create_structured_completion(self, messages: List[Dict], schema: Dict, model: str = "openai/gpt-4", **kwargs):
+        """
+        Create a chat completion with structured output following a JSON schema.
+
+        Args:
+            messages: List of message dictionaries
+            schema: JSON Schema object defining the expected response format
+            model: Model ID (must support structured outputs)
+            **kwargs: Additional arguments to pass to create()
+        """
+        try:
+            logger.debug(f"Creating structured completion with model: {model}")
+            return self.chat.completions.create(
+                model=model,
+                messages=messages,
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {"name": schema.get("name", "response"), "strict": True, "schema": schema},
+                },
+                **kwargs,
+            )
+        except Exception as e:
+            logger.error(f"Failed to create structured completion: {str(e)}")
+            raise
+
+    def vision(self, prompt: str, image: Union[str, Path], model: str = "openai/gpt-4o-mini"):
+        """
+        Create a vision completion with the given prompt and image.
+
+        Args:
+            prompt: Text prompt to send with the image
+            image: Path to image file or base64 encoded image string
+            model: Model to use for completion (must support vision)
+            max_tokens: Maximum tokens in response
+        """
+        return super().vision(prompt=prompt, image=image, model=model)
+
     def get_available_models(self):
         """
         Get list of available models from OpenRouter.
@@ -47,7 +94,9 @@ class OpenRouterClient(OpenAI):
             logger.error(f"Failed to get models from OpenRouter: {str(e)}")
             raise
 
-    def create_chat_completion(self, messages, model="google/gemini-2.0-flash-exp:free", stream=False, **kwargs):
+    def create_chat_completion(
+        self, messages: List[Dict], model: str = "google/gemini-2.0-flash-exp:free", stream: bool = False, **kwargs
+    ):
         """
         Convenience method for creating chat completions with OpenRouter.
 
