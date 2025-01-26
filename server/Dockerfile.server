@@ -1,29 +1,15 @@
 # Base Python stage
-FROM python:3.12-slim as python-base
+FROM python:3.12-slim AS python-base
 WORKDIR /app
-
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-# VLLM stage
-FROM vllm/vllm-openai:v0.6.4.post1 as vllm
-WORKDIR /app
-
-# Set up directories
-RUN mkdir -p /cache/HF_HOME  /cache/local_cache /app /vllm-workspace /cache/HF_HOME/.hub /cache/HF_HOME/hub/.locks \
-    && chmod -R 777 /cache \
-    && chmod -R 775 /app /vllm-workspace
-
-ENV VLLM_VERSION=v0.6.4.post1
-ENV DO_NOT_TRACK=1
-ENV HF_HOME=/cache/HF_HOME
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Copy project configuration
 COPY pyproject.toml uv.lock /app/
-RUN uv sync
+RUN uv venv && \
+    . .venv/bin/activate && \
+    uv sync
 
 # Copy application code
 COPY . /app
@@ -32,7 +18,7 @@ COPY . /app
 COPY --chmod=775 _scripts/endpoints-entrypoint.sh entrypoint.sh
 
 # Test stage
-FROM python-base as test
+FROM python-base AS test
 WORKDIR /app
 
 # Copy project files
@@ -41,12 +27,15 @@ COPY GraphCap ./GraphCap
 COPY tests ./tests
 
 # Install dependencies
-RUN uv venv && \
-    . .venv/bin/activate && \
-    uv pip install -e ".[dev]"
+RUN . .venv/bin/activate && \
+    uv pip install -e ".[dev]" && \
+    uv pip install pytest pytest-asyncio pytest-cov && \
+    ln -s /app/.venv/bin/pytest /usr/local/bin/pytest
+
+WORKDIR /app
 
 # Production stage
-FROM vllm as prod
+FROM python-base AS prod
 EXPOSE 32100
 ENTRYPOINT ["/bin/bash", "entrypoint.sh"]
 CMD ["tail", "-f", "/dev/null"]

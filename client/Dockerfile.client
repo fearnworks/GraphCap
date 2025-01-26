@@ -1,8 +1,17 @@
-FROM node:20-alpine 
+FROM node:20-alpine AS base
 ENV NEXT_TELEMETRY_DISABLED=1
 # Install pnpm
 RUN npm install -g pnpm
 
+# Test stage
+FROM base AS test
+WORKDIR /app
+COPY package*.json ./
+RUN pnpm install
+COPY . .
+
+# Production stage
+FROM base AS prod
 WORKDIR /app
 COPY package*.json ./
 RUN pnpm install

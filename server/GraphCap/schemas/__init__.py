@@ -3,19 +3,6 @@ from typing import Dict, List
 
 from pydantic import BaseModel, Field
 
-from GraphCap.schemas.vllm_schemas import (
-    Interaction,
-    ToolCall,
-    VLLMChoice,
-    VLLMFunction,
-    VLLMMessage,
-    VLLMRequest,
-    VLLMRequestMessage,
-    VLLMResponse,
-    VLLMTool,
-    VLLMUsage,
-)
-
 
 class TestCase(BaseModel):
     image_path: str
@@ -67,14 +54,4 @@ __all__ = [
     "TestCase",
     "TestSuite",
     "ImageCaptionInputs",
-    "Interaction",
-    "ToolCall",
-    "VLLMChoice",
-    "VLLMFunction",
-    "VLLMMessage",
-    "VLLMRequest",
-    "VLLMRequestMessage",
-    "VLLMResponse",
-    "VLLMTool",
-    "VLLMUsage",
 ]
