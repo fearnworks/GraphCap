@@ -49,26 +49,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build test container
+        uses: docker/build-push-action@v6
         with:
-          python-version: '3.12'
-          enable-cache: true
+          context: ./server
+          file: ./server/Dockerfile.server
+          load: true
+          tags: graphcap-server:test
+          target: test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Install dependencies
-        working-directory: ./server
+      - name: Run tests
         run: |
-          uv pip install -e ".[dev]"
-          uv pip install pytest pytest-asyncio pytest-cov
-        env:
-          UV_SYSTEM_PYTHON: 1
-
-      - name: Run pytest
-        working-directory: ./server
-        continue-on-error: true
-        run: |
-          uv run pytest tests/ -v -m "not integration" --junitxml=test-results.xml --cov=GraphCap --cov-report=xml > pytest_report.txt 2>&1
-          cat pytest_report.txt
+          docker run --rm \
+            -v ${{ github.workspace }}/server/test-results:/app/test-results \
+            graphcap-server:test \
+            pytest tests/ -v -m "not integration" \
+            --junitxml=/app/test-results/test-results.xml \
+            --cov=GraphCap --cov-report=xml:/app/test-results/coverage.xml \
+            | tee test-results/pytest_report.txt
 
       - name: Upload pytest report and logs
         if: always()
@@ -76,10 +79,10 @@ jobs:
         with:
           name: pytest-report
           path: |
-            ./server/pytest_report.txt
-            ./server/test-results.xml
-            ./server/test_logs.jsonl
-            ./server/coverage.xml
+            ./server/test-results/pytest_report.txt
+            ./server/test-results/test-results.xml
+            ./server/test-results/test_logs.jsonl
+            ./server/test-results/coverage.xml
           retention-days: 14
 
   client-checks:
