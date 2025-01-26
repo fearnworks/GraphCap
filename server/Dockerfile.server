@@ -1,5 +1,12 @@
-FROM vllm/vllm-openai:v0.6.4.post1
-# Set working directory
+# Base Python stage
+FROM python:3.12-slim as python-base
+WORKDIR /app
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# VLLM stage
+FROM vllm/vllm-openai:v0.6.4.post1 as vllm
 WORKDIR /app
 
 # Set up directories
@@ -15,19 +22,31 @@ ENV HF_HOME=/cache/HF_HOME
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Copy project configuration
-COPY  pyproject.toml uv.lock /app/
+COPY pyproject.toml uv.lock /app/
 RUN uv sync
 
 # Copy application code
-COPY  . /app
-
+COPY . /app
 
 # Copy and set permissions for entrypoint script
 COPY --chmod=775 _scripts/endpoints-entrypoint.sh entrypoint.sh
 
-# Expose the port the app runs on
+# Test stage
+FROM python-base as test
+WORKDIR /app
+
+# Copy project files
+COPY pyproject.toml uv.lock ./
+COPY GraphCap ./GraphCap
+COPY tests ./tests
+
+# Install dependencies
+RUN uv venv && \
+    . .venv/bin/activate && \
+    uv pip install -e ".[dev]"
+
+# Production stage
+FROM vllm as prod
 EXPOSE 32100
-
-
 ENTRYPOINT ["/bin/bash", "entrypoint.sh"]
 CMD ["tail", "-f", "/dev/null"]
