@@ -54,6 +54,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip'
 
       - name: Install uv
         run: |
@@ -63,14 +64,17 @@ jobs:
       - name: Install dependencies
         working-directory: ./server
         run: |
+          . .venv/bin/activate
           uv venv
           uv pip install -e ".[dev]"
+          uv pip install pytest pytest-asyncio pytest-cov
 
       - name: Run pytest
         working-directory: ./server
         continue-on-error: true
         run: |
-          pytest tests/ -v -m "not integration" --junitxml=test-results.xml > pytest_report.txt 2>&1
+          . .venv/bin/activate
+          python -m pytest tests/ -v -m "not integration" --junitxml=test-results.xml > pytest_report.txt 2>&1
           cat pytest_report.txt
 
       - name: Upload pytest report and logs
