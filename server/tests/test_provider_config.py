@@ -204,6 +204,7 @@ def test_provider_completeness():
         assert provider.fetch_models == expected["fetch_models"], f"Wrong fetch_models for {name}"
 
 
+@pytest.mark.integration
 def test_default_model_propagation():
     """Test that default_model from config is correctly propagated to client"""
     config_path = ARTIFACTS_DIR / "provider.parse-config.toml"
