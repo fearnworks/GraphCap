@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 from datetime import datetime
@@ -8,6 +9,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from GraphCap.config.router import router
+from httpx import AsyncClient
 
 # Load environment variables from .env
 load_dotenv()
@@ -52,3 +54,35 @@ def app():
 def client(app):
     """Create a test client using the test app"""
     return TestClient(app)
+
+
+# Event loop setup with proper cleanup
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for each test session."""
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    asyncio.set_event_loop(loop)
+    yield loop
+    # Clean up the loop
+    if loop.is_running():
+        loop.stop()
+    pending = asyncio.all_tasks(loop)
+    if pending:
+        loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+    loop.close()
+
+
+@pytest.fixture
+async def async_client():
+    """Create a new AsyncClient for each test with proper cleanup."""
+    client = AsyncClient()
+    yield client
+    await client.aclose()
+
+
+# Set default event loop policy for all tests
+def pytest_configure(config):
+    """Configure pytest with the correct event loop policy."""
+    policy = asyncio.DefaultEventLoopPolicy()
+    asyncio.set_event_loop_policy(policy)

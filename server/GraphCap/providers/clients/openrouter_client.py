@@ -1,49 +1,23 @@
-import os
 from typing import Dict, List
 
 from loguru import logger
 
 from .base_client import BaseClient
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-if OPENROUTER_API_KEY is None:
-    raise ValueError("OPENROUTER_API_KEY is not set")
-
 
 class OpenRouterClient(BaseClient):
-    name = "openrouter"
-    default_model = "google/gemini-2.0-flash-exp:free"
+    """Client for OpenRouter API with OpenAI compatibility layer"""
 
-    def __init__(
-        self,
-        api_key: str = OPENROUTER_API_KEY,
-        base_url: str = "https://openrouter.ai/api/v1",
-        app_url: str = None,
-        app_title: str = None,
-    ):
-        # Ensure base_url doesn't end with a slash
-        base_url = base_url.rstrip("/")
+    def __init__(self, name: str, kind: str, environment: str, env_var: str, base_url: str, default_model: str):
         logger.info(f"OpenRouterClient initialized with base_url: {base_url}")
-
-        self.app_url = app_url
-        self.app_title = app_title
-        super().__init__(api_key=OPENROUTER_API_KEY, base_url=base_url)
-
-    def _prepare_request(self, request, *args, **kwargs):
-        """Hook for modifying requests before they're sent"""
-        # Add OpenRouter-specific headers if provided
-        headers = {}
-        if self.app_url:
-            headers["HTTP-Referer"] = self.app_url
-        if self.app_title:
-            headers["X-Title"] = self.app_title
-
-        # Add headers directly to the request object
-        request.headers.update(headers)
-        logger.debug(f"Preparing request with headers: {headers}")
-
-        # Call parent without extra_headers
-        return super()._prepare_request(request, *args, **kwargs)
+        super().__init__(
+            name=name,
+            kind=kind,
+            environment=environment,
+            env_var=env_var,
+            base_url=base_url.rstrip("/"),
+            default_model=default_model,
+        )
 
     def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:
         """Format vision content for OpenRouter API"""
@@ -51,6 +25,32 @@ class OpenRouterClient(BaseClient):
             {"type": "text", "text": text},
             {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_data}"}},
         ]
+
+    async def _prepare_request(self, request, *args, **kwargs):
+        """Hook for modifying requests before they're sent"""
+        # Add OpenRouter-specific headers if provided
+        headers = {}
+        if hasattr(self, "app_url"):
+            headers["HTTP-Referer"] = self.app_url
+        if hasattr(self, "app_title"):
+            headers["X-Title"] = self.app_title
+
+        # Add headers directly to the request object
+        request.headers.update(headers)
+        logger.debug(f"Preparing request with headers: {headers}")
+
+        # Call parent without extra_headers
+        return await super()._prepare_request(request, *args, **kwargs)
+
+    async def get_available_models(self):
+        """Get list of available models from OpenRouter."""
+        try:
+            models = await self.models.list()
+            logger.debug(f"Retrieved {len(models.data)} models from OpenRouter")
+            return models
+        except Exception as e:
+            logger.error(f"Failed to get models from OpenRouter: {str(e)}")
+            raise
 
     def create_structured_completion(self, messages: List[Dict], schema: Dict, model: str = "openai/gpt-4", **kwargs):
         """
@@ -75,23 +75,6 @@ class OpenRouterClient(BaseClient):
             )
         except Exception as e:
             logger.error(f"Failed to create structured completion: {str(e)}")
-            raise
-
-    def get_available_models(self):
-        """
-        Get list of available models from OpenRouter.
-        Example models:
-        - anthropic/claude-2
-        - openai/gpt-4
-        - google/gemini-2.0-flash-exp
-        - meta-llama/llama-3.2-90b-vision-instruct:free
-        """
-        try:
-            models = self.models.list()
-            logger.debug(f"Retrieved {len(models.data)} models from OpenRouter")
-            return models
-        except Exception as e:
-            logger.error(f"Failed to get models from OpenRouter: {str(e)}")
             raise
 
     def create_chat_completion(

@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import APIRouter, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 from .provider_manager import ProviderManager
 
@@ -16,6 +17,14 @@ router = APIRouter(
 provider_manager = ProviderManager()
 
 
+class ModelParams(BaseModel):
+    """Common parameters for AI model configuration"""
+
+    max_tokens: Optional[int] = Field(default=None, description="Maximum number of tokens to generate")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0, description="Sampling temperature")
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0, description="Nucleus sampling threshold")
+
+
 @router.get("/", response_model=List[Dict[str, Any]])
 async def list_providers():
     """Get a list of all available providers"""
@@ -24,6 +33,8 @@ async def list_providers():
         return [
             {
                 "name": provider.name,
+                "kind": provider.kind,
+                "environment": provider.environment,
                 "default_model": provider.default_model,
             }
             for provider in providers
@@ -36,16 +47,16 @@ async def list_providers():
 async def get_provider(provider_name: str):
     """Get details about a specific provider"""
     try:
-        # Add cloud. prefix if not provided
-        if "." not in provider_name:
-            provider_name = f"cloud.{provider_name}"
-
         provider = provider_manager.get_client(provider_name)
         if not provider:
             raise HTTPException(status_code=404, detail=f"Provider {provider_name} not found")
 
         return {
             "name": provider.name,
+            "kind": provider.kind,
+            "environment": provider.environment,
+            "env_var": provider.env_var,
+            "base_url": provider.base_url,
             "default_model": provider.default_model,
         }
     except ValueError as e:
@@ -58,14 +69,13 @@ async def get_provider(provider_name: str):
 async def analyze_image(
     provider_name: str,
     image: UploadFile,
-    prompt: str = "What's in this image? Describe it briefly.",  # Added default prompt
+    prompt: str = Form("What's in this image? Describe it briefly."),
+    max_tokens: Optional[int] = Form(default=1024),
+    temperature: Optional[float] = Form(default=0.8),
+    top_p: Optional[float] = Form(default=0.9),
 ):
     """Analyze an image using the specified provider's default model"""
     try:
-        # Add cloud. prefix if not provided
-        if "." not in provider_name:
-            provider_name = f"cloud.{provider_name}"
-
         provider = provider_manager.get_client(provider_name)
         if not provider:
             raise HTTPException(status_code=404, detail=f"Provider {provider_name} not found")
@@ -77,11 +87,20 @@ async def analyze_image(
             f.write(contents)
 
         try:
+            # Create model parameters dictionary, excluding None values
+            model_params = {
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+                "top_p": top_p,
+            }
+            model_params = {k: v for k, v in model_params.items() if v is not None}
+
             # Use the provider's vision method with its default model and user prompt
-            completion = provider.vision(
-                prompt=prompt,  # Using the provided prompt
+            completion = await provider.vision(
+                prompt=prompt,
                 image=temp_path,
                 model=provider.default_model,
+                **model_params,  # Pass through any provided model parameters
             )
 
             return JSONResponse(content={"description": completion.choices[0].message.content})

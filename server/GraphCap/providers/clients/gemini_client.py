@@ -1,4 +1,3 @@
-import os
 from typing import Any, Dict, List, Type, Union
 
 from loguru import logger
@@ -6,23 +5,20 @@ from pydantic import BaseModel
 
 from .base_client import BaseClient
 
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-if GOOGLE_API_KEY is None:
-    raise ValueError("GOOGLE_API_KEY is not set")
-
 
 class GeminiClient(BaseClient):
-    name = "gemini"
-    default_model = "gemini-2.0-flash-exp"
     """Client for Google's Gemini API with OpenAI compatibility layer"""
 
-    def __init__(
-        self, api_key: str = GOOGLE_API_KEY, base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
-    ):
-        # Ensure base_url doesn't end with a slash
-        base_url = base_url.rstrip("/")
-        logger.info(f"GeminiClient initialized with base_url: {base_url} with api_key: {api_key}")
-        super().__init__(api_key=GOOGLE_API_KEY, base_url=base_url)
+    def __init__(self, name: str, kind: str, environment: str, env_var: str, base_url: str, default_model: str):
+        logger.info(f"GeminiClient initialized with base_url: {base_url}")
+        super().__init__(
+            name=name,
+            kind=kind,
+            environment=environment,
+            env_var=env_var,
+            base_url=base_url.rstrip("/"),
+            default_model=default_model,
+        )
 
     def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:
         """Format vision content for Gemini API"""

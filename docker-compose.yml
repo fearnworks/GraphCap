@@ -30,7 +30,7 @@ services:
       watch:
         - action: sync
           path: ./server
-          target: /app/GraphCap
+          target: /app
           ignore:
             - "**/__pycache__"
             - "**/*.pyc"
