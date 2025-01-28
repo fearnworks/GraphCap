@@ -8,13 +8,6 @@ services:
       dockerfile: ./Dockerfile.server
     ports:
       - 32100:32100
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
     volumes:
       - graphcap_cache:/cache/HF_HOME
       - ./local/cache:/cache/local_cache

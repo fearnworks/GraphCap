@@ -45,6 +45,8 @@ To update environment configuration copy the docker compose override file and un
 
 ```
 cp docker-compose.override.example.yml docker-compose.override.yml
+cp provider.example.config.toml provider.config.toml
+cp .env.caption.template .env.caption
 ```
 
 

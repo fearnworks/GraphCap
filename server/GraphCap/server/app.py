@@ -6,12 +6,12 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from GraphCap.agents.router import router as agents_router
 from GraphCap.config.router import router as server_router
 from GraphCap.providers.router import router as providers_router
 from GraphCap.utils.logger import logger
 
 load_dotenv()
+import os 
 
 
 @asynccontextmanager
@@ -21,6 +21,7 @@ async def lifespan(app: FastAPI):
     logger.info("Starting server initialization...")
     initialization_time = time.time() - start_time
     logger.info(f"Server initialization completed in {initialization_time:.2f} seconds")
+    logger.info("Server available at http://localhost:32100/api/v1")
     yield
     # Shutdown
     logger.info("Shutting down...")
@@ -40,5 +41,4 @@ app.add_middleware(
 # Add routers
 api_version = "/api/v1"
 app.include_router(prefix=api_version, router=server_router)
-app.include_router(prefix=api_version, router=agents_router)
 app.include_router(prefix=api_version, router=providers_router)
