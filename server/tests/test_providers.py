@@ -104,7 +104,7 @@ class TestGeminiProvider:
         """Test Gemini's structured vision capabilities"""
         client = provider_manager.get_client("gemini")
         image_path = Path(__file__).parent / "test_image.png"
-        await test_structured_vision(client, test_logger, image_path)
+        await run_structured_vision(client, test_logger, image_path)
 
 
 @pytest.mark.integration
@@ -183,7 +183,7 @@ class TestVLLMProvider:
         """Test VLLM's structured vision capabilities"""
         client = provider_manager.get_client("vllm-pixtral")
         image_path = Path(__file__).parent / "test_image.png"
-        await test_structured_vision(client, test_logger, image_path)
+        await run_structured_vision(client, test_logger, image_path)
 
 
 @pytest.mark.integration
@@ -253,7 +253,7 @@ class TestOpenRouterProvider:
         """Test OpenRouter's structured vision capabilities"""
         client = provider_manager.get_client("openrouter")
         image_path = Path(__file__).parent / "test_image.png"
-        await test_structured_vision(client, test_logger, image_path)
+        await run_structured_vision(client, test_logger, image_path)
 
 
 @pytest.mark.asyncio
@@ -307,10 +307,10 @@ class TestOpenAIVisionProvider:
         """Test OpenAI's structured vision capabilities"""
         client = provider_manager.get_client("openai")
         image_path = Path(__file__).parent / "test_image.png"
-        await test_structured_vision(client, test_logger, image_path)
+        await run_structured_vision(client, test_logger, image_path)
 
 
-async def test_structured_vision(client, test_logger, image_path):
+async def run_structured_vision(client, test_logger, image_path):
     """Helper function to test structured vision capabilities"""
     completion = await client.vision(
         prompt=test_vision_config.prompt,
