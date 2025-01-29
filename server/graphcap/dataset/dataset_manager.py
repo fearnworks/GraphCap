@@ -63,7 +63,7 @@ class DatasetManager:
             logger.error(f"Failed to get user info: {e}")
             raise
 
-        # Create the repository first and ensure it exists
+        # Create the repository first
         try:
             create_repo(
                 repo_id=repo_id,
@@ -105,6 +105,17 @@ class DatasetManager:
                 
                 metadata_entries = []
                 
+                # Create a data directory structure
+                data_config = {
+                    "configs": [{
+                        "config_name": "default",
+                        "data_files": [{
+                            "split": "default",
+                            "path": "data/metadata.jsonl"
+                        }]
+                    }]
+                }
+                
                 with jsonl_path.open() as f:
                     for line in f:
                         entry = json.loads(line)
@@ -114,14 +125,17 @@ class DatasetManager:
                             image_name = entry["filename"].lstrip("./")
                             image_path = input_dir / image_name
                             
+                            # Use consistent path format without 'data/' prefix in metadata
+                            relative_image_path = f"images/{Path(image_name).name}"
+                            
                             metadata_entry = {
-                                "file_name": f"data/images/{Path(image_name).name}",
-                                "image": f"data/images/{Path(image_name).name}",
+                                "file_name": relative_image_path,  # Remove data/ prefix
+                                "image": relative_image_path,      # Remove data/ prefix
                                 "config_name": entry.get("config_name", ""),
                                 "version": entry.get("version", ""),
                                 "model": entry.get("model", ""),
                                 "provider": entry.get("provider", ""),
-                                "split": "train",
+                                "split": "default",
                                 "parsed": {
                                     "tags_list": entry.get("parsed", {}).get("tags_list", []),
                                     "short_caption": entry.get("parsed", {}).get("short_caption", ""),
@@ -131,9 +145,9 @@ class DatasetManager:
                             }
                             metadata_entries.append(metadata_entry)
                             
-                            logger.info(f"Looking for image at: {image_path}")
                             if image_path.exists():
                                 try:
+                                    # Still upload to data/images/ directory
                                     repo_image_path = f"data/images/{image_path.name}"
                                     logger.info(f"Uploading image {image_path} to {repo_image_path}")
                                     self.api.upload_file(
@@ -143,9 +157,9 @@ class DatasetManager:
                                         repo_type="dataset",
                                         token=token
                                     )
-                                    logger.info(f"Successfully uploaded image: {image_path.name} to {repo_image_path}")
+                                    logger.info(f"Successfully uploaded image: {image_path.name}")
                                 except Exception as e:
-                                    logger.warning(f"Failed to upload image {image_path}: {e}", exc_info=True)
+                                    logger.warning(f"Failed to upload image {image_path}: {e}")
                                     continue
                             else:
                                 logger.warning(f"Image not found at path: {image_path}")
@@ -154,6 +168,7 @@ class DatasetManager:
                             
                 logger.info("Completed image uploads")
 
+                # Create and upload metadata.jsonl
                 metadata_content = "\n".join(json.dumps(entry) for entry in metadata_entries)
                 try:
                     logger.info("Uploading metadata.jsonl...")
@@ -169,9 +184,24 @@ class DatasetManager:
                     logger.error(f"Failed to upload metadata: {e}")
                     raise
 
+                # Upload the data configuration file
+                try:
+                    logger.info("Uploading data configuration...")
+                    self.api.upload_file(
+                        path_or_fileobj=json.dumps(data_config).encode(),
+                        path_in_repo="data/config.yaml",
+                        repo_id=repo_id,
+                        repo_type="dataset",
+                        token=token
+                    )
+                    logger.info("Successfully uploaded data configuration")
+                except Exception as e:
+                    logger.error(f"Failed to upload data configuration: {e}")
+                    raise
+
             # Create dataset-metadata.json
             dataset_metadata = {
-                "splits": ["train"],
+                "splits": ["default"],
                 "column_names": [
                     "file_name",
                     "image",
@@ -213,31 +243,58 @@ class DatasetManager:
             try:
                 logger.info("Creating dataset card...")
                 readme_content = f"""---
+language:
+  - en
+license: cc0-1.0
+pretty_name: {config.name}
+dataset_info:
+  features:
+    - name: file_name
+      dtype: string
+    - name: image
+      dtype: image
+    - name: config_name
+      dtype: string
+    - name: version
+      dtype: string
+    - name: model
+      dtype: string
+    - name: provider
+      dtype: string
+    - name: parsed
+      struct:
+        - name: tags_list
+          sequence: string
+        - name: short_caption
+          dtype: string
+        - name: verification
+          dtype: string
+        - name: dense_caption
+          dtype: string
+  splits:
+    - name: default
+      num_examples: {len(metadata_entries)}
+  download_size: null
+  dataset_size: null
+configs:
+  - config_name: default
+    data_files:
+      - split: default
+        path: data/metadata.jsonl
 tags:
-  - images
-  - metadata
-viewer: true
+  - image-to-text
+  - computer-vision
+  - image-captioning
+{chr(10).join([f'  - {tag}' for tag in config.tags])}
 ---
 
-# Dataset Card for {config.name}
+# {config.name}
 
 {config.description}
 
 ## Dataset Structure
 
-The dataset is organized as follows:
-- `data/images/`: Contains all the images
-- `data/metadata.jsonl`: Contains metadata for each image, including:
-  - Image path
-  - Configuration name and version
-  - Model and provider information
-  - Parsed data including:
-    - Tag list with categories and confidence scores
-    - Short caption
-    - Dense caption
-    - Verification notes
-
-## Usage
+The dataset contains images with associated metadata including captions, tags, and verification information.
 """
                 self.api.upload_file(
                     path_or_fileobj=readme_content.encode(),
