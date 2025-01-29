@@ -20,13 +20,12 @@ class ImageTag(BaseModel):
     category: TagType
     tag: str = Field(description=("Descriptive keyword or phrase representing the tag."))
     confidence: float = Field(
-        0.0,
         description=("Confidence score for the tag, between 0 (exclusive) and 1 (inclusive)."),
     )
 
 
 class ImageData(BaseModel):
-    tags_list: List[ImageTag] = Field(..., min_items=8, max_items=20)
+    tags_list: List[ImageTag] = Field()
     short_caption: str
     verification: str
     dense_caption: str

@@ -12,7 +12,20 @@ from GraphCap.providers.clients import (
     VLLMClient,
 )
 from GraphCap.providers.provider_manager import ProviderManager
+from GraphCap.schemas.structured_vision import StructuredVisionConfig
 from loguru import logger
+from pydantic import BaseModel
+
+
+class TestStructuredOutput(BaseModel):
+    is_cat: bool
+    caption: str
+
+
+test_vision_config = StructuredVisionConfig(
+    prompt="Is this a cat? What does it look like?", schema=TestStructuredOutput
+)
+
 
 # Load environment variables from .env
 load_dotenv()
@@ -87,6 +100,12 @@ class TestGeminiProvider:
         assert isinstance(completion.choices[0].message.content, str), "Message should be string"
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
+    async def test_gemini_structured_vision(self, test_logger, provider_manager):
+        """Test Gemini's structured vision capabilities"""
+        client = provider_manager.get_client("gemini")
+        image_path = Path(__file__).parent / "test_image.png"
+        await test_structured_vision(client, test_logger, image_path)
+
 
 @pytest.mark.integration
 class TestOllamaProvider:
@@ -160,6 +179,12 @@ class TestVLLMProvider:
         assert isinstance(completion.choices[0].message.content, str), "Message should be string"
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
+    async def test_vllm_structured_vision(self, test_logger, provider_manager):
+        """Test VLLM's structured vision capabilities"""
+        client = provider_manager.get_client("vllm-pixtral")
+        image_path = Path(__file__).parent / "test_image.png"
+        await test_structured_vision(client, test_logger, image_path)
+
 
 @pytest.mark.integration
 class TestOpenRouterProvider:
@@ -224,6 +249,12 @@ class TestOpenRouterProvider:
         assert isinstance(completion.choices[0].message.content, str), "Message should be string"
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
+    async def test_openrouter_structured_vision(self, test_logger, provider_manager):
+        """Test OpenRouter's structured vision capabilities"""
+        client = provider_manager.get_client("openrouter")
+        image_path = Path(__file__).parent / "test_image.png"
+        await test_structured_vision(client, test_logger, image_path)
+
 
 @pytest.mark.asyncio
 @pytest.mark.integration
@@ -271,3 +302,37 @@ class TestOpenAIVisionProvider:
 
         test_logger("openai_vision", completion.model_dump())
         assert completion.choices[0].message.content, "Expected non-empty response"
+
+    async def test_openai_structured_vision(self, test_logger, provider_manager):
+        """Test OpenAI's structured vision capabilities"""
+        client = provider_manager.get_client("openai")
+        image_path = Path(__file__).parent / "test_image.png"
+        await test_structured_vision(client, test_logger, image_path)
+
+
+async def test_structured_vision(client, test_logger, image_path):
+    """Helper function to test structured vision capabilities"""
+    completion = await client.vision(
+        prompt=test_vision_config.prompt,
+        image=image_path,
+        schema=test_vision_config.schema,
+        model=client.default_model,
+        max_tokens=100,
+    )
+
+    test_logger(f"{client.name}_structured_vision", completion.model_dump())
+
+    # If the response is already a Pydantic model
+    if isinstance(completion, TestStructuredOutput):
+        assert isinstance(completion.is_cat, bool), "is_cat should be boolean"
+        assert isinstance(completion.caption, str), "caption should be string"
+        assert len(completion.caption) > 0, "caption should not be empty"
+        return
+
+    # For providers that return raw completion
+    assert hasattr(completion, "choices"), "Should have 'choices' attribute"
+    assert len(completion.choices) > 0, "Should have at least one choice"
+    assert hasattr(completion.choices[0], "message"), "Choice should have a message"
+    content = completion.choices[0].message.content
+    assert isinstance(content, str), "Message should be string"
+    assert len(content) > 0, "Message should not be empty"

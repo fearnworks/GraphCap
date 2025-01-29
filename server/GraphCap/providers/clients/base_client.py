@@ -2,7 +2,7 @@ import base64
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
 from loguru import logger
 from openai import AsyncOpenAI
@@ -53,7 +53,15 @@ class BaseClient(AsyncOpenAI, ABC):
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode("utf-8")
 
-    async def vision(self, prompt: str, image: Union[str, Path], model: str, max_tokens: int = 1024, **kwargs):
+    async def vision(
+        self,
+        prompt: str,
+        image: Union[str, Path],
+        model: str,
+        max_tokens: int = 1024,
+        schema: Optional[BaseModel] = None,
+        **kwargs,
+    ):
         """Create a vision completion"""
         # Handle image input
         if isinstance(image, (str, Path)) and not str(image).startswith("data:"):
@@ -63,11 +71,18 @@ class BaseClient(AsyncOpenAI, ABC):
 
         # Get provider-specific message format
         content = self._format_vision_content(prompt, image_data)
-
         try:
-            completion = await self.chat.completions.create(
-                model=model, messages=[{"role": "user", "content": content}], max_tokens=max_tokens, **kwargs
-            )
+            if schema:
+                completion = await self.beta.chat.completions.parse(
+                    model=model,
+                    messages=[{"role": "user", "content": content}],
+                    max_tokens=max_tokens,
+                    response_format=schema,
+                )
+            else:
+                completion = await self.chat.completions.create(
+                    model=model, messages=[{"role": "user", "content": content}], max_tokens=max_tokens, **kwargs
+                )
             return completion
         except Exception as e:
             logger.error(f"Vision completion failed: {str(e)}")
