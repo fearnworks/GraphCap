@@ -3,8 +3,8 @@ import asyncio
 import os
 
 from dotenv import load_dotenv
-from GraphCap.agents.ImageCaptioner import ImageCaptioner
-from GraphCap.utils.logger import logger
+from graphcap.agents.ImageCaptioner import ImageCaptioner
+from graphcap.utils.logger import logger
 
 load_dotenv()
 

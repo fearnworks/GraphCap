@@ -9,8 +9,8 @@ echo "Starting server..."
 
 # Start the FastAPI server with uvicorn using the virtual environment's Python
 echo "Running uvicorn with uv..."
-uv run python -m uvicorn GraphCap.server.app:app \
+uv run python -m uvicorn graphcap.server.app:app \
     --host "0.0.0.0" \
     --port 32100 \
     --reload \
-    --reload-dir /app/GraphCap
+    --reload-dir /app/graphcap

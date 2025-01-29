@@ -12,7 +12,7 @@
 # If you need multiple changes to a service, combine them under a single service definition.
 
 
-name: GraphCap
+name: graphcap
 # services:
   # caption:
   #   build:
@@ -38,8 +38,8 @@ name: GraphCap
   #   develop:
   #     watch:
   #       - action: sync
-  #         path: ./GraphCap
-  #         target: /app/GraphCap
+  #         path: ./graphcap
+  #         target: /app/graphcap
 
   # postgres:
   #   image: postgres:17

@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import pytest
-from GraphCap.providers.provider_config import get_providers_config, validate_config
-from GraphCap.providers.provider_manager import ProviderManager
+from graphcap.providers.provider_config import get_providers_config, validate_config
+from graphcap.providers.provider_manager import ProviderManager
 
 ARTIFACTS_DIR = Path(__file__).parent / "artifacts"
 
@@ -54,7 +54,7 @@ def test_load_provider_config():
 
 def test_default_model_handling():
     """Test default model configuration behavior"""
-    from GraphCap.providers.provider_config import parse_provider_config
+    from graphcap.providers.provider_config import parse_provider_config
 
     # Test using explicit default_model
     config = {
@@ -101,7 +101,7 @@ def test_validate_config():
 
 def test_validate_config_with_errors():
     """Test configuration validation with invalid data"""
-    from GraphCap.providers.provider_config import ProviderConfig
+    from graphcap.providers.provider_config import ProviderConfig
 
     invalid_providers = {
         "missing_fields": ProviderConfig(

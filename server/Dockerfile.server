@@ -23,7 +23,7 @@ WORKDIR /app
 
 # Copy project files
 COPY pyproject.toml uv.lock ./
-COPY GraphCap ./GraphCap
+COPY graphcap ./graphcap
 COPY tests ./tests
 
 # Install dependencies

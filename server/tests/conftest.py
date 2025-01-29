@@ -8,7 +8,7 @@ import pytest
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from GraphCap.config.router import router
+from graphcap.config.router import router
 from httpx import AsyncClient
 
 # Load environment variables from .env

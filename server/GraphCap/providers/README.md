@@ -56,7 +56,7 @@ models = ["vision-worker"]
 ### Basic Usage
 
 ```python
-from GraphCap.providers.provider_manager import ProviderManager
+from graphcap.providers.provider_manager import ProviderManager
 
 # Initialize the manager
 manager = ProviderManager("provider.config.toml")

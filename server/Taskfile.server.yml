@@ -37,3 +37,8 @@ tasks:
     desc: Run pytest
     cmds:
       - uv run pytest -v -c server/pytest.ini
+
+  batch_caption:
+    desc: Run batch_caption on example images
+    cmds:
+      - uv run python ./graphcap/main.py batch-caption ../datasets/os_img --provider gemini --output ../datasets/os_img/output.jsonl

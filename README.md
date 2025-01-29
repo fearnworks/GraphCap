@@ -1,9 +1,9 @@
-# GraphCap
+# graphcap
 > **SPDX-License-Identifier: Apache-2.0**
 
 ![Image](./docs/static/flow.png)
 
-**GraphCap** is a work-in-progress repository dedicated to experimenting with **structured outputs** and **scene-based captions** to support open-source dataset generation. By leveraging models capable of producing detailed annotations (including bounding boxes, attributes, relationships, and textual captions), GraphCap aims to streamline the creation of rich, shareable metadata for images.
+**graphcap** is a work-in-progress repository dedicated to experimenting with **structured outputs** and **scene-based captions** to support open-source dataset generation. By leveraging models capable of producing detailed annotations (including bounding boxes, attributes, relationships, and textual captions), graphcap aims to streamline the creation of rich, shareable metadata for images.
 
 ## Key Ideas
 

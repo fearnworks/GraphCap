@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 
 # Import your service functions or classes here
-from GraphCap.utils.logger import logger
+from graphcap.utils.logger import logger
 
 router = APIRouter(prefix="/server", tags=["server"])
 

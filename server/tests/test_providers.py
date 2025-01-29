@@ -4,15 +4,15 @@ from pathlib import Path
 import httpx
 import pytest
 from dotenv import load_dotenv
-from GraphCap.providers.clients import (
+from graphcap.providers.clients import (
     GeminiClient,
     OllamaClient,
     OpenAIClient,
     OpenRouterClient,
     VLLMClient,
 )
-from GraphCap.providers.provider_manager import ProviderManager
-from GraphCap.schemas.structured_vision import StructuredVisionConfig
+from graphcap.providers.provider_manager import ProviderManager
+from graphcap.schemas.structured_vision import StructuredVisionConfig
 from loguru import logger
 from pydantic import BaseModel
 

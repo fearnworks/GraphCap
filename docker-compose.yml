@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-name: GraphCap
+name: graphcap
 services:
   gcap_server:
     container_name: gcap_server

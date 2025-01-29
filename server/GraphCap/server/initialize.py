@@ -6,9 +6,9 @@ import torch
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from GraphCap.config.router import router as server_router
-from GraphCap.config.server_controller import ServerController
-from GraphCap.utils.logger import logger
+from graphcap.config.router import router as server_router
+from graphcap.config.server_controller import ServerController
+from graphcap.utils.logger import logger
 
 
 async def initialize():

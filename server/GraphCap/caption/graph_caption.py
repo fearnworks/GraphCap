@@ -2,6 +2,11 @@
 
 from ..schemas.caption import ImageData
 from ..schemas.structured_vision import StructuredVisionConfig
+from ..providers.clients.base_client import BaseClient
+from typing import Optional, List, Dict, Any
+from pathlib import Path
+import asyncio
+from pydantic import BaseModel
 
 instruction = """<Task>You are a structured image analysis agent. Generate comprehensive tag list, caption,
 and dense caption for an image classification system.</Task>
@@ -48,4 +53,71 @@ without overt flowery prose. It incorporates elements from each of the tag categ
 """
 
 
-graphcap_vision_config = StructuredVisionConfig(prompt=instruction, schema=ImageData)
+graphcap_vision_config = StructuredVisionConfig(config_name="graphcap", version="1", prompt=instruction, schema=ImageData)
+
+async def process_graph_caption(
+    provider,
+    image_path: Path,
+    max_tokens: Optional[int] = 1024,
+    temperature: Optional[float] = 0.8,
+    top_p: Optional[float] = 0.9,
+) -> dict:
+    """Process a single image and return structured caption data"""
+    try:
+        completion = await provider.vision(
+            prompt=graphcap_vision_config.prompt,
+            image=image_path,
+            schema=graphcap_vision_config.schema,
+            model=provider.default_model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+        )
+
+        # Handle both Pydantic model and raw completion responses
+        if isinstance(completion, BaseModel):
+            result = completion.choices[0].message.parsed
+            if isinstance(result, BaseModel):
+                result = result.model_dump()
+        else:
+            result = completion.choices[0].message.parsed
+            if "choices" in result:
+                result = result["choices"][0]["message"]["parsed"]["parsed"]
+            elif "message" in result:
+                result = result["message"]["parsed"]
+
+        return result
+    except Exception as e:
+        raise Exception(f"Error processing {image_path}: {str(e)}")
+
+async def process_batch_captions(
+    provider: BaseClient,
+    image_paths: List[Path],
+    max_tokens: Optional[int] = 1024,
+    temperature: Optional[float] = 0.8,
+    top_p: Optional[float] = 0.9,
+) -> List[Dict[str, Any]]:
+    """Process multiple images and return their captions"""
+    tasks = [
+        process_graph_caption(
+            provider=provider,
+            image_path=path,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+        )
+        for path in image_paths
+    ]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    
+    return [
+        {
+            "filename": str(path),
+            "config_name": graphcap_vision_config.config_name,
+            "version": graphcap_vision_config.version,
+            "model": provider.default_model,
+            "provider": provider.name,
+            "parsed": result if not isinstance(result, Exception) else {"error": str(result)}
+        }
+        for path, result in zip(image_paths, results)
+    ]
