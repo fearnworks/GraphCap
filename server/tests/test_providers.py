@@ -23,7 +23,7 @@ class TestStructuredOutput(BaseModel):
 
 
 test_vision_config = StructuredVisionConfig(
-    prompt="Is this a cat? What does it look like?", schema=TestStructuredOutput
+    prompt="Is this a cat? What does it look like?", schema=TestStructuredOutput, config_name="test", version="1"
 )
 
 
