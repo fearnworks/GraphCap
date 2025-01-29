@@ -1,9 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
+import asyncio
+import io
+import json
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Form, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi.responses import JSONResponse, StreamingResponse
+from loguru import logger
 from pydantic import BaseModel, Field
 
 from ..caption.graph_caption import graphcap_vision_config
@@ -167,7 +172,109 @@ async def graph_caption(
         if isinstance(completion, BaseModel):
             return completion
 
-        return JSONResponse(content={"caption": completion.choices[0].message.content})
+        # Get just the parsed content from the message
+        parsed_content = completion.choices[0].message.parsed
+        return JSONResponse(content={"parsed": parsed_content})
+
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{provider_name}/batch_caption")
+async def batch_caption(
+    provider_name: str,
+    files: List[UploadFile] = File(description="Multiple image files to process", allow_multiple=True),
+    max_tokens: Optional[int] = Form(default=1024),
+    temperature: Optional[float] = Form(default=0.8),
+    top_p: Optional[float] = Form(default=0.9),
+):
+    """Process multiple images and return structured captions as JSONL
+
+    Accepts multiple image files uploaded simultaneously and processes them in parallel.
+    Returns a JSONL file with captions for each image.
+    """
+    try:
+        provider = provider_manager.get_client(provider_name)
+        if not provider:
+            raise HTTPException(status_code=404, detail=f"Provider {provider_name} not found")
+
+        # Create temporary directory
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_dir_path = Path(temp_dir)
+
+            # Save all files to temporary directory
+            temp_files = []
+            for file in files:
+                temp_path = temp_dir_path / file.filename
+                with temp_path.open("wb") as f:
+                    contents = await file.read()
+                    f.write(contents)
+                temp_files.append((file.filename, temp_path))
+
+            # Process images concurrently
+            async def process_single_image(filename: str, image_path: Path):
+                try:
+                    completion = await provider.vision(
+                        prompt=graphcap_vision_config.prompt,
+                        image=image_path,
+                        schema=graphcap_vision_config.schema,
+                        model=provider.default_model,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        top_p=top_p,
+                    )
+
+                    logger.debug(f"Raw completion for {filename}: {completion}")
+
+                    # Handle both Pydantic model and raw completion responses
+                    if isinstance(completion, BaseModel):
+                        # Extract just the parsed content from the Pydantic model and convert to dict
+                        result = completion.choices[0].message.parsed
+                        if isinstance(result, BaseModel):
+                            result = result.model_dump()
+                        logger.debug(f"Pydantic model parsed result for {filename}: {result}")
+                    else:
+                        # Navigate through the nested structure to get the final parsed data
+                        result = completion.choices[0].message.parsed
+                        logger.debug(f"Initial parsed result for {filename}: {result}")
+
+                        assert isinstance(result, dict), f"Expected dict, got {type(result)}"
+
+                        if "choices" in result:
+                            logger.debug(f"Found nested choices in result for {filename}")
+                            # Get the innermost parsed data
+                            result = result["choices"][0]["message"]["parsed"]["parsed"]
+                        elif "message" in result:
+                            logger.debug(f"Found nested message in result for {filename}")
+                            result = result["message"]["parsed"]
+
+                    logger.debug(f"Final parsed result for {filename}: {result}")
+
+                    return {"filename": filename, "parsed": result}
+                except Exception as e:
+                    logger.error(f"Error processing {filename}: {str(e)}")
+                    logger.exception(e)
+                    return {"filename": filename, "error": str(e)}
+
+            # Process all images concurrently
+            tasks = [process_single_image(filename, image_path) for filename, image_path in temp_files]
+            results = await asyncio.gather(*tasks)
+
+            # Create JSONL response
+            output = io.StringIO()
+            for result in results:
+                output.write(json.dumps(result) + "\n")
+
+            output.seek(0)
+
+            # Return streaming response with JSONL file
+            return StreamingResponse(
+                iter([output.getvalue()]),
+                media_type="application/x-jsonlines",
+                headers={"Content-Disposition": "attachment; filename=captions.jsonl"},
+            )
 
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
