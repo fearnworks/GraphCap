@@ -73,6 +73,8 @@ class DatasetManager:
         push_to_hub: bool = False,
         token: Optional[str] = None,
         private: bool = False,
+        use_hf_urls: bool = False,
+        repo_id: Optional[str] = None,
     ) -> str:
         """
         Create and optionally upload a dataset to the Hugging Face Hub.
@@ -83,6 +85,8 @@ class DatasetManager:
             push_to_hub: Whether to upload to HuggingFace
             token: HuggingFace API token
             private: Whether to create a private repository
+            use_hf_urls: Whether to use HuggingFace URLs for image paths
+            repo_id: HuggingFace repository ID (required if use_hf_urls is True)
 
         Returns:
             str: Dataset path or HuggingFace URL
@@ -106,8 +110,22 @@ class DatasetManager:
             time.sleep(2)
             self.hf_client.verify_repo_exists(repo_id, token)
 
+            # Load captions from input file
+            captions = []
+            with jsonl_path.open() as f:
+                for line in f:
+                    captions.append(json.loads(line))
+
+            # Export captions with appropriate URLs
+            output_path = await self.file_handler.export_to_jsonl(
+                captions,
+                output_path=jsonl_path,
+                use_hf_urls=use_hf_urls,
+                repo_id=repo_id
+            )
+
             # Upload initial JSONL
-            self.hf_client.upload_file(str(jsonl_path), "data/captions.jsonl", repo_id, token)
+            self.hf_client.upload_file(str(output_path), "data/captions.jsonl", repo_id, token)
 
             metadata_entries = []
             if config.include_images:
@@ -143,12 +161,15 @@ class DatasetManager:
                 if "filename" not in entry:
                     continue
 
-                image_path = self.file_handler.get_image_path(input_dir, entry["filename"])
+                # Extract just the filename from either local path or HF URL
+                filename = Path(entry["filename"]).name
+                image_path = self.file_handler.get_image_path(input_dir, filename)
+                
                 if not image_path.exists():
                     logger.warning(f"Image not found: {image_path}")
                     continue
 
-                relative_path = f"images/{image_path.name}"
+                relative_path = f"images/{filename}"
                 metadata_entries.append(self.metadata_handler.create_metadata_entry(entry, relative_path))
 
                 try:

@@ -44,6 +44,8 @@ class DatasetFileHandler:
         self,
         captions: List[Dict],
         output_path: Optional[Path] = None,
+        use_hf_urls: bool = False,
+        repo_id: Optional[str] = None,
     ) -> Path:
         """
         Export caption data to JSONL format.
@@ -51,6 +53,8 @@ class DatasetFileHandler:
         Args:
             captions: List of caption dictionaries to export
             output_path: Optional custom output path, defaults to export_dir/captions.jsonl
+            use_hf_urls: Whether to use HuggingFace URLs for image paths
+            repo_id: HuggingFace repository ID (required if use_hf_urls is True)
 
         Returns:
             Path: Path to the exported JSONL file
@@ -58,9 +62,13 @@ class DatasetFileHandler:
         Raises:
             IOError: If unable to write to the output file
             TypeError: If captions contain non-serializable data
+            ValueError: If use_hf_urls is True but repo_id is not provided
         """
         if output_path is None:
             output_path = self.export_dir / "captions.jsonl"
+
+        if use_hf_urls and not repo_id:
+            raise ValueError("repo_id must be provided when use_hf_urls is True")
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -69,11 +77,15 @@ class DatasetFileHandler:
                 # Create a copy to avoid modifying the original
                 caption_copy = caption.copy()
 
-                # Convert filename to be relative to output file location
+                # Convert filename to appropriate format
                 if "filename" in caption_copy:
                     orig_path = Path(caption_copy["filename"])
-                    # Get just the filename part
-                    caption_copy["filename"] = f"./{orig_path.name}"
+                    if use_hf_urls:
+                        # Format: https://huggingface.co/datasets/{repo_id}/raw/main/data/images/{filename}
+                        caption_copy["filename"] = f"https://huggingface.co/datasets/{repo_id}/raw/main/data/images/{orig_path.name}"
+                    else:
+                        # Use relative path
+                        caption_copy["filename"] = f"./images/{orig_path.name}"
 
                 f.write(json.dumps(caption_copy) + "\n")
 

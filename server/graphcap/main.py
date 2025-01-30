@@ -115,8 +115,19 @@ def batch_caption(input_path, provider, output, max_tokens, temperature, top_p, 
 @click.option("--tags", multiple=True, help="Dataset tags")
 @click.option("--push-to-hub/--local-only", default=False, help="Push to Hugging Face Hub")
 @click.option("--private", is_flag=True, help="Private dataset")
+@click.option(
+    "--use-hf-urls", 
+    is_flag=True, 
+    help="Use HuggingFace URLs for image paths instead of relative paths"
+)
 def export_dataset(
-    input_path: Path, name: str, description: str, tags: List[str], push_to_hub: bool, private: bool = False
+    input_path: Path, 
+    name: str, 
+    description: str, 
+    tags: List[str], 
+    push_to_hub: bool, 
+    private: bool = False,
+    use_hf_urls: bool = False,
 ):
     """Export captions to a Hugging Face dataset format.
 
@@ -134,6 +145,7 @@ def export_dataset(
                 description=description,
                 tags=list(tags),
                 include_images=True,  # Enable image uploads
+                use_hf_urls=use_hf_urls,  # Use the new option
             )
 
             # Load captions from input file
@@ -150,6 +162,9 @@ def export_dataset(
                     logger.error("HUGGING_FACE_HUB_TOKEN environment variable not set")
                     return
 
+                # Get repo ID for HF URLs if needed
+                repo_id = f"{name}" if use_hf_urls else None
+
                 # Create and push dataset using the input path directly
                 result = await dataset_manager.create_hf_dataset(
                     input_path,  # Pass the input path directly
@@ -157,6 +172,8 @@ def export_dataset(
                     push_to_hub=True,
                     token=hf_token,
                     private=private,
+                    use_hf_urls=use_hf_urls,
+                    repo_id=repo_id,
                 )
                 logger.info(f"Dataset pushed to Hugging Face Hub: {result}")
             else:

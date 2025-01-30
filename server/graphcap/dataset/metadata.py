@@ -24,12 +24,14 @@ class DatasetConfig(BaseModel):
         description (str): Description of the dataset
         tags (List[str]): List of tags describing the dataset
         include_images (bool): Whether to include images in the dataset
+        use_hf_urls (bool): Whether to use HuggingFace URLs for image paths
     """
 
     name: str
     description: str
     tags: List[str]
     include_images: bool = True
+    use_hf_urls: bool = False
 
 
 class DatasetMetadataHandler:
