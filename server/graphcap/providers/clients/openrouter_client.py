@@ -1,3 +1,20 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+OpenRouter Provider Client
+
+OpenAI-compatible client implementation for OpenRouter API aggregation service.
+
+Key features:
+- Multiple model provider support
+- Model availability checking
+- Custom headers support
+- Structured completions
+- Vision capabilities (not functioning)
+
+Classes:
+    OpenRouterClient: OpenRouter API client implementation
+"""
+
 from typing import Dict, List
 
 from loguru import logger

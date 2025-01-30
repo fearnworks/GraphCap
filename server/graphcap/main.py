@@ -7,7 +7,8 @@ from typing import List
 import click
 import uvicorn
 from dotenv import load_dotenv
-from graphcap.caption.graph_caption import process_batch_captions
+from graphcap.caption.art_critic import ArtCriticProcessor
+from graphcap.caption.graph_caption import GraphCaptionProcessor
 from graphcap.dataset.dataset_manager import DatasetConfig, DatasetManager
 from graphcap.providers.provider_manager import ProviderManager
 from loguru import logger
@@ -42,7 +43,14 @@ def dev(port):
     type=click.Path(path_type=Path),
     help="Provider config file path",
 )
-def batch_caption(input_path, provider, output, max_tokens, temperature, top_p, provider_config):
+@click.option(
+    "--caption-type",
+    "-t",
+    default="graph",
+    type=click.Choice(["graph", "art"]),
+    help="Type of caption to generate",
+)
+def batch_caption(input_path, provider, output, max_tokens, temperature, top_p, provider_config, caption_type):
     """Process images from a directory or file and generate structured captions.
 
     INPUT_PATH: Directory containing images or a single image file
@@ -71,9 +79,15 @@ def batch_caption(input_path, provider, output, max_tokens, temperature, top_p, 
         logger.error(f"Provider {provider} not found")
         return
 
+    # Initialize caption processor based on type
+    if caption_type == "graph":
+        processor = GraphCaptionProcessor()
+    else:  # art
+        processor = ArtCriticProcessor()
+
     # Process images
     results = asyncio.run(
-        process_batch_captions(
+        processor.process_batch(
             provider=provider_client,
             image_paths=image_paths,
             max_tokens=max_tokens,

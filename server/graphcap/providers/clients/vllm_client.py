@@ -1,3 +1,20 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+VLLM Provider Client
+
+OpenAI-compatible client implementation for local VLLM deployments.
+
+Key features:
+- Local model deployment support
+- OpenAI-compatible API
+- Vision capabilities
+- Health check endpoint
+- Structured JSON output
+
+Classes:
+    VLLMClient: VLLM API client implementation
+"""
+
 from typing import Any, Dict, List, Type, Union
 
 import httpx

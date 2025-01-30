@@ -1,3 +1,20 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+Ollama Provider Client
+
+OpenAI-compatible client implementation for local Ollama deployments.
+
+Key features:
+- Local model deployment support
+- Model listing and management
+- Health check endpoint
+- Vision capabilities
+- OpenAI compatibility layer
+
+Classes:
+    OllamaClient: Ollama API client implementation
+"""
+
 from typing import Dict, List
 
 import httpx

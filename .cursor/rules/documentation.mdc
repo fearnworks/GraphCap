@@ -9,6 +9,7 @@ globs: *.tsx, *.ts, *.py
 1. All code files must include a license header:
 ```python
 # SPDX-License-Identifier: Apache-2.0
+graphcap.module.path
 ```
 
 2. Documentation should be:

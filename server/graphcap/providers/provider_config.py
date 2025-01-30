@@ -1,3 +1,25 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+Provider Configuration Module
+
+This module handles loading and validating provider configurations from TOML files.
+
+Key features:
+- TOML configuration loading
+- Provider config validation
+- Default model handling
+- Environment variable management
+
+Classes:
+    ProviderConfig: Configuration dataclass for providers
+
+Functions:
+    load_provider_config: Load config from TOML file
+    parse_provider_config: Parse config into ProviderConfig object
+    get_providers_config: Load and parse all provider configs
+    validate_config: Validate provider configurations
+"""
+
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path

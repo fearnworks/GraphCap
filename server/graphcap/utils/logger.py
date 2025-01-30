@@ -1,4 +1,21 @@
+"""
 # SPDX-License-Identifier: Apache-2.0
+Logger Configuration Module
+
+Configures and provides a customized loguru logger with JSON formatting
+and colored output.
+
+Key features:
+- JSON pretty printing
+- Colored console output
+- Timestamp formatting
+- Source location tracking
+- Custom record formatting
+
+Functions:
+    format_record: Custom formatter for log records
+"""
+
 import json
 import sys
 from typing import Any

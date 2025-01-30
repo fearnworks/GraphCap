@@ -1,3 +1,27 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+Base Provider Client
+
+Abstract base class defining the interface for all provider clients.
+
+Key features:
+- OpenAI-compatible interface
+- Vision API support
+- Structured output handling
+- Base64 image processing
+- Environment variable management
+
+Classes:
+    BaseClient: Abstract base class for provider clients
+        Attributes:
+            name (str): Provider name
+            kind (str): Provider type
+            environment (str): Deployment environment
+            env_var (str): Environment variable for API key
+            base_url (str): Base API URL
+            default_model (str): Default model identifier
+"""
+
 import base64
 import os
 from abc import ABC, abstractmethod

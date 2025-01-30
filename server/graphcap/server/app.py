@@ -1,3 +1,21 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+Server Application Module
+
+Main FastAPI application setup and configuration.
+
+Key features:
+- Server initialization
+- CORS configuration
+- Router registration
+- Lifespan management
+- Environment loading
+
+Components:
+    app: FastAPI application instance
+    lifespan: Server lifecycle manager
+"""
+
 # SPDX-License-Identifier: Apache-2.0
 import time
 from contextlib import asynccontextmanager
@@ -5,13 +23,11 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from graphcap.config.router import router as server_router
 from graphcap.providers.router import router as providers_router
 from graphcap.utils.logger import logger
 
 load_dotenv()
-import os 
 
 
 @asynccontextmanager

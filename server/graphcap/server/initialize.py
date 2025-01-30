@@ -1,3 +1,21 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+Server Initialization Module
+
+Handles server initialization including CUDA setup and controller configuration.
+
+Key features:
+- CUDA device detection
+- Server controller initialization
+- CORS middleware setup
+- Router configuration
+- Async initialization support
+
+Functions:
+    initialize: Async server initialization
+    create_app: Synchronous app creation wrapper
+"""
+
 # SPDX-License-Identifier: Apache-2.0
 import asyncio
 import time
@@ -5,9 +23,7 @@ import time
 import torch
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from graphcap.config.router import router as server_router
-from graphcap.config.server_controller import ServerController
 from graphcap.utils.logger import logger
 
 
@@ -20,11 +36,6 @@ async def initialize():
     logger.info(f"Device name: {torch.cuda.get_device_name(0)}")
 
     app = FastAPI()
-
-    # Get the singleton instance and initialize the model
-    logger.info("Initializing server controller...")
-    controller = ServerController()
-    await controller.initialize_model()  # Await the async initialization
 
     # Add CORS middleware
     logger.info("Configuring CORS middleware...")

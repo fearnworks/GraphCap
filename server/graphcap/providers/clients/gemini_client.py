@@ -1,3 +1,20 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+Gemini Provider Client
+
+OpenAI-compatible client implementation for Google's Gemini API.
+
+Key features:
+- Gemini API integration
+- OpenAI compatibility layer
+- Vision capabilities
+- Structured output support
+- Error handling
+
+Classes:
+    GeminiClient: Gemini API client implementation
+"""
+
 from typing import Any, Dict, List, Type, Union
 
 from loguru import logger

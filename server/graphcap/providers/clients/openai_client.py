@@ -1,3 +1,20 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+OpenAI Provider Client
+
+Standard OpenAI API client implementation with extended capabilities.
+
+Key features:
+- Full OpenAI API support
+- Vision model integration
+- Structured output generation
+- JSON schema validation
+- Pydantic model support
+
+Classes:
+    OpenAIClient: OpenAI API client implementation
+"""
+
 import base64
 from pathlib import Path
 from typing import Any, Dict, List, Type, Union
