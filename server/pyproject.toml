@@ -16,6 +16,7 @@ dependencies = [
     "loguru>=0.7.3",
     "openai>=1.59.9",
     "pydantic>=2.10.5",
+    "pytest-watcher>=0.4.3",
     "python-dotenv>=1.0.1",
     "python-multipart>=0.0.20",
     "tenacity>=9.0.0",
@@ -28,14 +29,7 @@ dependencies = [
 packages = ["graphcap"]  # Adjust this path to match your actual source code location
 
 [project.scripts]
-graphcap = "graphcap.main:main"
-
-[dependency-groups]
-dev = [
-    "pytest>=8.3.4",
-    "ruff>=0.9.1",
-    "pytest-asyncio>=0.25.2",
-]
+graphcap = "graphcap.main:cli"
 
 [project.optional-dependencies]
 dev = [

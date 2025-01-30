@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import shutil
 from datetime import datetime
 from pathlib import Path
 
@@ -86,3 +87,40 @@ def pytest_configure(config):
     """Configure pytest with the correct event loop policy."""
     policy = asyncio.DefaultEventLoopPolicy()
     asyncio.set_event_loop_policy(policy)
+
+
+@pytest.fixture(scope="session")
+def test_data_dir() -> Path:
+    """Fixture providing path to test data directory"""
+    return Path(__file__).parent / "artifacts/test_dataset"
+
+
+@pytest.fixture(scope="session")
+def test_export_dir(tmp_path_factory) -> Path:
+    """Fixture providing a temporary directory for test exports"""
+    export_dir = tmp_path_factory.mktemp("exports")
+    yield export_dir
+    # Cleanup after tests
+    shutil.rmtree(export_dir)
+
+
+@pytest.fixture(scope="session")
+def test_captions(test_data_dir) -> list:
+    """Fixture providing test caption data"""
+    captions_file = test_data_dir / "captions.jsonl"
+    captions = []
+    with captions_file.open() as f:
+        for line in f:
+            captions.append(json.loads(line))
+    return captions
+
+
+@pytest.fixture(scope="session")
+def test_dataset_config():
+    """Fixture providing test dataset configuration"""
+    return {
+        "name": "test-dataset",
+        "description": "A test dataset for unit testing",
+        "tags": ["test", "unit-testing"],
+        "include_images": True,
+    }

@@ -8,7 +8,12 @@ ARTIFACTS_DIR = Path(__file__).parent / "artifacts"
 
 
 def test_load_provider_config():
-    """Test loading and parsing the provider configuration"""
+    """
+    GIVEN a valid provider configuration file
+    WHEN loading and parsing the configuration
+    THEN should return all expected providers
+    AND each provider should have correct configuration values
+    """
     config_path = ARTIFACTS_DIR / "provider.parse-config.toml"
     providers = get_providers_config(config_path)
 
@@ -53,7 +58,12 @@ def test_load_provider_config():
 
 
 def test_default_model_handling():
-    """Test default model configuration behavior"""
+    """
+    GIVEN different provider configurations
+    WHEN parsing provider configs with various model settings
+    THEN should handle default model selection correctly
+    AND should raise appropriate errors for invalid configurations
+    """
     from graphcap.providers.provider_config import parse_provider_config
 
     # Test using explicit default_model
@@ -90,17 +100,25 @@ def test_default_model_handling():
 
 
 def test_validate_config():
-    """Test configuration validation"""
+    """
+    GIVEN a valid provider configuration
+    WHEN validating the configuration
+    THEN should return no validation errors
+    """
     config_path = ARTIFACTS_DIR / "provider.parse-config.toml"
     providers = get_providers_config(config_path)
     errors = validate_config(providers)
 
-    # The test config should be valid
     assert not errors, f"Unexpected validation errors: {errors}"
 
 
 def test_validate_config_with_errors():
-    """Test configuration validation with invalid data"""
+    """
+    GIVEN an invalid provider configuration
+    WHEN validating the configuration
+    THEN should return appropriate validation errors
+    AND should include all expected error messages
+    """
     from graphcap.providers.provider_config import ProviderConfig
 
     invalid_providers = {
@@ -128,13 +146,24 @@ def test_validate_config_with_errors():
 
 
 def test_missing_config_file():
-    """Test handling of missing configuration file"""
+    """
+    GIVEN a non-existent configuration file path
+    WHEN attempting to load the configuration
+    THEN should raise FileNotFoundError
+    """
     with pytest.raises(FileNotFoundError):
         get_providers_config("nonexistent.toml")
 
 
 def test_provider_completeness():
-    """Test that all expected providers are present with correct configurations"""
+    """
+    GIVEN a complete provider configuration file
+    WHEN loading all provider configurations
+    THEN should have all expected providers
+    AND each provider should have correct configuration values
+    AND should validate environment settings
+    AND should verify model configurations
+    """
     config_path = ARTIFACTS_DIR / "provider.parse-config.toml"
     providers = get_providers_config(config_path)
 
@@ -206,7 +235,12 @@ def test_provider_completeness():
 
 @pytest.mark.integration
 def test_default_model_propagation():
-    """Test that default_model from config is correctly propagated to client"""
+    """
+    GIVEN a provider manager with configuration
+    WHEN initializing provider clients
+    THEN should correctly set default models for each provider
+    AND should handle both local and cloud providers
+    """
     config_path = ARTIFACTS_DIR / "provider.parse-config.toml"
     manager = ProviderManager(config_path)
 

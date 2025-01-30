@@ -37,6 +37,11 @@ tasks:
     desc: Run pytest
     cmds:
       - uv run pytest -v -c server/pytest.ini
+  
+  test:watch:
+    desc: Run pytest in watch mode
+    cmds:
+      - uv run ptw . -c server/pytest.ini -v
 
   batch_caption:
     desc: Run batch_caption on example images

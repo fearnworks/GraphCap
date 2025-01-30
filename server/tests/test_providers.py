@@ -65,6 +65,12 @@ class TestGeminiProvider:
             pytest.skip("No GOOGLE_API_KEY found. Skipping Gemini tests.")
 
     async def test_gemini_chat_completion(self, test_logger, provider_manager):
+        """
+        GIVEN a Gemini client with valid API key
+        WHEN making a simple chat completion request
+        THEN should return a valid response with expected structure
+        AND should contain non-empty message content
+        """
         client = provider_manager.get_client("gemini")
         completion = await client.chat.completions.create(
             model=client.default_model,
@@ -81,7 +87,12 @@ class TestGeminiProvider:
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
     async def test_gemini_vision(self, test_logger, provider_manager):
-        """Test Gemini's multimodal capabilities"""
+        """
+        GIVEN a Gemini client and a test image
+        WHEN requesting vision analysis
+        THEN should return a valid description of the image
+        AND should have proper response structure
+        """
         client = provider_manager.get_client("gemini")
         image_path = Path(__file__).parent / "test_image.png"
 
@@ -101,7 +112,12 @@ class TestGeminiProvider:
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
     async def test_gemini_structured_vision(self, test_logger, provider_manager):
-        """Test Gemini's structured vision capabilities"""
+        """
+        GIVEN a Gemini client and a test image
+        WHEN requesting structured vision analysis with schema
+        THEN should return data matching the specified schema
+        AND should contain valid boolean and string fields
+        """
         client = provider_manager.get_client("gemini")
         image_path = Path(__file__).parent / "test_image.png"
         await run_structured_vision(client, test_logger, image_path)
@@ -118,6 +134,12 @@ class TestOllamaProvider:
             pytest.skip("Ollama service not available. Skipping Ollama tests.")
 
     async def test_ollama_chat_completion(self, provider_manager):
+        """
+        GIVEN an Ollama client with available service
+        WHEN making a simple chat completion request
+        THEN should return a valid response
+        AND should contain non-empty message content
+        """
         client = provider_manager.get_client("ollama")
         completion = await client.chat.completions.create(
             model=client.default_model,
@@ -146,6 +168,12 @@ class TestVLLMProvider:
             pytest.skip(f"VLLM service not available. Error: {str(e)}")
 
     async def test_vllm_chat_completion(self, provider_manager):
+        """
+        GIVEN a VLLM client with running service
+        WHEN making a chat completion request
+        THEN should return a valid response
+        AND should contain expected message structure
+        """
         client = provider_manager.get_client("vllm-pixtral")
         completion = await client.chat.completions.create(
             model=client.default_model,
@@ -160,7 +188,12 @@ class TestVLLMProvider:
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
     async def test_vllm_vision(self, test_logger, provider_manager):
-        """Test VLLM's vision capabilities"""
+        """
+        GIVEN a VLLM client and test image
+        WHEN requesting vision analysis
+        THEN should return a valid image description
+        AND should follow expected response format
+        """
         client = provider_manager.get_client("vllm-pixtral")
         image_path = Path(__file__).parent / "test_image.png"
 
@@ -180,7 +213,12 @@ class TestVLLMProvider:
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
     async def test_vllm_structured_vision(self, test_logger, provider_manager):
-        """Test VLLM's structured vision capabilities"""
+        """
+        GIVEN a VLLM client and test image
+        WHEN requesting structured vision analysis
+        THEN should return data matching the schema
+        AND should contain valid boolean and string fields
+        """
         client = provider_manager.get_client("vllm-pixtral")
         image_path = Path(__file__).parent / "test_image.png"
         await run_structured_vision(client, test_logger, image_path)
@@ -195,6 +233,13 @@ class TestOpenRouterProvider:
             pytest.skip("No OPENROUTER_API_KEY found. Skipping OpenRouter tests.")
 
     async def test_openrouter_chat_completion(self, provider_manager):
+        """
+        GIVEN an OpenRouter client with valid API key
+        WHEN making a chat completion request
+        THEN should return a valid response
+        AND should contain non-empty message content
+        AND should handle any API-specific requirements
+        """
         client = provider_manager.get_client("openrouter")
         try:
             completion = await client.chat.completions.create(
@@ -217,6 +262,12 @@ class TestOpenRouterProvider:
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
     async def test_openrouter_models(self, provider_manager):
+        """
+        GIVEN an OpenRouter client
+        WHEN requesting available models
+        THEN should return a list of models
+        AND should include GPT models in the list
+        """
         client = provider_manager.get_client("openrouter")
         models = await client.get_available_models()
 
@@ -225,7 +276,12 @@ class TestOpenRouterProvider:
         assert any("gpt" in model.id for model in models.data), "Should have GPT models available"
 
     async def test_openrouter_vision(self, test_logger, provider_manager):
-        """Test OpenRouter's vision capabilities"""
+        """
+        GIVEN an OpenRouter client and test image
+        WHEN requesting vision analysis
+        THEN should return a valid image description
+        AND should handle potential API errors gracefully
+        """
         client = provider_manager.get_client("openrouter")
         image_path = Path(__file__).parent / "test_image.png"
 
@@ -250,7 +306,12 @@ class TestOpenRouterProvider:
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
     async def test_openrouter_structured_vision(self, test_logger, provider_manager):
-        """Test OpenRouter's structured vision capabilities"""
+        """
+        GIVEN an OpenRouter client and test image
+        WHEN requesting structured vision analysis
+        THEN should return data matching the schema
+        AND should handle JSON parsing correctly
+        """
         client = provider_manager.get_client("openrouter")
         image_path = Path(__file__).parent / "test_image.png"
         await run_structured_vision(client, test_logger, image_path)
@@ -259,7 +320,12 @@ class TestOpenRouterProvider:
 @pytest.mark.asyncio
 @pytest.mark.integration
 async def test_provider_manager_initialization(provider_manager):
-    """Test that ProviderManager can initialize and return clients"""
+    """
+    GIVEN a provider configuration file
+    WHEN initializing the ProviderManager
+    THEN should create appropriate client instances
+    AND should match each provider with correct client type
+    """
     clients = provider_manager.clients()
     assert clients, "Should have at least one client initialized"
 
@@ -288,8 +354,13 @@ class TestOpenAIVisionProvider:
             pytest.skip("No OPENAI_API_KEY found. Skipping OpenAI Vision tests.")
 
     @pytest.mark.asyncio
-    async def test_gpt4_vision(self, test_logger, provider_manager):
-        """Test GPT-4 Vision capabilities"""
+    async def test_openai_vision(self, test_logger, provider_manager):
+        """
+        GIVEN an OpenAI client
+        WHEN requesting image analysis
+        THEN should return a coherent description
+        AND should handle the image format correctly
+        """
         client = provider_manager.get_client("openai")
         image_path = Path(__file__).parent / "test_image.png"
 
@@ -304,14 +375,25 @@ class TestOpenAIVisionProvider:
         assert completion.choices[0].message.content, "Expected non-empty response"
 
     async def test_openai_structured_vision(self, test_logger, provider_manager):
-        """Test OpenAI's structured vision capabilities"""
+        """
+        GIVEN an OpenAI client and test image
+        WHEN requesting structured vision analysis
+        THEN should return data matching the schema
+        AND should parse JSON response correctly
+        """
         client = provider_manager.get_client("openai")
         image_path = Path(__file__).parent / "test_image.png"
         await run_structured_vision(client, test_logger, image_path)
 
 
 async def run_structured_vision(client, test_logger, image_path):
-    """Helper function to test structured vision capabilities"""
+    """
+    Helper function to test structured vision capabilities:
+        GIVEN a vision-capable client and test image
+        WHEN running structured vision analysis
+        THEN should return properly formatted data
+        AND should validate against the schema
+    """
     completion = await client.vision(
         prompt=test_vision_config.prompt,
         image=image_path,

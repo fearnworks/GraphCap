@@ -1,45 +1,70 @@
-from pathlib import Path
-from typing import List, Dict, Optional
-import json
-from loguru import logger
-from pydantic import BaseModel
-from huggingface_hub import HfApi, create_repo, CommitScheduler
-import os
-import time
-from tenacity import retry, stop_after_attempt, wait_exponential
+"""
+# SPDX-License-Identifier: Apache-2.0
+Dataset Management Module
 
-class DatasetConfig(BaseModel):
-    name: str
-    description: str
-    tags: List[str]
-    include_images: bool = True
+This module provides functionality for managing datasets, including:
+- Exporting captions to JSONL format
+- Creating and uploading datasets to Hugging Face Hub
+- Managing work sessions for dataset creation
+- Processing images and metadata
+
+Classes:
+    DatasetManager: Main class for dataset operations and management
+"""
+
+import json
+import time
+from pathlib import Path
+from typing import Dict, List, Optional
+
+from graphcap.dataset.file_handler import DatasetFileHandler
+from graphcap.dataset.hf_client import HuggingFaceClient
+from graphcap.dataset.metadata import DatasetConfig, DatasetMetadataHandler
+from loguru import logger
+
 
 class DatasetManager:
-    def __init__(self, export_dir: Path):
+    """
+    Manages dataset operations including export, creation, and upload to Hugging Face Hub.
+
+    This class coordinates between file handling, metadata management, and HuggingFace
+    interactions to provide a complete dataset management solution.
+
+    Attributes:
+        export_dir (Path): Directory for exporting dataset files
+        file_handler (DatasetFileHandler): Handles file operations
+        hf_client (HuggingFaceClient): Client for HuggingFace operations
+        metadata_handler (DatasetMetadataHandler): Handles metadata creation and validation
+    """
+
+    def __init__(
+        self,
+        export_dir: Path,
+        file_handler: Optional[DatasetFileHandler] = None,
+        hf_client: Optional[HuggingFaceClient] = None,
+        metadata_handler: Optional[DatasetMetadataHandler] = None,
+    ):
         self.export_dir = Path(export_dir)
-        self.export_dir.mkdir(parents=True, exist_ok=True)
-        self.api = HfApi()
-        
+        self.file_handler = file_handler or DatasetFileHandler(export_dir)
+        self.hf_client = hf_client or HuggingFaceClient()
+        self.metadata_handler = metadata_handler or DatasetMetadataHandler()
+
     async def export_to_jsonl(
         self,
         captions: List[Dict],
         output_path: Optional[Path] = None,
     ) -> Path:
-        """Export captions to JSONL format"""
-        if output_path is None:
-            output_path = self.export_dir / "captions.jsonl"
-            
-        with output_path.open("w") as f:
-            for caption in captions:
-                f.write(json.dumps(caption) + "\n")
-                
-        logger.info(f"Exported {len(captions)} captions to {output_path}")
-        return output_path
+        """
+        Export captions to JSONL format.
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    def _verify_repo_exists(self, repo_id: str, token: Optional[str] = None):
-        """Verify repository exists with retries"""
-        return self.api.repo_info(repo_id=repo_id, repo_type="dataset")
+        Args:
+            captions: List of caption dictionaries to export
+            output_path: Optional custom output path
+
+        Returns:
+            Path: Path to the exported JSONL file
+        """
+        return await self.file_handler.export_to_jsonl(captions, output_path)
 
     async def create_hf_dataset(
         self,
@@ -47,291 +72,147 @@ class DatasetManager:
         config: DatasetConfig,
         push_to_hub: bool = False,
         token: Optional[str] = None,
-        private: bool = False
+        private: bool = False,
     ) -> str:
-        """Create and optionally upload a dataset to the Hugging Face Hub"""
+        """
+        Create and optionally upload a dataset to the Hugging Face Hub.
+
+        Args:
+            jsonl_path: Path to the JSONL file containing dataset
+            config: Dataset configuration
+            push_to_hub: Whether to upload to HuggingFace
+            token: HuggingFace API token
+            private: Whether to create a private repository
+
+        Returns:
+            str: Dataset path or HuggingFace URL
+
+        Raises:
+            Exception: If dataset creation or upload fails
+        """
         if not push_to_hub or not token:
             return str(jsonl_path)
 
-        # Get user info from token to create full repo_id
         try:
-            user_info = self.api.whoami(token=token)
+            # Get user info and create repo
+            user_info = self.hf_client.get_user_info(token)
             username = user_info["name"]
             repo_id = f"{username}/{config.name}"
+
             logger.info(f"Creating dataset repository for user: {username}")
-        except Exception as e:
-            logger.error(f"Failed to get user info: {e}")
-            raise
+            self.hf_client.create_dataset_repo(repo_id, token, private)
 
-        # Create the repository first
-        try:
-            create_repo(
-                repo_id=repo_id,
-                token=token,
-                private=private,
-                repo_type="dataset",
-                exist_ok=True
-            )
-            logger.info(f"Repository {repo_id} created or already exists")
-            
-            # Add a small delay after creation
+            # Add delay and verify
             time.sleep(2)
-            
-            # Verify with retries
-            self._verify_repo_exists(repo_id, token)
-            logger.info(f"Repository {repo_id} verified")
-            
-        except Exception as e:
-            logger.error(f"Failed to create or verify repository: {e}")
-            raise
+            self.hf_client.verify_repo_exists(repo_id, token)
 
-        try:
-            # Upload the JSONL file
-            logger.info(f"Uploading JSONL file to {repo_id}")
-            self.api.upload_file(
-                path_or_fileobj=str(jsonl_path),
-                path_in_repo="data/captions.jsonl",
-                repo_id=repo_id,
-                repo_type="dataset",
-                token=token
-            )
-            logger.info(f"Successfully uploaded JSONL file to {repo_id}")
+            # Upload initial JSONL
+            self.hf_client.upload_file(str(jsonl_path), "data/captions.jsonl", repo_id, token)
 
-            # If include_images is True, upload associated images
+            metadata_entries = []
             if config.include_images:
-                logger.info("Starting image uploads...")
-                input_dir = Path(jsonl_path).parent
-                logger.info(f"Looking for images in: {input_dir}")
-                
-                metadata_entries = []
-                
-                # Create a data directory structure
-                data_config = {
-                    "configs": [{
-                        "config_name": "default",
-                        "data_files": [{
-                            "split": "default",
-                            "path": "data/metadata.jsonl"
-                        }]
-                    }]
-                }
-                
-                with jsonl_path.open() as f:
-                    for line in f:
-                        entry = json.loads(line)
-                        logger.debug(f"Processing entry: {entry}")
-                        
-                        if "filename" in entry:
-                            image_name = entry["filename"].lstrip("./")
-                            image_path = input_dir / image_name
-                            
-                            # Use consistent path format without 'data/' prefix in metadata
-                            relative_image_path = f"images/{Path(image_name).name}"
-                            
-                            metadata_entry = {
-                                "file_name": relative_image_path,  # Remove data/ prefix
-                                "image": relative_image_path,      # Remove data/ prefix
-                                "config_name": entry.get("config_name", ""),
-                                "version": entry.get("version", ""),
-                                "model": entry.get("model", ""),
-                                "provider": entry.get("provider", ""),
-                                "split": "default",
-                                "parsed": {
-                                    "tags_list": entry.get("parsed", {}).get("tags_list", []),
-                                    "short_caption": entry.get("parsed", {}).get("short_caption", ""),
-                                    "verification": entry.get("parsed", {}).get("verification", ""),
-                                    "dense_caption": entry.get("parsed", {}).get("dense_caption", "")
-                                }
-                            }
-                            metadata_entries.append(metadata_entry)
-                            
-                            if image_path.exists():
-                                try:
-                                    # Still upload to data/images/ directory
-                                    repo_image_path = f"data/images/{image_path.name}"
-                                    logger.info(f"Uploading image {image_path} to {repo_image_path}")
-                                    self.api.upload_file(
-                                        path_or_fileobj=str(image_path),
-                                        path_in_repo=repo_image_path,
-                                        repo_id=repo_id,
-                                        repo_type="dataset",
-                                        token=token
-                                    )
-                                    logger.info(f"Successfully uploaded image: {image_path.name}")
-                                except Exception as e:
-                                    logger.warning(f"Failed to upload image {image_path}: {e}")
-                                    continue
-                            else:
-                                logger.warning(f"Image not found at path: {image_path}")
-                        else:
-                            logger.warning("Entry missing filename field")
-                            
-                logger.info("Completed image uploads")
+                metadata_entries = await self._process_images(jsonl_path, repo_id, token)
 
-                # Create and upload metadata.jsonl
-                metadata_content = "\n".join(json.dumps(entry) for entry in metadata_entries)
-                try:
-                    logger.info("Uploading metadata.jsonl...")
-                    self.api.upload_file(
-                        path_or_fileobj=metadata_content.encode(),
-                        path_in_repo="data/metadata.jsonl",
-                        repo_id=repo_id,
-                        repo_type="dataset",
-                        token=token
-                    )
-                    logger.info("Successfully uploaded metadata.jsonl")
-                except Exception as e:
-                    logger.error(f"Failed to upload metadata: {e}")
-                    raise
+            # Upload metadata and configs
+            await self._upload_metadata_files(repo_id, token, config, metadata_entries)
 
-                # Upload the data configuration file
-                try:
-                    logger.info("Uploading data configuration...")
-                    self.api.upload_file(
-                        path_or_fileobj=json.dumps(data_config).encode(),
-                        path_in_repo="data/config.yaml",
-                        repo_id=repo_id,
-                        repo_type="dataset",
-                        token=token
-                    )
-                    logger.info("Successfully uploaded data configuration")
-                except Exception as e:
-                    logger.error(f"Failed to upload data configuration: {e}")
-                    raise
-
-            # Create dataset-metadata.json
-            dataset_metadata = {
-                "splits": ["default"],
-                "column_names": [
-                    "file_name",
-                    "image",
-                    "config_name",
-                    "version",
-                    "model",
-                    "provider",
-                    "parsed"
-                ]
-            }
-            
-            try:
-                logger.info("Uploading dataset-metadata.json...")
-                self.api.upload_file(
-                    path_or_fileobj=json.dumps(dataset_metadata).encode(),
-                    path_in_repo="dataset-metadata.json",
-                    repo_id=repo_id,
-                    repo_type="dataset",
-                    token=token
-                )
-                logger.info("Successfully uploaded dataset-metadata.json")
-            except Exception as e:
-                logger.error(f"Failed to upload dataset metadata: {e}")
-                raise
-
-            try:
-                logger.info("Updating repository settings...")
-                self.api.update_repo_settings(
-                    repo_id=repo_id,
-                    private=private,
-                    repo_type="dataset",
-                    token=token
-                )
-                logger.info("Repository settings updated successfully")
-            except Exception as e:
-                logger.error(f"Failed to update repository settings: {e}")
-                raise
-
-            try:
-                logger.info("Creating dataset card...")
-                readme_content = f"""---
-language:
-  - en
-license: cc0-1.0
-pretty_name: {config.name}
-dataset_info:
-  features:
-    - name: file_name
-      dtype: string
-    - name: image
-      dtype: image
-    - name: config_name
-      dtype: string
-    - name: version
-      dtype: string
-    - name: model
-      dtype: string
-    - name: provider
-      dtype: string
-    - name: parsed
-      struct:
-        - name: tags_list
-          sequence: string
-        - name: short_caption
-          dtype: string
-        - name: verification
-          dtype: string
-        - name: dense_caption
-          dtype: string
-  splits:
-    - name: default
-      num_examples: {len(metadata_entries)}
-  download_size: null
-  dataset_size: null
-configs:
-  - config_name: default
-    data_files:
-      - split: default
-        path: data/metadata.jsonl
-tags:
-  - image-to-text
-  - computer-vision
-  - image-captioning
-{chr(10).join([f'  - {tag}' for tag in config.tags])}
----
-
-# {config.name}
-
-{config.description}
-
-## Dataset Structure
-
-The dataset contains images with associated metadata including captions, tags, and verification information.
-"""
-                self.api.upload_file(
-                    path_or_fileobj=readme_content.encode(),
-                    path_in_repo="README.md",
-                    repo_id=repo_id,
-                    repo_type="dataset",
-                    token=token
-                )
-                logger.info("Successfully updated README")
-            except Exception as e:
-                logger.warning(f"Failed to update README: {e}")
-
-            logger.info(f"Dataset successfully uploaded to Hugging Face Hub: {repo_id}")
             return f"https://huggingface.co/datasets/{repo_id}"
 
         except Exception as e:
-            logger.error(f"Error uploading dataset to Hub: {e}")
+            logger.error(f"Error creating dataset: {e}")
             raise
 
-    async def save_work_session(
-        self,
-        session_data: Dict,
-        session_id: str
-    ) -> Path:
-        """Save current work session"""
-        session_path = self.export_dir / f"session_{session_id}.json"
-        with session_path.open("w") as f:
-            json.dump(session_data, f)
-        return session_path
+    async def _process_images(self, jsonl_path: Path, repo_id: str, token: str) -> List[Dict]:
+        """
+        Process and upload images from the dataset.
 
-    async def load_work_session(
-        self,
-        session_id: str
-    ) -> Optional[Dict]:
-        """Load a previous work session"""
-        session_path = self.export_dir / f"session_{session_id}.json"
-        if session_path.exists():
-            with session_path.open() as f:
-                return json.load(f)
-        return None
+        Args:
+            jsonl_path: Path to JSONL file containing image references
+            repo_id: HuggingFace repository ID
+            token: HuggingFace API token
+
+        Returns:
+            List[Dict]: List of metadata entries for processed images
+        """
+        metadata_entries = []
+        input_dir = jsonl_path.parent
+
+        with jsonl_path.open() as f:
+            for line in f:
+                entry = json.loads(line)
+                if "filename" not in entry:
+                    continue
+
+                image_path = self.file_handler.get_image_path(input_dir, entry["filename"])
+                if not image_path.exists():
+                    logger.warning(f"Image not found: {image_path}")
+                    continue
+
+                relative_path = f"images/{image_path.name}"
+                metadata_entries.append(self.metadata_handler.create_metadata_entry(entry, relative_path))
+
+                try:
+                    self.hf_client.upload_file(str(image_path), f"data/{relative_path}", repo_id, token)
+                except Exception as e:
+                    logger.warning(f"Failed to upload image {image_path}: {e}")
+
+        return metadata_entries
+
+    async def _upload_metadata_files(
+        self, repo_id: str, token: str, config: DatasetConfig, metadata_entries: List[Dict]
+    ):
+        """
+        Upload all metadata related files to HuggingFace.
+
+        Args:
+            repo_id: HuggingFace repository ID
+            token: HuggingFace API token
+            config: Dataset configuration
+            metadata_entries: List of metadata entries
+        """
+        # Upload metadata.jsonl
+        metadata_content = "\n".join(json.dumps(entry) for entry in metadata_entries)
+        self.hf_client.upload_file(metadata_content.encode(), "data/metadata.jsonl", repo_id, token)
+
+        # Upload config.yaml
+        data_config = self.metadata_handler.create_data_config()
+        self.hf_client.upload_file(json.dumps(data_config).encode(), "data/config.yaml", repo_id, token)
+
+        # Upload dataset-metadata.json
+        dataset_metadata = self.metadata_handler.create_dataset_metadata(
+            splits=["default"],
+            column_names=["file_name", "image", "config_name", "version", "model", "provider", "parsed"],
+        )
+        self.hf_client.upload_file(json.dumps(dataset_metadata).encode(), "dataset-metadata.json", repo_id, token)
+
+        # Upload README.md
+        readme_content = self.metadata_handler.create_dataset_card(config, len(metadata_entries))
+        self.hf_client.upload_file(readme_content.encode(), "README.md", repo_id, token)
+
+    async def save_work_session(self, session_data: Dict, session_id: str) -> Path:
+        """
+        Save current work session data.
+
+        Args:
+            session_data: Dictionary containing session data
+            session_id: Unique identifier for the session
+
+        Returns:
+            Path: Path to the saved session file
+
+        Raises:
+            TypeError: If session data contains non-serializable objects
+        """
+        return await self.file_handler.save_work_session(session_data, session_id)
+
+    async def load_work_session(self, session_id: str) -> Optional[Dict]:
+        """
+        Load a previous work session.
+
+        Args:
+            session_id: Unique identifier for the session
+
+        Returns:
+            Optional[Dict]: Session data if found, None otherwise
+        """
+        return await self.file_handler.load_work_session(session_id)

@@ -49,4 +49,20 @@ cp provider.example.config.toml provider.config.toml
 cp .env.caption.template .env.caption
 ```
 
+## CLI
+
+To run graphcap cli 
+
+
+```python
+# Pre req : set up .env and provider.config.toml
+cd ./server
+uv venv
+uv sync
+uv pip install -e . 
+uv run python ./graphcap/main.py batch-caption ../datasets/os_img --provider gemini --output ../local/os_img/output.jsonl -c ../provider.config.toml
+```
+
+This should generate a jsonl file in the local directory of the root project.
+
 

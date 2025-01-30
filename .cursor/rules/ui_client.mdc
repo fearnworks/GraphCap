@@ -1,3 +1,7 @@
+---
+description: Frontend ui development 
+globs: *.tsx, *.ts, *.svelte
+---
 <Svelte>
 Full Svelte 5 documentation can be found in the repository at ./docs/ai_docs/frontend
 
