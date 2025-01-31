@@ -7,9 +7,11 @@ Provides structured analysis of images with categorized tags and descriptions.
 Focuses on comprehensive scene understanding and detailed content analysis.
 """
 
-from typing import List
+from typing import Any, Dict, List
 
+from loguru import logger
 from pydantic import BaseModel, Field
+from rich.table import Table
 
 from .base_caption import BaseCaptionProcessor
 
@@ -92,3 +94,39 @@ class GraphCaptionProcessor(BaseCaptionProcessor):
             prompt=instruction,
             schema=GraphCaptionData,
         )
+
+    def create_rich_table(self, caption_data: Dict[str, Any]) -> Table:
+        """Create Rich table for graph caption data."""
+        result = caption_data["parsed"]
+
+        # Create main table
+        table = Table(show_header=True, header_style="bold magenta", expand=True)
+        table.add_column("Category", style="cyan")
+        table.add_column("Content", style="green")
+
+        # Add short caption
+        table.add_row("Short Caption", result["short_caption"])
+
+        # Group tags by category
+        tags_by_category = {}
+        for tag in result["tags_list"]:
+            category = tag["category"]
+            if category not in tags_by_category:
+                tags_by_category[category] = []
+            tags_by_category[category].append(f"• {tag['tag']} ({tag['confidence']:.2f})")
+
+        # Add tags section
+        tags_content = []
+        for category, tags in tags_by_category.items():
+            tags_content.append(f"[bold]{category}[/bold]")
+            tags_content.extend(tags)
+            tags_content.append("")  # Add spacing between categories
+
+        table.add_row("Tags", "\n".join(tags_content))
+
+        # Add verification
+        table.add_row("Verification", result["verification"])
+
+        table.add_row("Dense Caption", result["dense_caption"])
+        logger.info(result["dense_caption"])
+        return table

@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import tomllib
 from pathlib import Path
 from typing import List
 
@@ -33,7 +34,7 @@ def dev(port):
 @click.argument("input_path", type=click.Path(exists=True, path_type=Path))
 @click.option("--provider", "-p", default="openai", help="AI provider to use")
 @click.option("--output", "-o", type=click.Path(path_type=Path), help="Output JSONL file path")
-@click.option("--max-tokens", default=1024, help="Maximum tokens to generate")
+@click.option("--max-tokens", default=4096, help="Maximum tokens to generate")
 @click.option("--temperature", default=0.8, help="Sampling temperature")
 @click.option("--top-p", default=0.9, help="Nucleus sampling threshold")
 @click.option(
@@ -115,17 +116,13 @@ def batch_caption(input_path, provider, output, max_tokens, temperature, top_p, 
 @click.option("--tags", multiple=True, help="Dataset tags")
 @click.option("--push-to-hub/--local-only", default=False, help="Push to Hugging Face Hub")
 @click.option("--private", is_flag=True, help="Private dataset")
-@click.option(
-    "--use-hf-urls", 
-    is_flag=True, 
-    help="Use HuggingFace URLs for image paths instead of relative paths"
-)
+@click.option("--use-hf-urls", is_flag=True, help="Use HuggingFace URLs for image paths instead of relative paths")
 def export_dataset(
-    input_path: Path, 
-    name: str, 
-    description: str, 
-    tags: List[str], 
-    push_to_hub: bool, 
+    input_path: Path,
+    name: str,
+    description: str,
+    tags: List[str],
+    push_to_hub: bool,
     private: bool = False,
     use_hf_urls: bool = False,
 ):
@@ -211,6 +208,114 @@ def list_providers(provider_config):
     except Exception as e:
         logger.error(f"Failed to list providers: {str(e)}")
         raise
+
+
+@cli.command()
+@click.argument("config_file", type=click.Path(exists=True, path_type=Path))
+def batch_config(config_file):
+    """Process images using a TOML configuration file.
+
+    CONFIG_FILE: Path to TOML configuration file
+    """
+    try:
+        # Load config using tomllib
+        with open(config_file, "rb") as f:
+            config = tomllib.load(f)
+
+        try:
+            input_path = Path(config["input"]["path"])
+            provider = config["provider"]["name"]
+            provider_config = Path(config["provider"]["config_file"])
+            max_concurrent = config["provider"].get("max_concurrent", 3)
+            caption_type = config["caption"]["type"]
+            max_tokens = config["caption"]["max_tokens"]
+            temperature = config["caption"]["temperature"]
+            repetition_penalty = config["caption"]["repetition_penalty"]
+            top_p = config["caption"]["top_p"]
+            output = Path(config["output"]["path"]) if config["output"].get("path") else None
+
+            # Validate caption type
+            if caption_type not in ["graph", "art"]:
+                raise ValueError(f"Invalid caption type: {caption_type}. Must be 'graph' or 'art'")
+
+            # Validate numeric parameters
+            if not isinstance(max_tokens, int) or max_tokens <= 0:
+                raise ValueError("max_tokens must be a positive integer")
+            if not isinstance(temperature, (int, float)) or not 0 <= temperature <= 1:
+                raise ValueError("temperature must be between 0 and 1")
+            if not isinstance(top_p, (int, float)) or not 0 <= top_p <= 1:
+                raise ValueError("top_p must be between 0 and 1")
+            if not isinstance(max_concurrent, int) or max_concurrent <= 0:
+                raise ValueError("max_concurrent must be a positive integer")
+            if not isinstance(repetition_penalty, (int, float)) or not 0 <= repetition_penalty <= 2:
+                raise ValueError("repetition_penalty must be between 0 and 2")
+
+        except KeyError as e:
+            logger.error(f"Missing required configuration key: {e}")
+            return
+        except ValueError as e:
+            logger.error(f"Invalid configuration value: {e}")
+            return
+
+        # Initialize provider
+        provider_manager = ProviderManager(provider_config)
+        provider_client = provider_manager.get_client(provider)
+
+        if not provider_client:
+            logger.error(f"Provider {provider} not found")
+            return
+
+        # Initialize caption processor based on type
+        if caption_type == "graph":
+            processor = GraphCaptionProcessor()
+        else:  # art
+            processor = ArtCriticProcessor()
+
+        # Get list of image files
+        image_paths = []
+        if input_path.is_dir():
+            # Supported image extensions
+            image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+            for ext in image_extensions:
+                image_paths.extend(input_path.glob(f"**/*{ext}"))
+        else:
+            image_paths = [input_path]
+
+        if not image_paths:
+            logger.error("No image files found")
+            return
+
+        logger.info(f"Found {len(image_paths)} images to process")
+
+        # Process images
+        results = asyncio.run(
+            processor.process_batch(
+                provider=provider_client,
+                image_paths=image_paths,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                max_concurrent=max_concurrent,
+                repetition_penalty=repetition_penalty,
+            )
+        )
+
+        # Write results
+        if output:
+            output.parent.mkdir(parents=True, exist_ok=True)  # Ensure output directory exists
+            with output.open("w") as f:
+                for result in results:
+                    f.write(json.dumps(result) + "\n")
+            logger.info(f"Results written to {output}")
+        else:
+            # Print to stdout
+            for result in results:
+                print(json.dumps(result))
+
+    except tomllib.TOMLDecodeError as e:
+        logger.error(f"Failed to parse TOML configuration: {e}")
+    except Exception as e:
+        logger.error(f"Error processing configuration: {e}")
 
 
 if __name__ == "__main__":

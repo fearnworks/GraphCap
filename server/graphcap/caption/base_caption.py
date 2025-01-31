@@ -6,16 +6,30 @@ Provides base classes and shared functionality for different caption types.
 """
 
 import asyncio
+import json
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from loguru import logger
 from pydantic import BaseModel
+from rich.console import Console
+from rich.table import Table
+from tqdm.asyncio import tqdm_asyncio
 
 from ..providers.clients.base_client import BaseClient
 from ..schemas.structured_vision import StructuredVisionConfig
 
+# Initialize Rich console
+console = Console()
 
-class BaseCaptionProcessor:
+
+def pretty_print_caption(caption_data: Dict[str, Any]) -> str:
+    """Format caption data for pretty console output."""
+    return json.dumps(caption_data["parsed"], indent=2, ensure_ascii=False)
+
+
+class BaseCaptionProcessor(ABC):
     """
     Base class for caption processors.
 
@@ -43,13 +57,62 @@ class BaseCaptionProcessor:
             schema=schema,
         )
 
+    def _sanitize_json_string(self, text: str) -> str:
+        """
+        Sanitize JSON string by properly escaping control characters.
+
+        Args:
+            text: Raw JSON string that may contain control characters
+
+        Returns:
+            Sanitized JSON string with properly escaped control characters
+        """
+        # Define escape sequences for common control characters
+        control_char_map = {
+            "\n": "\\n",  # Line feed
+            "\r": "\\r",  # Carriage return
+            "\t": "\\t",  # Tab
+            "\b": "\\b",  # Backspace
+            "\f": "\\f",  # Form feed
+            "\v": "\\u000b",  # Vertical tab
+            "\0": "",  # Null character - remove it
+        }
+
+        # First pass: handle known control characters
+        for char, escape_seq in control_char_map.items():
+            text = text.replace(char, escape_seq)
+
+        # Second pass: handle any remaining control characters
+        result = ""
+        for char in text:
+            if ord(char) < 32:  # Control characters are below ASCII 32
+                result += f"\\u{ord(char):04x}"
+            else:
+                result += char
+
+        return result
+
+    @abstractmethod
+    def create_rich_table(self, caption_data: Dict[str, Any]) -> Table:
+        """
+        Create a Rich table for displaying caption data.
+
+        Args:
+            caption_data: The caption data to format
+
+        Returns:
+            Rich Table object for display
+        """
+        pass
+
     async def process_single(
         self,
         provider: BaseClient,
         image_path: Path,
-        max_tokens: Optional[int] = 2048,
+        max_tokens: Optional[int] = 4096,
         temperature: Optional[float] = 0.8,
         top_p: Optional[float] = 0.9,
+        repetition_penalty: Optional[float] = 1.15,
     ) -> dict:
         """
         Process a single image and return caption data.
@@ -76,16 +139,25 @@ class BaseCaptionProcessor:
                 max_tokens=max_tokens,
                 temperature=temperature,
                 top_p=top_p,
+                repetition_penalty=repetition_penalty,
             )
 
-            # Handle response parsing
+            # Handle response parsing with sanitization
             if isinstance(completion, BaseModel):
                 result = completion.choices[0].message.parsed
                 if isinstance(result, BaseModel):
                     result = result.model_dump()
             else:
                 result = completion.choices[0].message.parsed
-                if "choices" in result:
+                # Handle string responses that need parsing
+                if isinstance(result, str):
+                    sanitized = self._sanitize_json_string(result)
+                    try:
+                        result = json.loads(sanitized)
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Failed to parse sanitized JSON: {e}")
+                        raise
+                elif "choices" in result:
                     result = result["choices"][0]["message"]["parsed"]["parsed"]
                 elif "message" in result:
                     result = result["message"]["parsed"]
@@ -98,9 +170,11 @@ class BaseCaptionProcessor:
         self,
         provider: BaseClient,
         image_paths: List[Path],
-        max_tokens: Optional[int] = 1024,
+        max_tokens: Optional[int] = 4096,
         temperature: Optional[float] = 0.8,
         top_p: Optional[float] = 0.9,
+        max_concurrent: Optional[int] = 5,
+        repetition_penalty: Optional[float] = 1.15,
     ) -> List[Dict[str, Any]]:
         """
         Process multiple images and return their captions.
@@ -111,30 +185,91 @@ class BaseCaptionProcessor:
             max_tokens: Maximum tokens for model response
             temperature: Sampling temperature
             top_p: Nucleus sampling parameter
+            max_concurrent: Maximum number of concurrent API requests
 
         Returns:
             List[Dict[str, Any]]: List of caption results with metadata
         """
-        tasks = [
-            self.process_single(
-                provider=provider,
-                image_path=path,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                top_p=top_p,
-            )
-            for path in image_paths
-        ]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        logger.info(f"Processing {len(image_paths)} images with {provider.name} provider")
+        logger.info(f"Using max concurrency of {max_concurrent} requests")
 
-        return [
-            {
-                "filename": f"./{Path(str(path)).name}",
-                "config_name": self.vision_config.config_name,
-                "version": self.vision_config.version,
-                "model": provider.default_model,
-                "provider": provider.name,
-                "parsed": result if not isinstance(result, Exception) else {"error": str(result)},
-            }
-            for path, result in zip(image_paths, results)
-        ]
+        semaphore = asyncio.Semaphore(max_concurrent)
+
+        # Track active requests
+        active_requests = 0
+
+        async def process_with_semaphore(path: Path) -> Dict[str, Any]:
+            nonlocal active_requests
+            async with semaphore:
+                try:
+                    active_requests += 1
+                    logger.info(f"Starting request for {path.name} (Active requests: {active_requests})")
+
+                    result = await self.process_single(
+                        provider=provider,
+                        image_path=path,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        top_p=top_p,
+                        repetition_penalty=repetition_penalty,
+                    )
+
+                    active_requests -= 1
+                    logger.info(f"Completed request for {path.name} (Active requests: {active_requests})")
+
+                    caption_data = {
+                        "filename": f"./{path.name}",
+                        "config_name": self.vision_config.config_name,
+                        "version": self.vision_config.version,
+                        "model": provider.default_model,
+                        "provider": provider.name,
+                        "parsed": result,
+                    }
+
+                    # Create and display Rich table
+                    console.print(f"\n[bold cyan]Processed {path.name}:[/bold cyan]")
+                    table = self.create_rich_table(caption_data)
+                    console.print(table)
+
+                    # # Show full JSON in a panel at the end
+                    # console.print(
+                    #     Panel(
+                    #         json.dumps(result, indent=2, ensure_ascii=False),
+                    #         title="[bold green]Full Caption Data[/bold green]",
+                    #         expand=False,
+                    #     )
+                    # )
+
+                    return caption_data
+                except Exception as e:
+                    active_requests -= 1
+                    logger.error(f"Failed request for {path.name} (Active requests: {active_requests})")
+                    error_data = {
+                        "filename": f"./{path.name}",
+                        "config_name": self.vision_config.config_name,
+                        "version": self.vision_config.version,
+                        "model": provider.default_model,
+                        "provider": provider.name,
+                        "parsed": {"error": str(e)},
+                    }
+                    console.print(f"\n[bold red]Failed to process {path.name}:[/bold red] {str(e)}")
+                    return error_data
+
+        results = await tqdm_asyncio.gather(
+            *[process_with_semaphore(path) for path in image_paths],
+            desc=f"Processing images with {provider.name}",
+        )
+
+        # Log summary with Rich
+        success_count = sum(1 for r in results if "error" not in r["parsed"])
+        summary_table = Table(title="Processing Summary", show_header=False)
+        summary_table.add_column("Metric", style="cyan")
+        summary_table.add_column("Value", style="green")
+        summary_table.add_row("Total Images", str(len(results)))
+        summary_table.add_row("Successful", str(success_count))
+        summary_table.add_row("Failed", str(len(results) - success_count))
+
+        console.print("\n")
+        console.print(summary_table)
+
+        return results

@@ -19,6 +19,7 @@ dependencies = [
     "pytest-watcher>=0.4.3",
     "python-dotenv>=1.0.1",
     "python-multipart>=0.0.20",
+    "rich>=13.9.4",
     "tenacity>=9.0.0",
     "termcolor>=2.5.0",
     "uvicorn>=0.34.0",

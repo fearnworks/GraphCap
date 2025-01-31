@@ -1,0 +1,17 @@
+[input]
+path = "../datasets/os_img"
+
+[provider]
+name = "vllm"
+config_file = "../provider.config.toml"
+max_concurrent = 3
+
+[caption]
+type = "art"
+max_tokens = 4096
+temperature = 0.7
+top_p = 0.9
+repetition_penalty = 1.15
+
+[output]
+path = "../.local/art_analysis_vllm.jsonl"

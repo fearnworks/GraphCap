@@ -1,0 +1,23 @@
+# Batch Caption Configuration
+
+[input]
+# Path to input directory or single image file
+path = "path/to/images"
+
+[provider]
+# AI provider settings
+name = "openai"  # [openai, gemini, ollama, vllm]
+config_file = "provider.config.toml"  # Path to provider config file
+max_concurrent = 3 # Maximum concurrent requests
+
+[caption]
+# Caption generation settings
+type = "graph"  # Options: "graph" or "art"
+max_tokens = 4096  # Maximum tokens to generate
+temperature = 0.8  # Sampling temperature
+top_p = 0.9  # Nucleus sampling threshold
+repetition_penalty = 1.15  # Repetition penalty
+
+[output]
+# Output settings (optional)
+path = "output.jsonl"  # Output JSONL file path. If not specified, prints to stdout

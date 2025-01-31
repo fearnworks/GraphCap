@@ -82,8 +82,11 @@ class BaseClient(AsyncOpenAI, ABC):
         prompt: str,
         image: Union[str, Path],
         model: str,
-        max_tokens: int = 1024,
+        max_tokens: int = 4096,
         schema: Optional[BaseModel] = None,
+        repetition_penalty: Optional[float] = 1.15,
+        temperature: Optional[float] = 0.8,
+        top_p: Optional[float] = 0.9,
         **kwargs,
     ):
         """Create a vision completion"""
@@ -102,10 +105,19 @@ class BaseClient(AsyncOpenAI, ABC):
                     messages=[{"role": "user", "content": content}],
                     max_tokens=max_tokens,
                     response_format=schema,
+                    presence_penalty=repetition_penalty,
+                    temperature=temperature,
+                    top_p=top_p,
                 )
             else:
                 completion = await self.chat.completions.create(
-                    model=model, messages=[{"role": "user", "content": content}], max_tokens=max_tokens, **kwargs
+                    model=model,
+                    messages=[{"role": "user", "content": content}],
+                    max_tokens=max_tokens,
+                    presence_penalty=repetition_penalty,
+                    temperature=temperature,
+                    top_p=top_p,
+                    **kwargs,
                 )
             return completion
         except Exception as e:
