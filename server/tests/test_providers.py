@@ -57,6 +57,7 @@ async def http_client():
 
 
 @pytest.mark.integration
+@pytest.mark.gemini
 class TestGeminiProvider:
     @pytest.fixture(autouse=True)
     def check_gemini_api_key(self):
@@ -124,6 +125,7 @@ class TestGeminiProvider:
 
 
 @pytest.mark.integration
+@pytest.mark.ollama
 class TestOllamaProvider:
     @pytest.fixture(autouse=True)
     async def check_ollama_available(self, provider_manager):
@@ -155,6 +157,7 @@ class TestOllamaProvider:
 
 
 @pytest.mark.integration
+@pytest.mark.vllm
 class TestVLLMProvider:
     @pytest.fixture(autouse=True)
     async def check_vllm_available(self, provider_manager, http_client):
@@ -201,7 +204,7 @@ class TestVLLMProvider:
             prompt="What's in this image? Describe it briefly.",
             image=image_path,
             model=client.default_model,
-            max_tokens=100,
+            max_tokens=500,
         )
 
         test_logger("vllm_vision", completion.model_dump())
@@ -225,6 +228,7 @@ class TestVLLMProvider:
 
 
 @pytest.mark.integration
+@pytest.mark.openrouter
 class TestOpenRouterProvider:
     @pytest.fixture(autouse=True)
     def check_openrouter_api_key(self):
@@ -346,6 +350,7 @@ async def test_provider_manager_initialization(provider_manager):
 
 
 @pytest.mark.integration
+@pytest.mark.openai
 class TestOpenAIVisionProvider:
     @pytest.fixture(autouse=True)
     def check_openai_api_key(self):
@@ -399,7 +404,7 @@ async def run_structured_vision(client, test_logger, image_path):
         image=image_path,
         schema=test_vision_config.schema,
         model=client.default_model,
-        max_tokens=100,
+        max_tokens=1000,
     )
 
     test_logger(f"{client.name}_structured_vision", completion.model_dump())
