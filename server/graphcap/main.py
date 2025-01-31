@@ -7,9 +7,9 @@ from typing import List
 import click
 import uvicorn
 from dotenv import load_dotenv
-from graphcap.caption.art_critic import ArtCriticProcessor
 from graphcap.caption.batch_config import get_image_paths, load_batch_config
 from graphcap.caption.graph_caption import GraphCaptionProcessor
+from graphcap.caption.perspectives.art_critic import ArtCriticProcessor
 from graphcap.dataset.dataset_manager import DatasetConfig, DatasetManager
 from graphcap.providers.provider_manager import ProviderManager
 from loguru import logger

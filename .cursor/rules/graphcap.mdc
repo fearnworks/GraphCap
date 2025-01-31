@@ -1,7 +1,19 @@
 ---
+description: 
+globs: 
+---
+---
 description: Developing the graphcap python client and server
 globs: *.py
 ---
+# Python rules 
+- use >3.11 python standards
+- utilize dict and list instead of Dict / List
+- Adhere to strong typing
+- Avoid the Any tag\
+- use | for unions instead of Union
+- use @override for overriden methods
+- Try to avoid casting values where possible
 # Server Libraries Documentation
 
 | Library | Description | Documentation |

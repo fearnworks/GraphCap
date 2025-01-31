@@ -18,4 +18,5 @@ repetition_penalty = 1.15
 [output]
 directory = "../.local/batch_outputs/default/art"
 store_logs = true
-formats = ["formal"]  # Will create an additional formal_analysis.txt file
+formats = ["formal", "html"] 
+copy_images = true

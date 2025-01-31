@@ -1,40 +1,21 @@
-# SPDX-License-Identifier: Apache-2.0
-
 """
-Graph Caption Module
+# SPDX-License-Identifier: Apache-2.0
+Graph Caption Processor
 
-Provides structured analysis of images with categorized tags and descriptions.
-Focuses on comprehensive scene understanding and detailed content analysis.
+Implements structured analysis of images with categorized tags and descriptions.
 """
 
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from loguru import logger
-from pydantic import BaseModel, Field
 from rich.table import Table
+from typing_extensions import override
 
-from .base_caption import BaseCaptionProcessor
-from .graph_network import generate_network_diagram
-from .html_report import generate_graph_report
-
-
-class Tag(BaseModel):
-    """Model for individual tagged elements in the image."""
-
-    tag: str = Field(description="Description of the tagged element")
-    category: str = Field(description="Category the tag belongs to")
-    confidence: float = Field(description="Confidence score between 0 and 1", gt=0, le=1)
-
-
-class GraphCaptionData(BaseModel):
-    """Schema for structured graph caption response."""
-
-    tags_list: List[Tag] = Field(description="List of categorized tags with confidence scores")
-    short_caption: str = Field(description="Concise single sentence caption (max 100 chars)")
-    verification: str = Field(description="Verification of tag accuracy and visual grounding")
-    dense_caption: str = Field(description="Detailed narrative description incorporating tagged elements")
-
+from ..base import BasePerspective
+from .network import generate_network_diagram
+from .report import generate_graph_report
+from .types import CaptionData, GraphCaptionData, ParsedData
 
 instruction = """<Task>You are a structured image analysis agent. Generate comprehensive tag list, caption,
 and dense caption for an image classification system.</Task>
@@ -60,14 +41,14 @@ for the tag, between 0 (exclusive) and 1 (inclusive).">
     },
     {
       "tag": "subject 2",
-      "category": "Entity",
+      "category": "Entity", 
       "confidence": 0.95
     },
     {
       "tag": "subject 1 runs from subject 2",
       "category": "Relationship",
       "confidence": 0.90
-    },
+    }
   ]
 }
 </Examples>
@@ -82,7 +63,7 @@ without overt flowery prose. It incorporates elements from each of the tag categ
 """
 
 
-class GraphCaptionProcessor(BaseCaptionProcessor):
+class GraphCaptionProcessor(BasePerspective):
     """
     Processor for generating structured graph captions.
 
@@ -90,16 +71,17 @@ class GraphCaptionProcessor(BaseCaptionProcessor):
     verification, and multiple caption formats.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             config_name="graphcap",
             version="1",
             prompt=instruction,
             schema=GraphCaptionData,
         )
-        self._html_captions = []  # Store captions for HTML report
+        self._captions: list[CaptionData] = []
 
-    def create_rich_table(self, caption_data: Dict[str, Any]) -> Table:
+    @override
+    def create_rich_table(self, caption_data: dict[str, ParsedData]) -> Table:
         """Create Rich table for graph caption data."""
         result = caption_data["parsed"]
 
@@ -112,46 +94,63 @@ class GraphCaptionProcessor(BaseCaptionProcessor):
         table.add_row("Short Caption", result["short_caption"])
 
         # Group tags by category
-        tags_by_category = {}
+        tags_by_category: dict[str, list[str]] = {}
         for tag in result["tags_list"]:
-            category = tag["category"]
+            if isinstance(tag, dict):
+                category = str(tag["category"])
+            else:
+                category = tag.category
+
             if category not in tags_by_category:
                 tags_by_category[category] = []
-            tags_by_category[category].append(f"• {tag['tag']} ({tag['confidence']:.2f})")
+
+            confidence = tag["confidence"] if isinstance(tag, dict) else tag.confidence
+            tag_text = tag["tag"] if isinstance(tag, dict) else tag.tag
+            tags_by_category[category].append(f"• {tag_text} ({confidence:.2f})")
 
         # Add tags section
-        tags_content = []
+        tags_content: list[str] = []
         for category, tags in tags_by_category.items():
             tags_content.append(f"[bold]{category}[/bold]")
             tags_content.extend(tags)
             tags_content.append("")  # Add spacing between categories
 
         table.add_row("Tags", "\n".join(tags_content))
-
-        # Add verification
         table.add_row("Verification", result["verification"])
-
         table.add_row("Dense Caption", result["dense_caption"])
         logger.info(result["dense_caption"])
         return table
 
     @property
-    def supported_formats(self) -> List[str]:
+    @override
+    def supported_formats(self) -> list[str]:
         return ["dense", "html", "network"]
 
-    def write_format(self, format_name: str, job_dir: Path, caption_data: Dict[str, Any]) -> None:
+    @override
+    def write_format(self, format_name: str, job_dir: Path, caption_data: dict[str, Any]) -> None:
         if format_name == "dense":
             dense_file = job_dir / "dense_captions.txt"
             with dense_file.open("a") as f:
-                f.write(f"{caption_data['parsed']['dense_caption']}\n---\n")
+                _ = f.write(f"{caption_data['parsed']['dense_caption']}\n---\n")
         elif format_name == "html":
             # Store caption for batch HTML generation
-            caption_data["input_path"] = caption_data["filename"]
-            self._html_captions.append(caption_data)
+            self._captions.append(
+                {
+                    "filename": str(caption_data["filename"]),
+                    "input_path": str(caption_data["filename"]),
+                    "parsed": caption_data["parsed"],
+                }
+            )  # type: ignore
             # Generate report after all captions are collected
-            generate_graph_report(self._html_captions, job_dir)
+            generate_graph_report(self._captions, job_dir)
         elif format_name == "network":
             # Store caption for network diagram
-            self._html_captions.append(caption_data)
+            self._captions.append(
+                {
+                    "filename": str(caption_data["filename"]),
+                    "input_path": str(caption_data["filename"]),
+                    "parsed": caption_data["parsed"],
+                }
+            )  # type: ignore
             # Generate network diagram after all captions are collected
-            generate_network_diagram(self._html_captions, job_dir)
+            generate_network_diagram(self._captions, job_dir)

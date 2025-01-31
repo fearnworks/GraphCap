@@ -15,11 +15,14 @@ dependencies = [
     "huggingface-hub>=0.27.1",
     "jinja2>=3.1.5",
     "loguru>=0.7.3",
+    "matplotlib>=3.10.0",
+    "networkx>=3.4.2",
     "openai>=1.59.9",
     "pydantic>=2.10.5",
     "pytest-watcher>=0.4.3",
     "python-dotenv>=1.0.1",
     "python-multipart>=0.0.20",
+    "pyvis>=0.3.2",
     "rich>=13.9.4",
     "tenacity>=9.0.0",
     "termcolor>=2.5.0",
@@ -29,6 +32,11 @@ dependencies = [
 # Add this section to specify where your package source code is located
 [tool.hatch.build.targets.wheel]
 packages = ["graphcap"]  # Adjust this path to match your actual source code location
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.26.0",
+]
 
 [project.scripts]
 graphcap = "graphcap.main:cli"
