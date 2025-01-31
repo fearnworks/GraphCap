@@ -19,5 +19,6 @@ top_p = 0.9  # Nucleus sampling threshold
 repetition_penalty = 1.15  # Repetition penalty
 
 [output]
-# Output settings (optional)
-path = "output.jsonl"  # Output JSONL file path. If not specified, prints to stdout
+# Output settings
+directory = "outputs/default/example"  # Base directory for batch job outputs
+store_logs = true  # Store logs in the output directory

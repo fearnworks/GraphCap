@@ -232,7 +232,12 @@ def batch_config(config_file):
             temperature = config["caption"]["temperature"]
             repetition_penalty = config["caption"]["repetition_penalty"]
             top_p = config["caption"]["top_p"]
-            output = Path(config["output"]["path"]) if config["output"].get("path") else None
+
+            # Get output directory and logging preference
+            output_dir = (
+                Path(config["output"]["directory"]) if "output" in config and "directory" in config["output"] else None
+            )
+            store_logs = bool(config["output"].get("store_logs", False)) if "output" in config else False
 
             # Validate caption type
             if caption_type not in ["graph", "art"]:
@@ -287,7 +292,7 @@ def batch_config(config_file):
 
         logger.info(f"Found {len(image_paths)} images to process")
 
-        # Process images
+        # Process images with output directory and logging
         results = asyncio.run(
             processor.process_batch(
                 provider=provider_client,
@@ -297,20 +302,10 @@ def batch_config(config_file):
                 top_p=top_p,
                 max_concurrent=max_concurrent,
                 repetition_penalty=repetition_penalty,
+                output_dir=output_dir,
+                store_logs=store_logs,
             )
         )
-
-        # Write results
-        if output:
-            output.parent.mkdir(parents=True, exist_ok=True)  # Ensure output directory exists
-            with output.open("w") as f:
-                for result in results:
-                    f.write(json.dumps(result) + "\n")
-            logger.info(f"Results written to {output}")
-        else:
-            # Print to stdout
-            for result in results:
-                print(json.dumps(result))
 
     except tomllib.TOMLDecodeError as e:
         logger.error(f"Failed to parse TOML configuration: {e}")

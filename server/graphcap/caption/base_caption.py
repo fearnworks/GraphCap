@@ -8,6 +8,7 @@ Provides base classes and shared functionality for different caption types.
 import asyncio
 import json
 from abc import ABC, abstractmethod
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -175,6 +176,8 @@ class BaseCaptionProcessor(ABC):
         top_p: Optional[float] = 0.9,
         max_concurrent: Optional[int] = 5,
         repetition_penalty: Optional[float] = 1.15,
+        output_dir: Optional[Path] = None,
+        store_logs: bool = False,
     ) -> List[Dict[str, Any]]:
         """
         Process multiple images and return their captions.
@@ -186,20 +189,72 @@ class BaseCaptionProcessor(ABC):
             temperature: Sampling temperature
             top_p: Nucleus sampling parameter
             max_concurrent: Maximum number of concurrent API requests
+            output_dir: Directory to store incremental results and job info
+            store_logs: Whether to store logs in the output directory
 
         Returns:
             List[Dict[str, Any]]: List of caption results with metadata
         """
+        # Create job directory with timestamp if output_dir provided
+        job_dir = None
+        job_output = None
+        job_info = None
+        log_file = None
+
+        if output_dir:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            job_dir = output_dir / f"batch_{timestamp}"
+            job_dir.mkdir(parents=True, exist_ok=True)
+
+            # Create output file and job info
+            job_output = job_dir / "captions.jsonl"
+            job_info = job_dir / "job_info.json"
+
+            # Configure logging if requested
+            if store_logs:
+                log_file = job_dir / "process.log"
+                # Add file logger while keeping console output
+                logger.add(
+                    log_file,
+                    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+                    level="INFO",
+                    rotation="100 MB",
+                )
+
+            # Write initial job info
+            job_info_data = {
+                "started_at": timestamp,
+                "provider": provider.name,
+                "model": provider.default_model,
+                "config_name": self.vision_config.config_name,
+                "version": self.vision_config.version,
+                "total_images": len(image_paths),
+                "params": {
+                    "max_tokens": max_tokens,
+                    "temperature": temperature,
+                    "top_p": top_p,
+                    "max_concurrent": max_concurrent,
+                    "repetition_penalty": repetition_penalty,
+                },
+                "log_file": str(log_file.relative_to(job_dir)) if log_file else None,
+            }
+            job_info.write_text(json.dumps(job_info_data, indent=2))
+
         logger.info(f"Processing {len(image_paths)} images with {provider.name} provider")
         logger.info(f"Using max concurrency of {max_concurrent} requests")
+        if job_dir:
+            logger.info(f"Writing results to {job_dir}")
+            if log_file:
+                logger.info(f"Logging to {log_file}")
 
         semaphore = asyncio.Semaphore(max_concurrent)
-
-        # Track active requests
         active_requests = 0
+        processed_count = 0
+        failed_count = 0
 
         async def process_with_semaphore(path: Path) -> Dict[str, Any]:
-            nonlocal active_requests
+            nonlocal active_requests, processed_count, failed_count
+
             async with semaphore:
                 try:
                     active_requests += 1
@@ -215,6 +270,7 @@ class BaseCaptionProcessor(ABC):
                     )
 
                     active_requests -= 1
+                    processed_count += 1
                     logger.info(f"Completed request for {path.name} (Active requests: {active_requests})")
 
                     caption_data = {
@@ -226,23 +282,26 @@ class BaseCaptionProcessor(ABC):
                         "parsed": result,
                     }
 
+                    # Write result incrementally if output file exists
+                    if job_output:
+                        with job_output.open("a") as f:
+                            f.write(json.dumps(caption_data) + "\n")
+
+                        # Update job info
+                        job_info_data["processed_count"] = processed_count
+                        job_info_data["failed_count"] = failed_count
+                        job_info_data["completed_at"] = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        job_info.write_text(json.dumps(job_info_data, indent=2))
+
                     # Create and display Rich table
                     console.print(f"\n[bold cyan]Processed {path.name}:[/bold cyan]")
                     table = self.create_rich_table(caption_data)
                     console.print(table)
 
-                    # # Show full JSON in a panel at the end
-                    # console.print(
-                    #     Panel(
-                    #         json.dumps(result, indent=2, ensure_ascii=False),
-                    #         title="[bold green]Full Caption Data[/bold green]",
-                    #         expand=False,
-                    #     )
-                    # )
-
                     return caption_data
                 except Exception as e:
                     active_requests -= 1
+                    failed_count += 1
                     logger.error(f"Failed request for {path.name} (Active requests: {active_requests})")
                     error_data = {
                         "filename": f"./{path.name}",
@@ -252,6 +311,18 @@ class BaseCaptionProcessor(ABC):
                         "provider": provider.name,
                         "parsed": {"error": str(e)},
                     }
+
+                    # Write error result if output file exists
+                    if job_output:
+                        with job_output.open("a") as f:
+                            f.write(json.dumps(error_data) + "\n")
+
+                        # Update job info
+                        job_info_data["processed_count"] = processed_count
+                        job_info_data["failed_count"] = failed_count
+                        job_info_data["completed_at"] = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        job_info.write_text(json.dumps(job_info_data, indent=2))
+
                     console.print(f"\n[bold red]Failed to process {path.name}:[/bold red] {str(e)}")
                     return error_data
 

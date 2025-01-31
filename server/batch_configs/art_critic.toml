@@ -14,4 +14,5 @@ top_p = 0.9
 repetition_penalty = 1.15
 
 [output]
-path = "../.local/art_analysis_vllm.jsonl"
+directory = "../.local/batch_outputs/default/art"
+store_logs = true
