@@ -229,6 +229,11 @@ class BaseCaptionProcessor(ABC):
                 "config_name": self.vision_config.config_name,
                 "version": self.vision_config.version,
                 "total_images": len(image_paths),
+                "sampling": {
+                    "original_count": getattr(image_paths, "original_count", len(image_paths)),
+                    "sample_size": getattr(image_paths, "sample_size", len(image_paths)),
+                    "sample_method": getattr(image_paths, "sample_method", "all"),
+                },
                 "params": {
                     "max_tokens": max_tokens,
                     "temperature": temperature,

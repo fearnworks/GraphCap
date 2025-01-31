@@ -1,7 +1,8 @@
 [input]
 path = "../datasets/os_img"
-sample_size = 7  # Process 10 images
-sample_method = "random"  # Randomly sample images
+sample_size = 1  
+sample_method = "incremental"  
+
 
 [provider]
 name = "vllm"
@@ -9,12 +10,12 @@ config_file = "../provider.config.toml"
 max_concurrent = 3
 
 [caption]
-type = "art"
+type = "graph"
 max_tokens = 4096
-temperature = 0.7
+temperature = 0.8
 top_p = 0.9
 repetition_penalty = 1.15
 
 [output]
-directory = "../.local/batch_outputs/default/art"
+directory = "../.local/batch_outputs/default/smoke"
 store_logs = true

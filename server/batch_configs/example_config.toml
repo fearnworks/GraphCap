@@ -3,6 +3,9 @@
 [input]
 # Path to input directory or single image file
 path = "path/to/images"
+# Sampling settings (optional)
+sample_size = 0  # Number of images to sample (0 or not set means use all)
+sample_method = "random"  # Options: "random", "incremental", "latest"
 
 [provider]
 # AI provider settings

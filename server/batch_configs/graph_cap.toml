@@ -1,5 +1,7 @@
 [input]
 path = "../datasets/os_img"
+sample_size = 7  # Process 10 images
+sample_method = "latest"  # Sample most recently modified images
 
 
 [provider]

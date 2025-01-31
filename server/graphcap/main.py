@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-import tomllib
 from pathlib import Path
 from typing import List
 
@@ -9,6 +8,7 @@ import click
 import uvicorn
 from dotenv import load_dotenv
 from graphcap.caption.art_critic import ArtCriticProcessor
+from graphcap.caption.batch_config import get_image_paths, load_batch_config
 from graphcap.caption.graph_caption import GraphCaptionProcessor
 from graphcap.dataset.dataset_manager import DatasetConfig, DatasetManager
 from graphcap.providers.provider_manager import ProviderManager
@@ -218,97 +218,41 @@ def batch_config(config_file):
     CONFIG_FILE: Path to TOML configuration file
     """
     try:
-        # Load config using tomllib
-        with open(config_file, "rb") as f:
-            config = tomllib.load(f)
-
-        try:
-            input_path = Path(config["input"]["path"])
-            provider = config["provider"]["name"]
-            provider_config = Path(config["provider"]["config_file"])
-            max_concurrent = config["provider"].get("max_concurrent", 3)
-            caption_type = config["caption"]["type"]
-            max_tokens = config["caption"]["max_tokens"]
-            temperature = config["caption"]["temperature"]
-            repetition_penalty = config["caption"]["repetition_penalty"]
-            top_p = config["caption"]["top_p"]
-
-            # Get output directory and logging preference
-            output_dir = (
-                Path(config["output"]["directory"]) if "output" in config and "directory" in config["output"] else None
-            )
-            store_logs = bool(config["output"].get("store_logs", False)) if "output" in config else False
-
-            # Validate caption type
-            if caption_type not in ["graph", "art"]:
-                raise ValueError(f"Invalid caption type: {caption_type}. Must be 'graph' or 'art'")
-
-            # Validate numeric parameters
-            if not isinstance(max_tokens, int) or max_tokens <= 0:
-                raise ValueError("max_tokens must be a positive integer")
-            if not isinstance(temperature, (int, float)) or not 0 <= temperature <= 1:
-                raise ValueError("temperature must be between 0 and 1")
-            if not isinstance(top_p, (int, float)) or not 0 <= top_p <= 1:
-                raise ValueError("top_p must be between 0 and 1")
-            if not isinstance(max_concurrent, int) or max_concurrent <= 0:
-                raise ValueError("max_concurrent must be a positive integer")
-            if not isinstance(repetition_penalty, (int, float)) or not 0 <= repetition_penalty <= 2:
-                raise ValueError("repetition_penalty must be between 0 and 2")
-
-        except KeyError as e:
-            logger.error(f"Missing required configuration key: {e}")
-            return
-        except ValueError as e:
-            logger.error(f"Invalid configuration value: {e}")
-            return
+        # Load and validate configuration
+        config = load_batch_config(config_file)
 
         # Initialize provider
-        provider_manager = ProviderManager(provider_config)
-        provider_client = provider_manager.get_client(provider)
+        provider_manager = ProviderManager(config.provider.config_file)
+        provider_client = provider_manager.get_client(config.provider.name)
 
         if not provider_client:
-            logger.error(f"Provider {provider} not found")
+            logger.error(f"Provider {config.provider.name} not found")
             return
 
         # Initialize caption processor based on type
-        if caption_type == "graph":
+        if config.caption.type == "graph":
             processor = GraphCaptionProcessor()
         else:  # art
             processor = ArtCriticProcessor()
 
-        # Get list of image files
-        image_paths = []
-        if input_path.is_dir():
-            # Supported image extensions
-            image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
-            for ext in image_extensions:
-                image_paths.extend(input_path.glob(f"**/*{ext}"))
-        else:
-            image_paths = [input_path]
-
-        if not image_paths:
-            logger.error("No image files found")
-            return
-
-        logger.info(f"Found {len(image_paths)} images to process")
+        # Get image paths with sampling
+        image_paths, sampling_info = get_image_paths(config.input)
 
         # Process images with output directory and logging
         results = asyncio.run(
             processor.process_batch(
                 provider=provider_client,
                 image_paths=image_paths,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                max_concurrent=max_concurrent,
-                repetition_penalty=repetition_penalty,
-                output_dir=output_dir,
-                store_logs=store_logs,
+                max_tokens=config.caption.max_tokens,
+                temperature=config.caption.temperature,
+                top_p=config.caption.top_p,
+                max_concurrent=config.provider.max_concurrent,
+                repetition_penalty=config.caption.repetition_penalty,
+                output_dir=config.output.directory,
+                store_logs=config.output.store_logs,
             )
         )
 
-    except tomllib.TOMLDecodeError as e:
-        logger.error(f"Failed to parse TOML configuration: {e}")
     except Exception as e:
         logger.error(f"Error processing configuration: {e}")
 
