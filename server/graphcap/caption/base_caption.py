@@ -7,6 +7,7 @@ Provides base classes and shared functionality for different caption types.
 
 import asyncio
 import json
+import shutil
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
@@ -195,6 +196,7 @@ class BaseCaptionProcessor(ABC):
         output_dir: Optional[Path] = None,
         store_logs: bool = False,
         formats: Optional[List[str]] = None,
+        copy_images: bool = False,
     ) -> List[Dict[str, Any]]:
         """
         Process multiple images and return their captions.
@@ -209,6 +211,7 @@ class BaseCaptionProcessor(ABC):
             output_dir: Directory to store incremental results and job info
             store_logs: Whether to store logs in the output directory
             formats: List of additional formats to write caption data
+            copy_images: Whether to copy images to the output directory
 
         Returns:
             List[Dict[str, Any]]: List of caption results with metadata
@@ -261,8 +264,19 @@ class BaseCaptionProcessor(ABC):
                 },
                 "log_file": str(log_file.relative_to(job_dir)) if log_file else None,
                 "formats": formats or [],
+                "copy_images": copy_images,
             }
             job_info.write_text(json.dumps(job_info_data, indent=2))
+
+            # Copy images if requested
+            if copy_images:
+                images_dir = job_dir / "images"
+                images_dir.mkdir(exist_ok=True)
+                for path in image_paths:
+                    try:
+                        shutil.copy2(path, images_dir / path.name)
+                    except Exception as e:
+                        logger.error(f"Failed to copy image {path}: {e}")
 
         logger.info(f"Processing {len(image_paths)} images with {provider.name} provider")
         logger.info(f"Using max concurrency of {max_concurrent} requests")

@@ -251,6 +251,7 @@ def batch_config(config_file):
                 output_dir=config.output.directory,
                 store_logs=config.output.store_logs,
                 formats=config.output.formats,
+                copy_images=config.output.copy_images,
             )
         )
 

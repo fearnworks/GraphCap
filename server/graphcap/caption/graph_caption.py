@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from rich.table import Table
 
 from .base_caption import BaseCaptionProcessor
+from .html_report import generate_graph_report
 
 
 class Tag(BaseModel):
@@ -95,6 +96,7 @@ class GraphCaptionProcessor(BaseCaptionProcessor):
             prompt=instruction,
             schema=GraphCaptionData,
         )
+        self._html_captions = []  # Store captions for HTML report
 
     def create_rich_table(self, caption_data: Dict[str, Any]) -> Table:
         """Create Rich table for graph caption data."""
@@ -134,10 +136,17 @@ class GraphCaptionProcessor(BaseCaptionProcessor):
 
     @property
     def supported_formats(self) -> List[str]:
-        return ["dense"]
+        return ["dense", "html"]
 
     def write_format(self, format_name: str, job_dir: Path, caption_data: Dict[str, Any]) -> None:
         if format_name == "dense":
             dense_file = job_dir / "dense_captions.txt"
             with dense_file.open("a") as f:
                 f.write(f"{caption_data['parsed']['dense_caption']}\n---\n")
+        elif format_name == "html":
+            # Store caption for batch HTML generation
+            # Add input path to caption data
+            caption_data["input_path"] = caption_data["filename"]
+            self._html_captions.append(caption_data)
+            # Generate report after all captions are collected
+            generate_graph_report(self._html_captions, job_dir)

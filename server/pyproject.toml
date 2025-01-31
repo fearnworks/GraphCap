@@ -13,6 +13,7 @@ dependencies = [
     "fastapi>=0.115.6",
     "httpx>=0.28.1",
     "huggingface-hub>=0.27.1",
+    "jinja2>=3.1.5",
     "loguru>=0.7.3",
     "openai>=1.59.9",
     "pydantic>=2.10.5",

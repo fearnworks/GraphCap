@@ -5,7 +5,7 @@ sample_method = "incremental"
 
 
 [provider]
-name = "vllm"
+name = "gemini"
 config_file = "../provider.config.toml"
 max_concurrent = 3
 
@@ -19,3 +19,5 @@ repetition_penalty = 1.15
 [output]
 directory = "../.local/batch_outputs/default/smoke"
 store_logs = true
+formats = ["dense", "html"]
+copy_images = true

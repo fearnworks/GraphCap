@@ -19,4 +19,5 @@ repetition_penalty = 1.15
 [output]
 directory = "../.local/batch_outputs/default/graph"
 store_logs = true
-formats = ["dense"]  # Will create an additional dense_captions.txt file
+formats = ["dense", "html"]  # Will create dense_captions.txt and HTML files
+copy_images = true  # Copy images to output directory

@@ -90,6 +90,7 @@ class OutputConfig(BaseModel):
     directory: Optional[Path] = Field(None, description="Base directory for batch job outputs")
     store_logs: bool = Field(False, description="Store logs in the output directory")
     formats: List[str] = Field(default_factory=list, description="Additional output formats supported by the processor")
+    copy_images: bool = Field(False, description="Copy images to output directory")
 
 
 class BatchConfig(BaseModel):
