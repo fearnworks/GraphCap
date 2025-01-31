@@ -6,6 +6,7 @@ Provides artistic analysis of images focusing on formal analysis and
 concrete visual elements, following ArtCoT methodology for reduced hallucination.
 """
 
+from pathlib import Path
 from typing import Any, Dict, List
 
 from pydantic import BaseModel, Field
@@ -94,3 +95,15 @@ class ArtCriticProcessor(BaseCaptionProcessor):
         table.add_row("Formal Analysis", result["formal_analysis"])
 
         return table
+
+    @property
+    def supported_formats(self) -> List[str]:
+        """List of supported output formats."""
+        return ["formal"]
+
+    def write_format(self, format_name: str, job_dir: Path, caption_data: Dict[str, Any]) -> None:
+        """Write caption data in specific formats."""
+        if format_name == "formal":
+            formal_file = job_dir / "formal_analysis.txt"
+            with formal_file.open("a") as f:
+                f.write(f"{caption_data['parsed']['formal_analysis']}\n---\n")

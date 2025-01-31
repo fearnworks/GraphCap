@@ -250,6 +250,7 @@ def batch_config(config_file):
                 repetition_penalty=config.caption.repetition_penalty,
                 output_dir=config.output.directory,
                 store_logs=config.output.store_logs,
+                formats=config.output.formats,
             )
         )
 

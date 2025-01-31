@@ -7,6 +7,7 @@ Provides structured analysis of images with categorized tags and descriptions.
 Focuses on comprehensive scene understanding and detailed content analysis.
 """
 
+from pathlib import Path
 from typing import Any, Dict, List
 
 from loguru import logger
@@ -130,3 +131,13 @@ class GraphCaptionProcessor(BaseCaptionProcessor):
         table.add_row("Dense Caption", result["dense_caption"])
         logger.info(result["dense_caption"])
         return table
+
+    @property
+    def supported_formats(self) -> List[str]:
+        return ["dense"]
+
+    def write_format(self, format_name: str, job_dir: Path, caption_data: Dict[str, Any]) -> None:
+        if format_name == "dense":
+            dense_file = job_dir / "dense_captions.txt"
+            with dense_file.open("a") as f:
+                f.write(f"{caption_data['parsed']['dense_caption']}\n---\n")

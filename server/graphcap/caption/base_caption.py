@@ -106,6 +106,22 @@ class BaseCaptionProcessor(ABC):
         """
         pass
 
+    @property
+    def supported_formats(self) -> List[str]:
+        """List of supported output formats for this processor."""
+        return []
+
+    def write_format(self, format_name: str, job_dir: Path, caption_data: Dict[str, Any]) -> None:
+        """
+        Write caption data in a specific format.
+
+        Args:
+            format_name: Name of the format to write
+            job_dir: Directory to write the output to
+            caption_data: Caption data to format and write
+        """
+        pass
+
     async def process_single(
         self,
         provider: BaseClient,
@@ -178,6 +194,7 @@ class BaseCaptionProcessor(ABC):
         repetition_penalty: Optional[float] = 1.15,
         output_dir: Optional[Path] = None,
         store_logs: bool = False,
+        formats: Optional[List[str]] = None,
     ) -> List[Dict[str, Any]]:
         """
         Process multiple images and return their captions.
@@ -191,6 +208,7 @@ class BaseCaptionProcessor(ABC):
             max_concurrent: Maximum number of concurrent API requests
             output_dir: Directory to store incremental results and job info
             store_logs: Whether to store logs in the output directory
+            formats: List of additional formats to write caption data
 
         Returns:
             List[Dict[str, Any]]: List of caption results with metadata
@@ -242,6 +260,7 @@ class BaseCaptionProcessor(ABC):
                     "repetition_penalty": repetition_penalty,
                 },
                 "log_file": str(log_file.relative_to(job_dir)) if log_file else None,
+                "formats": formats or [],
             }
             job_info.write_text(json.dumps(job_info_data, indent=2))
 
@@ -302,6 +321,12 @@ class BaseCaptionProcessor(ABC):
                     console.print(f"\n[bold cyan]Processed {path.name}:[/bold cyan]")
                     table = self.create_rich_table(caption_data)
                     console.print(table)
+
+                    # Write additional formats if requested
+                    if formats:
+                        for fmt in formats:
+                            if fmt in self.supported_formats:
+                                self.write_format(fmt, job_dir, caption_data)
 
                     return caption_data
                 except Exception as e:
