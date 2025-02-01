@@ -75,7 +75,6 @@ class ProviderManager:
 
         config = self.providers[provider_name]
         try:
-            client = None
             client_args = {
                 "name": provider_name,
                 "kind": config.kind,
@@ -85,6 +84,7 @@ class ProviderManager:
                 "default_model": config.default_model,
             }
 
+            client = None
             if config.kind == "openai":
                 client = OpenAIClient(**client_args)
             elif config.kind == "ollama":
@@ -96,10 +96,13 @@ class ProviderManager:
             elif config.kind == "openrouter":
                 client = OpenRouterClient(**client_args)
             else:
-                logger.error(f"Unknown provider kind: {config.kind}")
                 raise ValueError(f"Unknown provider kind: {config.kind}")
 
-            logger.info(f"Successfully created client for provider '{provider_name}'")
+            # Set rate limits if configured
+            if config.rate_limits:
+                client.requests_per_minute = config.rate_limits.requests_per_minute
+                client.tokens_per_minute = config.rate_limits.tokens_per_minute
+
             self._clients[provider_name] = client
             return client
 

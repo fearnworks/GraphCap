@@ -22,8 +22,10 @@ Classes:
             default_model (str): Default model identifier
 """
 
+import asyncio
 import base64
 import os
+import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, Union
@@ -56,6 +58,13 @@ class BaseClient(AsyncOpenAI, ABC):
         self.base_url = base_url
         self.default_model = default_model
 
+        # Rate limiting state
+        self._request_times: List[float] = []
+        self._token_counts: List[int] = []
+        self._rate_limit_lock = asyncio.Lock()
+        self.requests_per_minute: Optional[int] = None
+        self.tokens_per_minute: Optional[int] = None
+
     @abstractmethod
     def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:
         """Format the vision content according to provider specifications"""
@@ -77,6 +86,37 @@ class BaseClient(AsyncOpenAI, ABC):
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode("utf-8")
 
+    async def _enforce_rate_limits(self, token_count: Optional[int] = None):
+        """Enforce rate limits by waiting if necessary"""
+        async with self._rate_limit_lock:
+            current_time = time.time()
+            minute_ago = current_time - 60
+
+            # Clean up old entries
+            self._request_times = [t for t in self._request_times if t > minute_ago]
+            self._token_counts = [t for t, time in zip(self._token_counts, self._request_times) if time > minute_ago]
+
+            # Check request rate limit
+            if self.requests_per_minute and len(self._request_times) >= self.requests_per_minute:
+                wait_time = 60 - (current_time - self._request_times[0])
+                if wait_time > 0:
+                    logger.warning(f"Rate limit reached, waiting {wait_time:.2f} seconds")
+                    await asyncio.sleep(wait_time)
+
+            # Check token rate limit
+            if token_count and self.tokens_per_minute:
+                current_tokens = sum(self._token_counts)
+                if current_tokens + token_count > self.tokens_per_minute:
+                    wait_time = 60 - (current_time - self._request_times[0])
+                    if wait_time > 0:
+                        logger.warning(f"Token limit reached, waiting {wait_time:.2f} seconds")
+                        await asyncio.sleep(wait_time)
+
+            # Record this request
+            self._request_times.append(current_time)
+            if token_count:
+                self._token_counts.append(token_count)
+
     async def vision(
         self,
         prompt: str,
@@ -89,7 +129,11 @@ class BaseClient(AsyncOpenAI, ABC):
         top_p: Optional[float] = 0.9,
         **kwargs,
     ):
-        """Create a vision completion"""
+        """Create a vision completion with rate limiting"""
+        # Estimate token count - this is approximate
+        estimated_tokens = len(prompt.split()) + 1000  # Base tokens + image tokens
+
+        await self._enforce_rate_limits(estimated_tokens)
         # Handle image input
         if isinstance(image, (str, Path)) and not str(image).startswith("data:"):
             image_data = await self._get_base64_image(image)
@@ -127,7 +171,11 @@ class BaseClient(AsyncOpenAI, ABC):
     async def create_structured_completion(
         self, messages: List[Dict], schema: Union[Dict, Type[BaseModel], BaseModel], model: str, **kwargs
     ) -> Any:
-        """Create a chat completion with structured output following a JSON schema."""
+        """Create a structured completion with rate limiting"""
+        # Estimate token count from messages
+        estimated_tokens = sum(len(str(m.get("content", ""))) // 4 for m in messages)
+
+        await self._enforce_rate_limits(estimated_tokens)
         json_schema = self._get_schema_from_input(schema)
 
         try:

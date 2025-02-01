@@ -18,15 +18,17 @@ models = [
     "gpt-4o",
 ]
 
-# [gemini]
-# kind = "gemini"
-# environment = "cloud"
-# env_var = "GEMINI_API_KEY"
-# base_url = "https://generativelanguage.googleapis.com/v1beta"
-# models = [
-#     "gemini-2.0-flash-exp",
-
-# ]
+[gemini]
+kind = "gemini"
+environment = "cloud"
+env_var = "GEMINI_API_KEY"
+base_url = "https://generativelanguage.googleapis.com/v1beta"
+models = [
+    "gemini-2.0-flash-exp",
+]
+# Rate limits configuration
+rate_limits.requests_per_minute = 10
+rate_limits.tokens_per_minute = 4000000
 
 # [openrouter]
 # kind = "openrouter"

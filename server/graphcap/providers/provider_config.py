@@ -23,9 +23,17 @@ Functions:
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
+
+
+@dataclass
+class RateLimits:
+    """Rate limits for a provider"""
+
+    requests_per_minute: Optional[int] = None
+    tokens_per_minute: Optional[int] = None
 
 
 @dataclass
@@ -39,6 +47,7 @@ class ProviderConfig:
     models: List[str]
     default_model: str
     fetch_models: bool = False
+    rate_limits: Optional[RateLimits] = None
 
 
 def load_provider_config(config_path: str | Path = "provider.config.toml") -> Dict[str, Any]:
@@ -66,6 +75,14 @@ def parse_provider_config(config_data: Dict[str, Any]) -> ProviderConfig:
         else:
             raise ValueError("Must specify default_model when no models list is provided")
 
+    # Parse rate limits if present
+    rate_limits = None
+    if "rate_limits" in config_data:
+        rate_limits = RateLimits(
+            requests_per_minute=config_data["rate_limits"].get("requests_per_minute"),
+            tokens_per_minute=config_data["rate_limits"].get("tokens_per_minute"),
+        )
+
     return ProviderConfig(
         kind=config_data["kind"],
         environment=config_data["environment"],
@@ -74,6 +91,7 @@ def parse_provider_config(config_data: Dict[str, Any]) -> ProviderConfig:
         models=models,
         default_model=default_model,
         fetch_models=config_data.get("fetch_models", False),
+        rate_limits=rate_limits,
     )
 
 
