@@ -1,5 +1,6 @@
 # DAG Node Development Guide
 
+
 This guide explains how to create and add new nodes to the GraphCap DAG system.
 
 ## Creating a New Node

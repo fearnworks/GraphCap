@@ -5,7 +5,7 @@
             "type": "ImageSamplingNode",
             "config": {
                 "path": "../datasets/os_img",
-                "sample_size": 2,
+                "sample_size": 1,
                 "sample_method": "random"
             },
             "dependencies": []
@@ -73,16 +73,38 @@
             "type": "DAGVisualizerNode",
             "config": {
                 "output_dir": "../.local/dags/smoke",
-                "layout": "spring",
                 "format": "png",
+                "layout": "layered",
                 "style": {
-                    "node_size": 2000,
-                    "node_color": "#E6F3FF",
+                    "node_color": "#F5F9FF",
                     "edge_color": "#666666",
-                    "font_size": 10,
-                    "width": 12,
-                    "height": 8
+                    "font_size": 14,
+                    "width": 16,
+                    "height": 10,
+                    "arrows": true,
+                    "arrowsize": 20,
+                    "with_labels": true,
+                    "font_weight": "bold",
+                    "edge_width": 2,
+                    "node_spacing": 1.8,
+                    "margin": 0.4
                 }
+            },
+            "dependencies": ["save_art_outputs", "save_graph_outputs"]
+        },
+        {
+            "id": "dataset_export",
+            "type": "DatasetExportNode",
+            "config": {
+                "dataset_config": {
+                    "name": "graphcap-smoke-test",
+                    "description": "Smoke test dataset with art and graph analysis",
+                    "tags": ["art-analysis", "graph-analysis", "image-captioning"],
+                    "include_images": true
+                },
+                "push_to_hub": true,
+                "hf_token_env": "HUGGING_FACE_HUB_TOKEN",
+                "private": true
             },
             "dependencies": ["save_art_outputs", "save_graph_outputs"]
         }

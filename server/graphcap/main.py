@@ -326,13 +326,15 @@ def get_node_registry():
     """Get complete node registry."""
     from graphcap.caption.nodes import NODE_TYPES as CAPTION_NODES
     from graphcap.dag.nodes import NODE_TYPES as DAG_NODES
+    from graphcap.dataset.nodes import NODE_TYPES as DATASET_NODES
     from graphcap.io.nodes import NODE_TYPES as IO_NODES
 
     # Combine all node registries
     registry = {}
     registry.update(CAPTION_NODES)
     registry.update(IO_NODES)
-    registry.update(DAG_NODES)  # Add DAG nodes
+    registry.update(DAG_NODES)
+    registry.update(DATASET_NODES)
 
     return registry
 
