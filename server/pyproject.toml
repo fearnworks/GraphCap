@@ -24,6 +24,7 @@ dependencies = [
     "python-multipart>=0.0.20",
     "pyvis>=0.3.2",
     "rich>=13.9.4",
+    "scipy>=1.15.1",
     "tenacity>=9.0.0",
     "termcolor>=2.5.0",
     "uvicorn>=0.34.0",

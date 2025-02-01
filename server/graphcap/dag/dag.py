@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional, Type
 from loguru import logger
 
 from .node import BaseNode
+from .nodes.meta import DAGVisualizerNode
 
 
 class DAG:
@@ -178,6 +179,10 @@ class DAG:
             # Add node configuration if available
             if hasattr(node, "config"):
                 input_values.update(node.config)
+
+            # Special handling for DAGVisualizerNode
+            if isinstance(node, DAGVisualizerNode):
+                input_values["dag"] = self
 
             # Execute node
             logger.info(f"Executing node: {node_id}")

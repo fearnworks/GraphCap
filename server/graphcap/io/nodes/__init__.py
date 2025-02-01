@@ -10,4 +10,9 @@ Nodes:
 
 from .image_sampling import ImageSamplingNode
 
-__all__ = ["ImageSamplingNode"]
+# Register available node types
+NODE_TYPES = {
+    "ImageSamplingNode": ImageSamplingNode,
+}
+
+__all__ = ["ImageSamplingNode", "NODE_TYPES"]

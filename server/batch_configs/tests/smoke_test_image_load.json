@@ -5,10 +5,49 @@
             "type": "ImageSamplingNode",
             "config": {
                 "path": "../datasets/os_img",
-                "sample_size": 1,
-                "sample_method": "incremental"
+                "sample_size": 2,
+                "sample_method": "random"
             },
             "dependencies": []
+        },
+        {
+            "id": "art_analysis",
+            "type": "PerspectiveNode",
+            "config": {
+                "perspective_type": "art",
+                "provider_name": "gemini",
+                "model_params": {
+                    "max_tokens": 4096,
+                    "temperature": 0.8,
+                    "top_p": 0.9,
+                    "max_concurrent": 2
+                },
+                "output": {
+                    "directory": "../.local/dags/smoke",
+                    "formats": ["html", "formal"],
+                    "store_logs": true,
+                    "copy_images": true
+                }
+            },
+            "dependencies": ["image_loader"]
+        },
+        {
+            "id": "dag_viz",
+            "type": "DAGVisualizerNode",
+            "config": {
+                "output_dir": "../.local/dags/smoke",
+                "layout": "spring",
+                "format": "png",
+                "style": {
+                    "node_size": 2000,
+                    "node_color": "#E6F3FF",
+                    "edge_color": "#666666",
+                    "font_size": 10,
+                    "width": 12,
+                    "height": 8
+                }
+            },
+            "dependencies": ["art_analysis"]
         }
     ],
     "metadata": {
