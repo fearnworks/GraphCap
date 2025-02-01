@@ -12,7 +12,6 @@ Key features:
 - Configurable outputs
 """
 
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
@@ -20,7 +19,6 @@ from loguru import logger
 from ...dag.node import BaseNode
 from ...providers.provider_manager import ProviderManager
 from ..perspectives import ArtCriticProcessor, GraphCaptionProcessor
-from ..perspectives.base import BasePerspective
 
 
 class PerspectiveNode(BaseNode):
@@ -169,88 +167,51 @@ class PerspectiveNode(BaseNode):
         return True
 
     async def execute(self, **kwargs) -> Dict[str, Any]:
-        """
-        Execute perspective processing on images.
-
-        Args:
-            image_paths: List of paths to images
-            perspective_type: Type of perspective to use
-            max_tokens: Maximum tokens for model response
-            temperature: Sampling temperature
-            top_p: Nucleus sampling parameter
-            max_concurrent: Maximum concurrent requests
-            output_dir: Optional output directory
-            formats: Optional list of output formats
-
-        Returns:
-            Dict containing captions and perspective info
-        """
-        # Validate inputs
+        """Execute perspective processing."""
         self.validate_inputs(**kwargs)
 
-        # Get parameters
-        image_paths: List[Path] = [Path(p) for p in kwargs["image_paths"]]
+        # Get image paths from input
+        image_paths = kwargs["image_paths"]
         perspective_type = kwargs["perspective_type"]
-        provider_name = kwargs.get("provider_name", "openai")
 
-        # Get model parameters
-        model_params = kwargs.get("model_params", {})
-        max_tokens = model_params.get("max_tokens", 4096)
-        temperature = model_params.get("temperature", 0.8)
-        top_p = model_params.get("top_p", 0.9)
-        max_concurrent = model_params.get("max_concurrent", 5)
-
-        # Get output configuration
-        output_config = kwargs.get("output", {})
-        output_dir = Path(output_config.get("directory", "./outputs"))
-        formats = output_config.get("formats", ["html"])
-        store_logs = output_config.get("store_logs", True)
-        copy_images = output_config.get("copy_images", False)
-
-        if not image_paths:
-            raise ValueError("No image paths provided")
-
-        # Create perspective processor
-        if perspective_type not in self.PERSPECTIVE_TYPES:
-            raise ValueError(f"Unknown perspective type: {perspective_type}")
-
+        # Initialize processor
         processor_class = self.PERSPECTIVE_TYPES[perspective_type]
-        processor: BasePerspective = processor_class()
+        processor = processor_class()
 
-        # Initialize provider if not already done
-        if not self._provider:
-            provider_manager = ProviderManager()
-            self._provider = provider_manager.get_client(provider_name)
+        # Initialize provider
+        provider_manager = ProviderManager()
+        provider = provider_manager.get_client(kwargs["provider_name"])
 
         # Process images
-        try:
-            results = await processor.process_batch(
-                provider=self._provider,
-                image_paths=image_paths,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                max_concurrent=max_concurrent,
-                output_dir=output_dir,
-                store_logs=store_logs,
-                formats=formats,
-                copy_images=copy_images,
-            )
+        results = await processor.process_batch(
+            provider=provider,
+            image_paths=image_paths,
+            max_tokens=kwargs["model_params"]["max_tokens"],
+            temperature=kwargs["model_params"]["temperature"],
+            top_p=kwargs["model_params"]["top_p"],
+            max_concurrent=kwargs["model_params"]["max_concurrent"],
+        )
 
-            # Prepare return data
-            perspective_info = {
-                "type": perspective_type,
-                "total_images": len(image_paths),
-                "successful": len([r for r in results if "error" not in r["parsed"]]),
-                "output_dir": str(output_dir),
-                "formats": formats,
-            }
+        # Format results for output node - handle first image's results
+        first_result = results[0]  # Get first image result
+        logger.debug(f"Raw processor result: {first_result}")
 
-            return {
-                "captions": results,
-                "perspective_info": perspective_info,
-            }
+        # Extract content from parsed results
+        parsed = first_result.get("parsed", {})
+        logger.debug(f"Parsed content: {parsed}")
 
-        except Exception as e:
-            logger.error(f"Perspective processing failed: {str(e)}")
-            raise
+        perspective_results = {
+            "formal": {
+                "filename": "formal_analysis.txt",
+                "content": parsed.get("formal_analysis", "No formal analysis available"),
+            },
+            "html": {
+                "filename": "art_report.html",
+                "content": first_result.get("html_report", "No HTML report available"),
+            },
+            "logs": first_result.get("logs", ""),
+            "image_path": str(image_paths[0]),
+        }
+
+        logger.info(f"Formatted perspective results for output node: {list(perspective_results.keys())}")
+        return {"perspective_results": perspective_results}

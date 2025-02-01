@@ -8,7 +8,8 @@ import click
 import uvicorn
 from dotenv import load_dotenv
 from graphcap.caption.batch_config import get_image_paths, load_batch_config
-from graphcap.caption.graph_caption import GraphCaptionProcessor
+
+# from graphcap.caption.graph_caption import GraphCaptionProcessor
 from graphcap.caption.nodes import PerspectiveNode
 from graphcap.caption.perspectives.art_critic import ArtCriticProcessor
 from graphcap.dataset.dataset_manager import DatasetConfig, DatasetManager

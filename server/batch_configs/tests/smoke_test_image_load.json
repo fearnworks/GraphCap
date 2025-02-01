@@ -21,15 +21,52 @@
                     "temperature": 0.8,
                     "top_p": 0.9,
                     "max_concurrent": 2
-                },
+                }
+            },
+            "dependencies": ["image_loader"]
+        },
+        {
+            "id": "graph_analysis",
+            "type": "PerspectiveNode",
+            "config": {
+                "perspective_type": "graph",
+                "provider_name": "gemini",
+                "model_params": {
+                    "max_tokens": 4096,
+                    "temperature": 0.8,
+                    "top_p": 0.9,
+                    "max_concurrent": 2
+                }
+            },
+            "dependencies": ["image_loader"]
+        },
+        {
+            "id": "save_art_outputs",
+            "type": "PerspectiveOutputNode",
+            "config": {
                 "output": {
                     "directory": "../.local/dags/smoke",
                     "formats": ["html", "formal"],
                     "store_logs": true,
                     "copy_images": true
-                }
+                },
+                "perspective_type": "art"
             },
-            "dependencies": ["image_loader"]
+            "dependencies": ["art_analysis"]
+        },
+        {
+            "id": "save_graph_outputs",
+            "type": "PerspectiveOutputNode",
+            "config": {
+                "output": {
+                    "directory": "../.local/dags/smoke",
+                    "formats": ["html", "formal"],
+                    "store_logs": true,
+                    "copy_images": false
+                },
+                "perspective_type": "graph"
+            },
+            "dependencies": ["graph_analysis"]
         },
         {
             "id": "dag_viz",
@@ -47,7 +84,7 @@
                     "height": 8
                 }
             },
-            "dependencies": ["art_analysis"]
+            "dependencies": ["save_art_outputs", "save_graph_outputs"]
         }
     ],
     "metadata": {
