@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import click
 import uvicorn
@@ -13,6 +13,9 @@ from graphcap.caption.perspectives.art_critic import ArtCriticProcessor
 from graphcap.dataset.dataset_manager import DatasetConfig, DatasetManager
 from graphcap.providers.provider_manager import ProviderManager
 from loguru import logger
+
+from .dag.dag import DAG
+from .io import ImageSamplingNode
 
 load_dotenv()
 
@@ -257,6 +260,68 @@ def batch_config(config_file):
 
     except Exception as e:
         logger.error(f"Error processing configuration: {e}")
+
+
+# Add this dictionary to map node types to their classes
+NODE_CLASS_MAPPINGS = {
+    "ImageSamplingNode": ImageSamplingNode,
+}
+
+
+@cli.command("dag-validate")
+@click.argument("dag_file", type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--node-types", type=click.Path(exists=True, path_type=Path), help="JSON file mapping node types to classes"
+)
+def dag_validate(dag_file: Path, node_types: Optional[Path] = None):
+    """
+    Validate a DAG configuration file.
+
+    The configuration file should be in JSON format with nodes and their dependencies.
+    """
+    try:
+        # Use built-in node mappings
+        node_classes = NODE_CLASS_MAPPINGS.copy()
+
+        # Load additional node type mappings if provided
+        if node_types:
+            with node_types.open() as f:
+                type_mappings = json.load(f)
+                # Add custom mappings to node_classes
+                pass
+
+        DAG.validate_config(str(dag_file), node_classes)
+
+    except Exception as e:
+        logger.error(f"DAG validation failed: {e}")
+
+
+@cli.command("dag-run")
+@click.argument("dag_file", type=click.Path(exists=True, path_type=Path))
+@click.option("--start-node", help="Optional node ID to start execution from")
+def dag_run(dag_file: Path, start_node: Optional[str] = None):
+    """
+    Execute a DAG configuration.
+
+    The configuration file should be in JSON format with nodes and their dependencies.
+    """
+    try:
+        # Use built-in node mappings
+        node_classes = NODE_CLASS_MAPPINGS.copy()
+
+        # Create and validate DAG
+        dag = DAG.validate_config(str(dag_file), node_classes)
+
+        # Execute DAG
+        results = asyncio.run(dag.execute(start_node))
+
+        # Log results
+        logger.info("DAG execution completed successfully")
+        for node_id, result in results.items():
+            logger.info(f"Node {node_id} result: {result}")
+
+    except Exception as e:
+        logger.error(f"DAG execution failed: {e}")
 
 
 if __name__ == "__main__":

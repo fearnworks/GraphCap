@@ -1,0 +1,61 @@
+{
+    "test_cases": [
+        {
+            "name": "basic_loading",
+            "config": {
+                "nodes": [{
+                    "id": "basic_loader",
+                    "type": "ImageSamplingNode",
+                    "config": {
+                        "path": "../datasets/os_img",
+                        "sample_size": 0,
+                        "sample_method": "random"
+                    },
+                    "dependencies": []
+                }]
+            },
+            "expected": {
+                "sample_method": "all",
+                "min_images": 1
+            }
+        },
+        {
+            "name": "random_sampling",
+            "config": {
+                "nodes": [{
+                    "id": "random_sampler",
+                    "type": "ImageSamplingNode",
+                    "config": {
+                        "path": "../datasets/os_img",
+                        "sample_size": 2,
+                        "sample_method": "random"
+                    },
+                    "dependencies": []
+                }]
+            },
+            "expected": {
+                "sample_size": 2,
+                "sample_method": "random"
+            }
+        },
+        {
+            "name": "latest_sampling",
+            "config": {
+                "nodes": [{
+                    "id": "latest_sampler",
+                    "type": "ImageSamplingNode",
+                    "config": {
+                        "path": "../datasets/os_img",
+                        "sample_size": 1,
+                        "sample_method": "latest"
+                    },
+                    "dependencies": []
+                }]
+            },
+            "expected": {
+                "sample_size": 1,
+                "sample_method": "latest"
+            }
+        }
+    ]
+} 
