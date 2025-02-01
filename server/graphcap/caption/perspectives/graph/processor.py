@@ -41,7 +41,7 @@ for the tag, between 0 (exclusive) and 1 (inclusive).">
     },
     {
       "tag": "subject 2",
-      "category": "Entity", 
+      "category": "Entity",
       "confidence": 0.95
     },
     {

@@ -15,9 +15,11 @@ Classes:
     OpenRouterClient: OpenRouter API client implementation
 """
 
-from typing import Dict, List
+from typing import Any
 
 from loguru import logger
+from openai.types.chat import ChatCompletion
+from pydantic import BaseModel
 
 from .base_client import BaseClient
 
@@ -36,7 +38,7 @@ class OpenRouterClient(BaseClient):
             default_model=default_model,
         )
 
-    def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:
+    def _format_vision_content(self, text: str, image_data: str) -> list[dict[str, Any]]:
         """Format vision content for OpenRouter API"""
         return [
             {"type": "text", "text": text},
@@ -69,7 +71,13 @@ class OpenRouterClient(BaseClient):
             logger.error(f"Failed to get models from OpenRouter: {str(e)}")
             raise
 
-    def create_structured_completion(self, messages: List[Dict], schema: Dict, model: str = "openai/gpt-4", **kwargs):
+    async def create_structured_completion(
+        self,
+        messages: list[dict[str, Any]],
+        schema: dict[str, Any] | type[BaseModel] | BaseModel,
+        model: str,
+        **kwargs,
+    ) -> Any:
         """
         Create a chat completion with structured output following a JSON schema.
 
@@ -81,7 +89,7 @@ class OpenRouterClient(BaseClient):
         """
         try:
             logger.debug(f"Creating structured completion with model: {model}")
-            return self.chat.completions.create(
+            completion: ChatCompletion = await self.chat.completions.create(
                 model=model,
                 messages=messages,
                 response_format={
@@ -90,25 +98,36 @@ class OpenRouterClient(BaseClient):
                 },
                 **kwargs,
             )
+            if completion is None:
+                raise ValueError("Failed to create structured completion")
+            return completion
         except Exception as e:
             logger.error(f"Failed to create structured completion: {str(e)}")
             raise
 
-    def create_chat_completion(
-        self, messages: List[Dict], model: str = "google/gemini-2.0-flash-exp:free", stream: bool = False, **kwargs
-    ):
+    async def create_chat_completion(
+        self,
+        messages: list[dict[str, Any]],
+        model: str,
+        **kwargs,
+    ) -> Any:
         """
         Convenience method for creating chat completions with OpenRouter.
 
+
         Args:
             messages: List of message dictionaries
-            model: Model ID (default: gpt-3.5-turbo)
-            stream: Whether to stream the response
+            model: Model ID
             **kwargs: Additional arguments to pass to create()
         """
         try:
             logger.debug(f"Creating chat completion with model: {model}")
-            return self.chat.completions.create(model=model, messages=messages, stream=stream, **kwargs)
+            completion: ChatCompletion = await self.chat.completions.create(model=model, messages=messages, **kwargs)
+
+            if completion is None:
+                raise ValueError("Failed to create chat completion")
+            return completion
+
         except Exception as e:
             logger.error(f"Failed to create chat completion: {str(e)}")
             raise

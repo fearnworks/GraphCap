@@ -239,7 +239,7 @@ def batch_config(config_file):
         image_paths, sampling_info = get_image_paths(config.input)
 
         # Process images with output directory and logging
-        results = asyncio.run(
+        _ = asyncio.run(
             processor.process_batch(
                 provider=provider_client,
                 image_paths=image_paths,

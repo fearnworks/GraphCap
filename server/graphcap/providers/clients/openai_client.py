@@ -17,9 +17,10 @@ Classes:
 
 import base64
 from pathlib import Path
-from typing import Any, Dict, List, Type, Union
+from typing import Any
 
 from loguru import logger
+from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
 
 from .base_client import BaseClient
@@ -39,7 +40,7 @@ class OpenAIClient(BaseClient):
             default_model=default_model,
         )
 
-    def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:
+    def _format_vision_content(self, text: str, image_data: str) -> list[dict[str, Any]]:
         """Format vision content for OpenAI API"""
         return [
             {"type": "text", "text": text},
@@ -47,12 +48,16 @@ class OpenAIClient(BaseClient):
         ]
 
     def create_structured_completion(
-        self, messages: List[Dict], schema: Union[Dict, Type[BaseModel], BaseModel], model: str, **kwargs
+        self,
+        messages: list[dict[str, Any]],
+        schema: dict[str, Any] | type[BaseModel] | BaseModel,
+        model: str,
+        **kwargs,
     ) -> Any:
         json_schema = self._get_schema_from_input(schema)
 
         try:
-            completion = self.chat.completions.create(
+            completion: ChatCompletion = self.chat.completions.create(
                 model=model, messages=messages, response_format={"type": "json_schema", "schema": json_schema}, **kwargs
             )
 
@@ -69,8 +74,8 @@ class OpenAIClient(BaseClient):
     def create_structured_vision_completion(
         self,
         prompt: str,
-        image: Union[str, Path],
-        schema: Union[Dict, Type[BaseModel], BaseModel],
+        image: str | Path,
+        schema: dict[str, Any] | type[BaseModel] | BaseModel,
         model: str,
         **kwargs,
     ) -> Any:

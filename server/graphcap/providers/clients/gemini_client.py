@@ -15,7 +15,7 @@ Classes:
     GeminiClient: Gemini API client implementation
 """
 
-from typing import Any, Dict, List, Type, Union
+from typing import Any
 
 from loguru import logger
 from pydantic import BaseModel
@@ -37,7 +37,7 @@ class GeminiClient(BaseClient):
             default_model=default_model,
         )
 
-    def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:
+    def _format_vision_content(self, text: str, image_data: str) -> list[dict[str, Any]]:
         """Format vision content for Gemini API"""
         return [
             {"type": "text", "text": text},
@@ -45,7 +45,7 @@ class GeminiClient(BaseClient):
         ]
 
     def create_structured_completion(
-        self, messages: List[Dict], schema: Union[Dict, Type[BaseModel], BaseModel], model: str, **kwargs
+        self, messages: list[dict[str, Any]], schema: dict[str, Any] | type[BaseModel] | BaseModel, model: str, **kwargs
     ) -> Any:
         json_schema = self._get_schema_from_input(schema)
 

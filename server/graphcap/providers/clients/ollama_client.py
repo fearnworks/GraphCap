@@ -15,7 +15,7 @@ Classes:
     OllamaClient: Ollama API client implementation
 """
 
-from typing import Dict, List
+from typing import Any
 
 import httpx
 from loguru import logger
@@ -37,7 +37,7 @@ class OllamaClient(BaseClient):
             default_model=default_model,
         )
 
-    def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:
+    def _format_vision_content(self, text: str, image_data: str) -> list[dict[str, Any]]:
         """Format vision content for Ollama API"""
         return [
             {"type": "text", "text": text},

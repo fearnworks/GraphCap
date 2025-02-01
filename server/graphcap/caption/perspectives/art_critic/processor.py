@@ -17,7 +17,8 @@ from ..base import BasePerspective
 from .report import generate_art_report
 from .types import ArtCriticResult, ArtCriticSchema, CaptionDict
 
-instruction = """Analyze this image using formal analysis principles, focusing exclusively on observable elements. Avoid adding any subjective commentary or unnecessary filler details. Your response must follow this structured format:
+instruction = """Analyze this image using formal analysis principles, focusing exclusively on observable elements.
+ Avoid adding any subjective commentary or unnecessary filler details. Your response must follow this structured format:
 
 1. Visual Elements: List only the concrete, observable elements present in the image:
    - Colors and their relationships

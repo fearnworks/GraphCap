@@ -28,7 +28,7 @@ import os
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any
 
 from loguru import logger
 from openai import AsyncOpenAI
@@ -59,18 +59,18 @@ class BaseClient(AsyncOpenAI, ABC):
         self.default_model = default_model
 
         # Rate limiting state
-        self._request_times: List[float] = []
-        self._token_counts: List[int] = []
+        self._request_times: list[float] = []
+        self._token_counts: list[int] = []
         self._rate_limit_lock = asyncio.Lock()
-        self.requests_per_minute: Optional[int] = None
-        self.tokens_per_minute: Optional[int] = None
+        self.requests_per_minute: int | None = None
+        self.tokens_per_minute: int | None = None
 
     @abstractmethod
-    def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:
+    def _format_vision_content(self, text: str, image_data: str) -> list[dict]:
         """Format the vision content according to provider specifications"""
         pass
 
-    def _get_schema_from_input(self, schema: Union[Dict, Type[BaseModel], BaseModel]) -> Dict:
+    def _get_schema_from_input(self, schema: dict | type[BaseModel] | BaseModel) -> dict:
         """Convert input schema to JSON Schema dict"""
         if isinstance(schema, dict):
             return schema
@@ -81,15 +81,16 @@ class BaseClient(AsyncOpenAI, ABC):
         else:
             raise ValueError("Schema must be either a dict or a Pydantic model/instance")
 
-    async def _get_base64_image(self, image_path: Union[str, Path]) -> str:
+    async def _get_base64_image(self, image_path: str | Path) -> str:
         """Helper method to convert image to base64"""
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode("utf-8")
 
-    async def _enforce_rate_limits(self, token_count: Optional[int] = None):
+    async def _enforce_rate_limits(self, token_count: int | None = None):
         """Enforce rate limits by waiting if necessary"""
         async with self._rate_limit_lock:
             current_time = time.time()
+
             minute_ago = current_time - 60
 
             # Clean up old entries
@@ -120,13 +121,13 @@ class BaseClient(AsyncOpenAI, ABC):
     async def vision(
         self,
         prompt: str,
-        image: Union[str, Path],
+        image: str | Path,
         model: str,
         max_tokens: int = 4096,
-        schema: Optional[BaseModel] = None,
-        repetition_penalty: Optional[float] = 1.15,
-        temperature: Optional[float] = 0.8,
-        top_p: Optional[float] = 0.9,
+        schema: BaseModel | None = None,
+        repetition_penalty: float | None = 1.15,
+        temperature: float | None = 0.8,
+        top_p: float | None = 0.9,
         **kwargs,
     ):
         """Create a vision completion with rate limiting"""
@@ -169,7 +170,7 @@ class BaseClient(AsyncOpenAI, ABC):
             raise
 
     async def create_structured_completion(
-        self, messages: List[Dict], schema: Union[Dict, Type[BaseModel], BaseModel], model: str, **kwargs
+        self, messages: list[dict], schema: dict | type[BaseModel] | BaseModel, model: str, **kwargs
     ) -> Any:
         """Create a structured completion with rate limiting"""
         # Estimate token count from messages

@@ -15,10 +15,11 @@ Classes:
     VLLMClient: VLLM API client implementation
 """
 
-from typing import Any, Dict, List, Type, Union
+from typing import Any
 
 import httpx
 from loguru import logger
+from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
 
 from .base_client import BaseClient
@@ -42,24 +43,31 @@ class VLLMClient(BaseClient):
             default_model=default_model,
         )
 
-    def _format_vision_content(self, text: str, image_data: str) -> List[Dict]:
+    def _format_vision_content(self, text: str, image_data: str) -> list[dict[str, Any]]:
         """Format vision content for VLLM API"""
         return [
             {"type": "text", "text": text},
             {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_data}"}},
         ]
 
-    def create_structured_completion(
-        self, messages: List[Dict], schema: Union[Dict, Type[BaseModel], BaseModel], model: str, **kwargs
+    async def create_structured_completion(
+        self,
+        messages: list[dict[str, Any]],
+        schema: dict[str, Any] | type[BaseModel] | BaseModel,
+        model: str,
+        **kwargs,
     ) -> Any:
         """Create a chat completion with structured output following a JSON schema."""
         json_schema = self._get_schema_from_input(schema)
 
         try:
             logger.debug(f"Creating structured completion with model: {model}")
-            completion = self.chat.completions.create(
+            completion: ChatCompletion = await self.chat.completions.create(
                 model=model, messages=messages, extra_body={"guided_json": json_schema}, **kwargs
             )
+
+            if completion is None:
+                raise ValueError("Failed to create structured completion")
 
             # If schema is a Pydantic model, parse the response
             if isinstance(schema, type) and issubclass(schema, BaseModel):

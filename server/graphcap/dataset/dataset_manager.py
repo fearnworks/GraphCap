@@ -164,7 +164,7 @@ class DatasetManager:
                 # Extract just the filename from either local path or HF URL
                 filename = Path(entry["filename"]).name
                 image_path = self.file_handler.get_image_path(input_dir, filename)
-                
+
                 if not image_path.exists():
                     logger.warning(f"Image not found: {image_path}")
                     continue

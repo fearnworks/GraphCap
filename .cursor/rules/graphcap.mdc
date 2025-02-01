@@ -1,5 +1,5 @@
 ---
-description: 
+description: python code rules
 globs: 
 ---
 ---
@@ -8,7 +8,12 @@ globs: *.py
 ---
 # Python rules 
 - use >3.11 python standards
-- utilize dict and list instead of Dict / List
+- Do not use outdated typing style
+Union -> type | type
+Dict -> dict
+List -> list
+Type -> type
+And so on
 - Adhere to strong typing
 - Avoid the Any tag\
 - use | for unions instead of Union

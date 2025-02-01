@@ -23,7 +23,7 @@ Functions:
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from loguru import logger
 
@@ -32,8 +32,8 @@ from loguru import logger
 class RateLimits:
     """Rate limits for a provider"""
 
-    requests_per_minute: Optional[int] = None
-    tokens_per_minute: Optional[int] = None
+    requests_per_minute: int | None = None
+    tokens_per_minute: int | None = None
 
 
 @dataclass
@@ -44,13 +44,13 @@ class ProviderConfig:
     environment: str  # 'cloud' or 'local'
     env_var: str
     base_url: str
-    models: List[str]
+    models: list[str]
     default_model: str
     fetch_models: bool = False
-    rate_limits: Optional[RateLimits] = None
+    rate_limits: RateLimits | None = None
 
 
-def load_provider_config(config_path: str | Path = "provider.config.toml") -> Dict[str, Any]:
+def load_provider_config(config_path: str | Path = "provider.config.toml") -> dict[str, Any]:
     """Load provider configuration from a TOML file."""
     config_path = Path(config_path)
 
@@ -61,11 +61,17 @@ def load_provider_config(config_path: str | Path = "provider.config.toml") -> Di
         return tomllib.load(f)
 
 
-def parse_provider_config(config_data: Dict[str, Any]) -> ProviderConfig:
+def parse_provider_config(config_data: dict[str, Any]) -> ProviderConfig:
     """Parse a provider's configuration data into a ProviderConfig object"""
     # Get models list and default model
-    models = config_data.get("models", [])
-    default_model = config_data.get("default_model")
+    models: list[str] = config_data.get("models", [])
+    default_model: str = config_data.get("default_model")
+    fetch_models: bool = config_data.get("fetch_models", False)
+
+    kind: str = config_data["kind"]
+    environment: str = config_data["environment"]
+    env_var: str = config_data["env_var"]
+    base_url: str = config_data["base_url"]
 
     # If no default model specified, require one to be set
     if not default_model:
@@ -78,26 +84,28 @@ def parse_provider_config(config_data: Dict[str, Any]) -> ProviderConfig:
     # Parse rate limits if present
     rate_limits = None
     if "rate_limits" in config_data:
+        rate_limits_data: dict[str, int | None] = config_data["rate_limits"]
         rate_limits = RateLimits(
-            requests_per_minute=config_data["rate_limits"].get("requests_per_minute"),
-            tokens_per_minute=config_data["rate_limits"].get("tokens_per_minute"),
+            requests_per_minute=rate_limits_data.get("requests_per_minute"),
+            tokens_per_minute=rate_limits_data.get("tokens_per_minute"),
         )
 
     return ProviderConfig(
-        kind=config_data["kind"],
-        environment=config_data["environment"],
-        env_var=config_data["env_var"],
-        base_url=config_data["base_url"],
+        kind=kind,
+        environment=environment,
+        env_var=env_var,
+        base_url=base_url,
         models=models,
         default_model=default_model,
-        fetch_models=config_data.get("fetch_models", False),
+        fetch_models=fetch_models,
         rate_limits=rate_limits,
     )
 
 
-def get_providers_config(config_path: str | Path = "provider.config.toml") -> Dict[str, ProviderConfig]:
+def get_providers_config(config_path: str | Path = "provider.config.toml") -> dict[str, ProviderConfig]:
     """
     Load and parse the providers configuration.
+
 
     Args:
         config_path: Path to the TOML configuration file
@@ -120,7 +128,7 @@ def get_providers_config(config_path: str | Path = "provider.config.toml") -> Di
         env_var = "CUSTOM_KEY"
         base_url = "http://localhost:11434"
         fetch_models = true
-        default_model = "llama2"  # Optional, defaults to "default" if no models
+        default_model = "llama3.2"  # Optional, defaults to "default" if no models
     """
     config = load_provider_config(config_path)
     providers = {}
@@ -138,9 +146,9 @@ def get_providers_config(config_path: str | Path = "provider.config.toml") -> Di
     return providers
 
 
-def validate_config(providers: Dict[str, ProviderConfig]) -> List[str]:
+def validate_config(providers: dict[str, ProviderConfig]) -> list[str]:
     """Validate the provider configuration."""
-    errors = []
+    errors: list[str] = []
 
     for name, provider in providers.items():
         # Required fields
