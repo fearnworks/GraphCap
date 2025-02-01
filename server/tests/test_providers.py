@@ -4,13 +4,7 @@ from pathlib import Path
 import httpx
 import pytest
 from dotenv import load_dotenv
-from graphcap.providers.clients import (
-    GeminiClient,
-    OllamaClient,
-    OpenAIClient,
-    OpenRouterClient,
-    VLLMClient,
-)
+from graphcap.providers.clients import GeminiClient, OllamaClient, OpenAIClient, OpenRouterClient, VLLMClient
 from graphcap.providers.provider_manager import ProviderManager
 from graphcap.schemas.structured_vision import StructuredVisionConfig
 from loguru import logger
@@ -323,6 +317,7 @@ class TestOpenRouterProvider:
 
 @pytest.mark.asyncio
 @pytest.mark.integration
+@pytest.mark.provider
 async def test_provider_manager_initialization(provider_manager):
     """
     GIVEN a provider configuration file
@@ -330,23 +325,43 @@ async def test_provider_manager_initialization(provider_manager):
     THEN should create appropriate client instances
     AND should match each provider with correct client type
     """
+    # Get all configured providers
+    provider_configs = provider_manager.providers
+    assert provider_configs, "Should have providers configured"
+
+    # Initialize each provider that has required environment variables
+    expected_clients = {}
+    for name, config in provider_configs.items():
+        # Skip providers that need API keys if they're not available
+        if config.env_var != "NONE" and not os.getenv(config.env_var):
+            continue
+
+        try:
+            client = provider_manager.get_client(name)
+            expected_clients[name] = client
+        except Exception as e:
+            logger.warning(f"Could not initialize {name}: {str(e)}")
+
+    # Now check all initialized clients
     clients = provider_manager.clients()
     assert clients, "Should have at least one client initialized"
+    assert len(clients) == len(expected_clients), "Should have all available clients initialized"
 
-    # Test specific provider availability based on config
+    # Test specific provider types
     for provider_name, client in clients.items():
         assert client is not None, f"Client for {provider_name} should not be None"
-        # Verify client is an instance of the correct type
-        if "openai" in provider_name:
-            assert isinstance(client, OpenAIClient)
-        elif "gemini" in provider_name:
-            assert isinstance(client, GeminiClient)
-        elif "ollama" in provider_name:
-            assert isinstance(client, OllamaClient)
-        elif "vllm" in provider_name:
-            assert isinstance(client, VLLMClient)
-        elif "openrouter" in provider_name:
-            assert isinstance(client, OpenRouterClient)
+        config = provider_configs[provider_name]
+
+        # Verify client type matches provider kind
+        expected_type = {
+            "openai": OpenAIClient,
+            "gemini": GeminiClient,
+            "ollama": OllamaClient,
+            "vllm": VLLMClient,
+            "openrouter": OpenRouterClient,
+        }.get(config.kind)
+
+        assert isinstance(client, expected_type), f"{provider_name} client should be {expected_type.__name__}"
 
 
 @pytest.mark.integration

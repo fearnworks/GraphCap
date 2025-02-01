@@ -9,6 +9,7 @@ import uvicorn
 from dotenv import load_dotenv
 from graphcap.caption.batch_config import get_image_paths, load_batch_config
 from graphcap.caption.graph_caption import GraphCaptionProcessor
+from graphcap.caption.nodes import PerspectiveNode
 from graphcap.caption.perspectives.art_critic import ArtCriticProcessor
 from graphcap.dataset.dataset_manager import DatasetConfig, DatasetManager
 from graphcap.providers.provider_manager import ProviderManager
@@ -265,6 +266,7 @@ def batch_config(config_file):
 # Add this dictionary to map node types to their classes
 NODE_CLASS_MAPPINGS = {
     "ImageSamplingNode": ImageSamplingNode,
+    "PerspectiveNode": PerspectiveNode,
 }
 
 

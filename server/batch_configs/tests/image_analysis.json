@@ -1,0 +1,36 @@
+{
+    
+    "nodes": [
+        {
+            "id": "image_loader",
+            "type": "ImageSamplingNode",
+            "config": {
+                "path": "../datasets/os_img",
+                "sample_size": 2,
+                "sample_method": "random"
+            },
+            "dependencies": []
+        },
+        {
+            "id": "art_analysis",
+            "type": "PerspectiveNode",
+            "config": {
+                "perspective_type": "art",
+                "provider_name": "gemini",
+                "model_params": {
+                    "max_tokens": 4096,
+                    "temperature": 0.8,
+                    "top_p": 0.9,
+                    "max_concurrent": 2
+                },
+                "output": {
+                    "directory": "../.local/dags/smoke",
+                    "formats": ["html", "formal"],
+                    "store_logs": true,
+                    "copy_images": true
+                }
+            },
+            "dependencies": ["image_loader"]
+        }
+    ]
+} 
