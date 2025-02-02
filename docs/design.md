@@ -47,9 +47,17 @@ Its outputs are typically structured JSON data and HTML reports, optionally asse
    - For remote usage, the UI (or external systems) calls the REST API, which runs the same DAG logic on the server.
 3. The *Agentic Systems* layer can also programmatically integrate with the server if advanced automation is needed.
 
+
+### 2.3 DAG Example
+
+Below is an example of a dag (produced by a meta node during execution) for the current system.
+
+![dag](./static/dag.png)
+
 ---
 
 ## 3. Core Library (`graphcap`)
+
 
 ### 3.1 Main CLI Entry Point
 
