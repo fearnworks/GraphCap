@@ -22,47 +22,40 @@
 - **Licensing**: The project is made available under the [Apache-2.0 License](https://www.apache.org/licenses/LICENSE-2.0), ensuring open collaboration and usage.
 
 ## Background
+
 Original RFC : [link](https://github.com/Open-Model-Initiative/OMI-Data-Pipeline/issues/134)
 
+## Architecture
 
-## Deployment:
+GraphCap is organized into three main components that work together to provide a complete dataset generation and management solution:
 
-Codebase is under major refactor for initial version. Deployment is not yet stable.
+1. **GraphCap Library (`graphcap`)**
+   - Core Library: Fundamental utilities and shared functionality
+   - CLI: Command-line interface for direct interactions
+   - DAG: Directed Acyclic Graph implementation for pipeline workflows
+   - Nodes: Processing components for the pipeline
+   - Stateless: Pure functional components for data transformation
 
-On first run, you need to setup the docker network: 
+2. **Server Component (`server`)**
+   - REST API: HTTP interface for remote interactions
+   - Orchestration: Manages workflow execution and resource allocation
+   - Stateful Services: Maintains system state and session management
+   - Tool Servers: Specialized services for specific processing tasks
 
-```
-docker network create gcap_network
-docker compose up -d
-```
+3. **Core UI Component (`core ui`)**
+   - Dataset Management: Interface for organizing and viewing datasets
+   - Pipeline Management: Tools for creating and monitoring workflows
+   - Configuration: System settings and pipeline configuration tools
 
-To Stop:
-```
-docker compose down
-```
+### Development Flow
 
-To update environment configuration copy the docker compose override file and uncomment the services you want to modify with your desired configuration:
+- Developers can contribute to both PyPI packages and Docker images
+- Components are published to PyPI Registry for Python package distribution
+- Docker images are stored in a central Docker image repository
+- The system integrates with Agentic Systems for AI-powered processing
 
-```
-cp docker-compose.override.example.yml docker-compose.override.yml
-cp provider.example.config.toml provider.config.toml
-cp .env.caption.template .env.caption
-```
+### Integration
 
-## CLI
-
-To run graphcap cli 
-
-
-```python
-# Pre req : set up .env and provider.config.toml
-cd ./server
-uv venv
-uv sync
-uv pip install -e . 
-uv run python ./graphcap/main.py batch-caption ../datasets/os_img --provider gemini --output ../local/os_img/output.jsonl -c ../provider.config.toml
-```
-
-This should generate a jsonl file in the local directory of the root project.
-
-
+- The server component uses the GraphCap library for core functionality
+- The UI communicates with the server through a client/server relationship
+- Users interact primarily through the UI, while developers can access all components directly

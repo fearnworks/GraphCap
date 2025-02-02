@@ -25,6 +25,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from server.config.router import router as server_router
+from server.providers.router import router as providers_router
 
 # from server.providers.router import router as providers_router
 from server.utils.logger import logger
@@ -59,4 +60,4 @@ app.add_middleware(
 # Add routers
 api_version = "/api/v1"
 app.include_router(prefix=api_version, router=server_router)
-# app.include_router(prefix=api_version, router=providers_router)
+app.include_router(prefix=api_version, router=providers_router)
