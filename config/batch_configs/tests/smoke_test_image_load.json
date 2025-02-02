@@ -4,7 +4,7 @@
             "id": "image_loader",
             "type": "ImageSamplingNode",
             "config": {
-                "path": "../datasets/os_img",
+                "path": "./datasets/os_img",
                 "sample_size": 1,
                 "sample_method": "random"
             },
@@ -45,7 +45,7 @@
             "type": "PerspectiveOutputNode",
             "config": {
                 "output": {
-                    "directory": "../.local/dags/smoke",
+                    "directory": "./.local/dags/smoke",
                     "formats": ["html", "formal"],
                     "store_logs": true,
                     "copy_images": true
@@ -59,7 +59,7 @@
             "type": "PerspectiveOutputNode",
             "config": {
                 "output": {
-                    "directory": "../.local/dags/smoke",
+                    "directory": "./.local/dags/smoke",
                     "formats": ["html", "formal"],
                     "store_logs": true,
                     "copy_images": false
@@ -72,7 +72,7 @@
             "id": "dag_viz",
             "type": "DAGVisualizerNode",
             "config": {
-                "output_dir": "../.local/dags/smoke",
+                "output_dir": "./.local/dags/smoke",
                 "format": "png",
                 "layout": "layered",
                 "style": {

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "graphcap"
-version = "0.0.1"
+version = "0.0.2"
 description = "graphcap"
 requires-python = ">=3.11"
 dependencies = [
@@ -44,6 +44,9 @@ dev-dependencies = [
     "httpx>=0.24.0",
     "pytest-cov>=4.1.0",
 ]
+
+[tool.uv.workspace]
+members = ["server"]
 
 [project.scripts]
 graphcap = "graphcap.main:cli"

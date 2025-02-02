@@ -23,9 +23,11 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from graphcap.config.router import router as server_router
-from graphcap.providers.router import router as providers_router
-from graphcap.utils.logger import logger
+
+from server.config.router import router as server_router
+
+# from server.providers.router import router as providers_router
+from server.utils.logger import logger
 
 load_dotenv()
 
@@ -57,4 +59,4 @@ app.add_middleware(
 # Add routers
 api_version = "/api/v1"
 app.include_router(prefix=api_version, router=server_router)
-app.include_router(prefix=api_version, router=providers_router)
+# app.include_router(prefix=api_version, router=providers_router)

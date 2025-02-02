@@ -96,22 +96,23 @@ async def test_perspective_node_execution(test_dag_config, tmp_path):
     # Verify perspective node results
     assert "art_analysis" in results
     perspective_result = results["art_analysis"]
-    assert "captions" in perspective_result
-    assert "perspective_info" in perspective_result
+    assert "perspective_results" in perspective_result
 
-    # Check perspective info
-    info = perspective_result["perspective_info"]
-    assert info["type"] == "art"
-    assert info["total_images"] == 1
-    assert info["successful"] == 1
-    assert info["formats"] == ["dense"]
-    assert Path(info["output_dir"]).exists()
+    # Check perspective results structure
+    results_data = perspective_result["perspective_results"]
+    assert "formal" in results_data
+    assert "html" in results_data
+    assert "image_path" in results_data
 
-    # Check captions
-    captions = perspective_result["captions"]
-    assert len(captions) == 1
-    assert "parsed" in captions[0]
-    assert "error" not in captions[0]["parsed"]
+    # Check formal analysis content
+    assert "content" in results_data["formal"]
+    assert "filename" in results_data["formal"]
+    assert results_data["formal"]["filename"] == "formal_analysis.txt"
+
+    # Check HTML report
+    assert "content" in results_data["html"]
+    assert "filename" in results_data["html"]
+    assert results_data["html"]["filename"] == "art_report.html"
 
 
 @pytest.mark.asyncio

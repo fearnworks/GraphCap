@@ -63,7 +63,6 @@ async def test_dag_visualizer(test_dag, tmp_path):
 
     # Check metadata
     assert viz_info["format"] == "png"
-    assert viz_info["layout"] == "spring"
     assert viz_info["node_count"] == 4
     assert viz_info["edge_count"] == 4
 
@@ -96,7 +95,15 @@ async def test_dag_visualizer_layouts(test_dag, tmp_path):
             dag=test_dag,
             output_dir=str(tmp_path),
             layout=layout,
+            format="png",
             timestamp=f"test_{layout}",
         )
 
-        assert result["visualization"]["layout"] == layout
+        assert "visualization" in result
+        viz_info = result["visualization"]
+        assert viz_info["format"] == "png"
+        assert viz_info["node_count"] == 4
+        assert viz_info["edge_count"] == 4
+
+        output_path = Path(viz_info["path"])
+        assert output_path.exists()

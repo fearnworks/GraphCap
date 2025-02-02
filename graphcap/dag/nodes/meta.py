@@ -108,4 +108,11 @@ class DAGVisualizerNode(BaseNode):
         plt.close()
 
         logger.info(f"DAG visualization saved to {output_path}")
-        return {"visualization": {"path": str(output_path), "format": fmt}}
+        return {
+            "visualization": {
+                "path": str(output_path),
+                "format": fmt,
+                "node_count": len(G.nodes),
+                "edge_count": len(G.edges),
+            }
+        }
