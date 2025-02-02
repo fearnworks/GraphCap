@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: Apache-2.0
+name: graphcap
+services:
+  gcap_server:
+    container_name: gcap_server
+    build:
+      context: ../server
+      dockerfile: Dockerfile.server
+    ports:
+      - 32100:32100
+
+    volumes:
+      - graphcap_cache:/cache/HF_HOME
+      - ../local/cache:/cache/local_cache
+      - ../provider.config.toml:/app/provider.config.toml
+    environment:
+      - HF_HOME=/cache/HF_HOME
+      - ODR_TEXT_MODEL=${ODR_TEXT_MODEL:-Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8}
+      - ODR_VISION_MODEL=${ODR_VISION_MODEL:-mistral-community/pixtral-12b}
+      - HOST_PLATFORM=${HOST_PLATFORM:-linux}
+    env_file:
+      - .env
+    develop:
+      watch:
+        - action: sync
+          path: ../server
+          target: /app
+          ignore:
+            - "**/__pycache__"
+            - "**/*.pyc"
+  gcap_client:
+    container_name: gcap_client
+    build:
+      context: client
+      dockerfile: Dockerfile.client
+    ports:
+      - "32000:32000"
+    develop:
+      watch:
+        - action: sync
+          path: ./client/src
+          target: /app/src
+          ignore:
+            - "**/node_modules"
+            - "**/.svelte-kit"
+            - "**/*.log"
+    volumes:
+      - ../.local/workspace:/workspace
+      - ../datasets:/workspace
+    
+
+    environment:
+      - API_URL=http://localhost:32100/api/v1
+      - NEXT_PUBLIC_SERVER_HOST=http://localhost:32100/api/v1
+      - WORKSPACE=./.local/workspace
+      - DATABASE_URL=postgresql://graphcap:graphcap@gcap_postgres:5432/graphcap
+      - NODE_ENV=development
+      - POSTGRES_URL=postgresql://graphcap:graphcap@gcap_postgres:5432/graphcap
+      - DB_HOST=gcap_postgres
+      - DB_USER=graphcap
+      - DB_PASSWORD=graphcap
+      - DB_NAME=graphcap
+      - DB_PORT=5432
+    networks:
+      - gcap_network
+    depends_on:
+      - gcap_server
+
+
+  gcap_postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: graphcap
+      POSTGRES_PASSWORD: graphcap
+      POSTGRES_DB: graphcap
+    ports:
+      - "35432:5432"
+    volumes:
+      - gcap_data:/var/lib/postgresql/data
+    networks:
+      - gcap_network
+
+volumes:
+  gcap_data:
+  graphcap_cache: # keeping until rework of model inference
+
+networks:
+  gcap_network:
+    driver: bridge
