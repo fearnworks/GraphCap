@@ -1,10 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "server"
-version = "0.1.0"
-description = "GraphCap Server"
-readme = "README.md"
-requires-python = ">=3.12"
+name = "graphcap-server"
+version = "0.0.2"
+description = "Server component for GraphCap"
+requires-python = ">=3.11"
 dependencies = [
+    "graphcap",
     "asyncpg>=0.30.0",
     "fastapi>=0.115.8",
     "gunicorn>=23.0.0",
@@ -14,58 +18,12 @@ dependencies = [
     "uvicorn>=0.34.0",
 ]
 
-
-# Added Ruff configuration
-[tool.ruff]
-# Exclude a variety of commonly ignored directories
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
 ]
 
-# Source directories
-src = ["./graphcap", "./server"]
-
-# Same as Black
-line-length = 120
-indent-width = 4
-
-# Assume Python 3.11
-target-version = "py311"
-
-[tool.ruff.lint]
-# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`) codes by default
-select = ["E", "F", "W", "I001"]
-ignore = []
-
-# Allow fix for all enabled rules (when `--fix`) is provided
-fixable = ["ALL"]
-unfixable = []
-
-# Allow unused variables when underscore-prefixed
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
+[tool.hatch.build.targets.wheel]
+packages = ["server"] 

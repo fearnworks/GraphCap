@@ -64,7 +64,7 @@ exclude = [
 ]
 
 # Source directories
-src = ["./graphcap", "./server"]
+src = ["./graphcap", "./server/server"]
 
 # Same as Black
 line-length = 120

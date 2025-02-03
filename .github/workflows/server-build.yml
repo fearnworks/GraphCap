@@ -39,14 +39,9 @@ jobs:
       - name: Run Ruff
         continue-on-error: true
         run: |
-          # Run linting and save output
-          ruff check ./server --output-format=github > ruff_report.txt || true
-          ruff format --check ./server >> ruff_report.txt || true
-          
-          # Display the report
+          ruff check --select ALL ./server/server --output-format=github > ruff_report.txt || true
+          ruff format --check ./server/server >> ruff_report.txt || true
           cat ruff_report.txt
-          
-          # Add warning annotation for the PR
           echo "::warning::Linting issues found. See report for details."
       - name: Upload lint results
         if: always()
@@ -68,11 +63,13 @@ jobs:
       - name: Setup test environment
         run: |
           uv venv
-          uv pip install pytest pytest-asyncio pytest-cov
-          uv pip install -e "./server[test]"
+          uv pip install -e ".[test]"
+          cd server
+          uv pip install -e ".[test]"
       - name: Run tests
         run: |
-          uv run pytest tests/ -v -m "server" --cov=server
+          cd server
+          uv run pytest tests/server_tests -v -m "server" --cov=server
 
   deploy:
     needs: test
