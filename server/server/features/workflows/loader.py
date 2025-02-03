@@ -6,11 +6,11 @@ Loads predefined workflow configurations from JSON files.
 """
 
 import json
-from pathlib import Path
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...config import settings
 from .models import Workflow
 
 
@@ -21,7 +21,7 @@ async def load_stock_workflows(session: AsyncSession) -> None:
     Args:
         session: Database session to use for loading workflows
     """
-    config_dir = Path("/config/batch_configs/tests")
+    config_dir = settings.CONFIG_PATH / "batch_configs/tests"
     logger.info(f"Looking for stock workflows in: {config_dir}")
 
     try:

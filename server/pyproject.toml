@@ -18,6 +18,9 @@ dependencies = [
     "uvicorn>=0.34.0",
 ]
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [project.optional-dependencies]
 test = [
     "pytest>=7.0.0",
@@ -26,4 +29,10 @@ test = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["server"] 
+packages = ["server"]
+
+[tool.hatch.build]
+packages = ["server"]
+include = [
+    "server/**/*.py",
+] 

@@ -7,43 +7,33 @@ includes:
   models: ./config/Taskfile.models.yml
   
 tasks:
-  build:
+  install:
+    desc: Install development dependencies
     cmds:
-      - docker compose build
+      - task: clean
+      - uv venv
+      - uv pip install -e ".[test]"
+      - uv pip install -e "./server[test]"
 
-  rebuild:
+  dev:server:
+    desc: Run the server in development mode with Docker
     cmds:
-      - docker compose up --build
+      - docker compose -f ./config/docker-compose.yml up --build --watch
 
-  run:
+  test:
+    desc: Run all tests
     cmds:
-      - docker compose up
+      - pytest tests/ -v -m "not integration"
 
-  watch:
+  test:server:
+    desc: Run server tests
     cmds:
-      - docker compose up --watch
-
-  logs:
-    cmds:
-      - docker compose logs -f
-
-  stop:
-    cmds:
-      - docker compose down
-
-  setup:
-    cmds:
-      - docker network create gcap_network
+      - cd server && pytest tests/server_tests -v -m "server"
 
   lint:
-    desc: Run Ruff linter on all Python files (using ruff.toml config)
+    desc: Run Ruff linter on all Python files
     cmds:
       - ruff check 
-
-  lint:fix:
-    desc: Run Ruff linter with auto-fix on all Python files
-    cmds:
-      - ruff check --fix 
 
   format:
     desc: Run Ruff formatter on all Python files
@@ -51,7 +41,7 @@ tasks:
       - ruff format 
 
   check:all:
-    desc: Run both linter and formatter in check mode (no changes)
+    desc: Run both linter and formatter in check mode
     cmds:
       - ruff check 
       - ruff format --check 
@@ -62,7 +52,31 @@ tasks:
       - ruff check --fix 
       - ruff format 
 
-  watch:
-    desc: Run Ruff in watch mode to check files on change
+  clean:
+    desc: Clean up development artifacts
     cmds:
-      - ruff check --watch 
+      - cmd: rm -rf .venv
+        platforms: [linux, darwin]
+      - cmd: powershell -Command "if (Test-Path .venv) { Remove-Item -Recurse -Force .venv }"
+        platforms: [windows]
+        ignore_error: true
+      - cmd: rm -rf server/.venv
+        platforms: [linux, darwin]
+      - cmd: powershell -Command "if (Test-Path server/.venv) { Remove-Item -Recurse -Force server/.venv }"
+        platforms: [windows]
+        ignore_error: true
+      - cmd: find . -type d -name "__pycache__" -exec rm -rf {} +
+        platforms: [linux, darwin]
+      - cmd: powershell -Command "Get-ChildItem -Path . -Filter '__pycache__' -Recurse -Directory | Remove-Item -Recurse -Force"
+        platforms: [windows]
+        ignore_error: true
+      - cmd: find . -name "*.pyc" -delete
+        platforms: [linux, darwin]
+      - cmd: powershell -Command "Get-ChildItem -Path . -Filter '*.pyc' -Recurse -File | Remove-Item -Force"
+        platforms: [windows]
+        ignore_error: true
+
+  stop:
+    desc: Stop all services
+    cmds:
+      - docker compose -f ./config/docker-compose.yml down

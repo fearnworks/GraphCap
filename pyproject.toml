@@ -102,3 +102,13 @@ test = [
 
 [tool.uv.workspace]
 members = ["server"]
+
+[tool.uv.sources]
+graphcap = { path = "." }
+graphcap-server = { path = "server" }
+
+[tool.hatch.build]
+packages = ["graphcap"]
+include = [
+    "graphcap/**/*.py",
+]

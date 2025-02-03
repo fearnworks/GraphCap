@@ -4,44 +4,39 @@ WORKDIR /server
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# # Copy project configuration first
+# Copy project configuration first
 COPY pyproject.toml uv.lock /graphcap/
-
-
 
 # Create venv and install dependencies
 RUN uv venv 
 # Copy application code
-COPY graphcap /graphcap/
+COPY graphcap /graphcap/graphcap
 COPY server /server/
-
 
 # Install graphcap package in development mode
 RUN . .venv/bin/activate && \
-    uv pip install -e /graphcap
+    uv pip install -e /graphcap && \
+    cd /server && uv pip install -e .
 
 # Copy and set permissions for entrypoint script
-COPY server/_scripts/endpoints-entrypoint.sh entrypoint.sh
-RUN chmod 775 entrypoint.sh
+COPY server/_scripts/endpoints-entrypoint.sh /server/entrypoint.sh
+RUN chmod 775 /server/entrypoint.sh
 
 # Test stage
 FROM python-base AS test
-WORKDIR /app
+WORKDIR /server
 
 # Copy project files
 COPY pyproject.toml uv.lock /graphcap/
 COPY graphcap /graphcap/graphcap
 COPY tests /graphcap/tests
 
-
 # Install dependencies
 RUN . .venv/bin/activate && \
-    uv pip install -e /graphcap[dev] && \
+    uv pip install -e /graphcap[test] && \
+    cd /server && uv pip install -e .[test] && \
     uv pip install pytest pytest-asyncio pytest-cov && \
-    ln -s /app/.venv/bin/pytest /usr/local/bin/pytest
-
-
-WORKDIR /app
+    ln -s /server/.venv/bin/pytest /usr/local/bin/pytest
 
 # Production stage
 FROM python-base AS prod

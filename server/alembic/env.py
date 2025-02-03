@@ -7,10 +7,10 @@ Alembic Environment Configuration
 from logging.config import fileConfig
 
 from alembic import context
+from graphcap_server.models import *
 
 # Import Base and all models
 from server.db import Base
-from server.models import *
 from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides

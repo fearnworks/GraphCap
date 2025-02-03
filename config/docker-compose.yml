@@ -11,17 +11,17 @@ services:
 
     volumes:
       - ./local/cache:/cache/local_cache
-      - ./provider.config.toml:/app/provider.config.toml
-      - ../graphcap:/app/graphcap
-      - ../pyproject.toml:/app/pyproject.toml
-      - ../uv.lock:/app/uv.lock
+      - ./provider.config.toml:/server/provider.config.toml
+      - ../graphcap:/graphcap/graphcap
+      - ../pyproject.toml:/graphcap/pyproject.toml
+      - ../uv.lock:/graphcap/uv.lock
       - ../config:/config
     environment:
       - HF_HOME=/cache/HF_HOME
       - ODR_TEXT_MODEL=${ODR_TEXT_MODEL:-Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8}
       - ODR_VISION_MODEL=${ODR_VISION_MODEL:-mistral-community/pixtral-12b}
       - HOST_PLATFORM=${HOST_PLATFORM:-linux}
-      - PYTHONPATH=/app
+      - PYTHONPATH=/server
       - DATABASE_URL=postgresql+asyncpg://graphcap:graphcap@gcap_postgres:5432/graphcap
     env_file:
       - ../.env
