@@ -4,14 +4,20 @@ name: GraphCap Server CI/CD
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev", "feature/*" ]
     paths:
       - 'server/**'
+      - 'pyproject.toml'
+      - 'pytest.ini'
+      - 'tests/server_tests/**'
     tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ "main" ]
     paths:
       - 'server/**'
+      - 'pyproject.toml'
+      - 'pytest.ini'
+      - 'tests/server_tests/**'
 
 env:
   REGISTRY: ghcr.io

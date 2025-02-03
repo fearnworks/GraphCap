@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "graphcap"
 version = "0.0.2"
-description = "graphcap"
+description = "A library for capturing graph structures from multimodal inputs utilizing directed acyclic graphs (DAGs)"
 requires-python = ">=3.11"
 dependencies = [
     "alembic>=1.14.1",
