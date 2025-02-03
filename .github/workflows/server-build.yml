@@ -63,7 +63,9 @@ jobs:
       - name: Setup test environment
         run: |
           uv venv
-          uv pip install --workspace -e ".[test]"
+          uv pip install -e ".[test]"
+          cd server
+          uv pip install -e ".[test]"
       - name: Run tests
         run: |
           cd server
