@@ -8,7 +8,7 @@ version = "0.0.2"
 description = "Server component for GraphCap"
 requires-python = ">=3.11"
 dependencies = [
-    "graphcap",
+    "graphcap @ file:../",
     "asyncpg>=0.30.0",
     "fastapi>=0.115.8",
     "gunicorn>=23.0.0",
@@ -37,5 +37,4 @@ include = [
     "server/**/*.py",
 ]
 
-[tool.uv.sources]
-graphcap = { workspace = true } 
+[tool.uv.sources] 
