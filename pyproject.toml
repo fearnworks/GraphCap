@@ -33,9 +33,6 @@ dependencies = [
 [tool.hatch.build.targets.wheel]
 packages = ["graphcap"]
 
-[tool.uv]
-python-version = "3.11"
-
 [tool.uv.dependencies]
 dev = [
     "basedpyright>=1.26.0",
