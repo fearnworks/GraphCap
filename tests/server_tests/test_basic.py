@@ -37,3 +37,12 @@ async def test_health_check(client: AsyncClient):
     response = await client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
+
+
+def test_pytest_smoke():
+    """
+    GIVEN pytest is run
+    WHEN test environment is configured properly
+    THEN the test should pass
+    """
+    assert True
