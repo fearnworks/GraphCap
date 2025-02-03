@@ -33,18 +33,6 @@ dependencies = [
 [tool.hatch.build.targets.wheel]
 packages = ["graphcap"]
 
-[tool.uv.dependencies]
-dev = [
-    "basedpyright>=1.26.0",
-    "pytest>=7.0.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.1.0",
-    "pytest-watcher>=0.4.3",
-]
-
-[tool.uv.workspace]
-members = ["server"]
-
 [project.scripts]
 graphcap = "graphcap.main:cli"
 
@@ -102,3 +90,15 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[project.optional-dependencies]
+test = [
+    "basedpyright>=1.26.0",
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pytest-watcher>=0.4.3",
+]
+
+[tool.uv.workspace]
+members = ["server"]
