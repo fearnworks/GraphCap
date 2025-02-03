@@ -1,45 +1,46 @@
 # Base Python stage
 FROM python:3.12-slim AS python-base
-WORKDIR /server
+WORKDIR /app
+
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Copy project configuration first
-COPY pyproject.toml uv.lock /graphcap/
+# Copy all pyproject.toml files first (matching local structure)
+COPY pyproject.toml /app/pyproject.toml
+COPY lib/pyproject.toml /app/lib/pyproject.toml
+COPY server/pyproject.toml /app/server/pyproject.toml
 
-# Create venv and install dependencies
-RUN uv venv 
-# Copy application code
-COPY graphcap /graphcap/graphcap
-COPY server /server/
+# Create venv and upgrade pip (matching Taskfile.yml)
+RUN uv venv && \
+    uv pip install --upgrade pip
 
-# Install graphcap package in development mode
+# Copy source code
+COPY lib/graphcap /app/lib/graphcap
+COPY server /app/server
+COPY server/_scripts/endpoints-entrypoint.sh /app/server/_scripts/endpoints-entrypoint.sh
+
+# Install packages (exactly as in Taskfile.yml)
 RUN . .venv/bin/activate && \
-    uv pip install -e /graphcap && \
-    cd /server && uv pip install -e .
-
-# Copy and set permissions for entrypoint script
-COPY server/_scripts/endpoints-entrypoint.sh /server/entrypoint.sh
-RUN chmod 775 /server/entrypoint.sh
+    cd /app && \
+    uv pip install -e "lib[test]" && \
+    uv pip install -e "server[test]" && \
+    chmod 775 /app/server/_scripts/endpoints-entrypoint.sh
 
 # Test stage
 FROM python-base AS test
-WORKDIR /server
+WORKDIR /app
 
-# Copy project files
-COPY pyproject.toml uv.lock /graphcap/
-COPY graphcap /graphcap/graphcap
-COPY tests /graphcap/tests
+# Copy test files
+COPY tests /app/tests
 
-# Install dependencies
+# Install test dependencies
 RUN . .venv/bin/activate && \
-    uv pip install -e /graphcap[test] && \
-    cd /server && uv pip install -e .[test] && \
     uv pip install pytest pytest-asyncio pytest-cov && \
-    ln -s /server/.venv/bin/pytest /usr/local/bin/pytest
+    ln -s /app/.venv/bin/pytest /usr/local/bin/pytest
 
 # Production stage
 FROM python-base AS prod
+WORKDIR /app
 EXPOSE 32100
-ENTRYPOINT ["/bin/bash", "entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/app/server/_scripts/endpoints-entrypoint.sh"]
 CMD ["tail", "-f", "/dev/null"]

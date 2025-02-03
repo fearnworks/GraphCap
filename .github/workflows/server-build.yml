@@ -63,9 +63,10 @@ jobs:
       - name: Setup test environment
         run: |
           uv venv
-          uv pip install -e ".[test]"
-          cd server
-          uv pip install -e ".[test]"
+          uv pip install --upgrade pip
+          uv sync
+          uv pip install -e "lib[test]"
+          uv pip install -e "server[test]"
       - name: Run tests
         run: |
           uv run pytest tests/server_tests -v -m "not integration" --cov=server

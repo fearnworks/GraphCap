@@ -12,8 +12,10 @@ tasks:
     cmds:
       - task: clean
       - uv venv
-      - uv pip install -e ".[test]"
-      - uv pip install -e "./server[test]"
+      - uv pip install --upgrade pip
+      - uv sync
+      - uv pip install -e "lib[test]"
+      - uv pip install -e "server[test]"
 
   dev:server:
     desc: Run the server in development mode with Docker

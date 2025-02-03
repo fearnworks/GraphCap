@@ -1,3 +1,4 @@
+# server/pyproject.toml
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -8,7 +9,7 @@ version = "0.0.2"
 description = "Server component for GraphCap"
 requires-python = ">=3.11"
 dependencies = [
-    "graphcap @ file:../",
+    "graphcap",
     "asyncpg>=0.30.0",
     "fastapi>=0.115.8",
     "gunicorn>=23.0.0",
@@ -17,9 +18,6 @@ dependencies = [
     "sqlalchemy[asyncio]>=2.0.37",
     "uvicorn>=0.34.0",
 ]
-
-[tool.hatch.metadata]
-allow-direct-references = true
 
 [project.optional-dependencies]
 test = [
@@ -37,4 +35,5 @@ include = [
     "server/**/*.py",
 ]
 
-[tool.uv.sources] 
+[tool.uv.sources]
+graphcap = { workspace = true } 

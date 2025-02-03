@@ -9,6 +9,7 @@ resolution-markers = [
 members = [
     "graphcap",
     "graphcap-server",
+    "graphcap-workspace",
 ]
 
 [[package]]
@@ -572,7 +573,7 @@ http = [
 [[package]]
 name = "graphcap"
 version = "0.0.2"
-source = { editable = "." }
+source = { editable = "lib" }
 dependencies = [
     { name = "alembic" },
     { name = "click" },
@@ -660,7 +661,7 @@ test = [
 requires-dist = [
     { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "fastapi", specifier = ">=0.115.8" },
-    { name = "graphcap", editable = "." },
+    { name = "graphcap", editable = "lib" },
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "pydantic-settings", specifier = ">=2.7.1" },
@@ -669,6 +670,29 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=4.1.0" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.37" },
     { name = "uvicorn", specifier = ">=0.34.0" },
+]
+
+[[package]]
+name = "graphcap-workspace"
+version = "0.0.2"
+source = { editable = "." }
+
+[package.optional-dependencies]
+test = [
+    { name = "basedpyright" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "pytest-watcher" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "basedpyright", marker = "extra == 'test'", specifier = ">=1.26.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=7.0.0" },
+    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = ">=0.21.0" },
+    { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=4.1.0" },
+    { name = "pytest-watcher", marker = "extra == 'test'", specifier = ">=0.4.3" },
 ]
 
 [[package]]
