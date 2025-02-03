@@ -53,7 +53,7 @@ class JobManager:
         async with self.pool.acquire() as conn:
             await conn.execute(
                 """
-                UPDATE pipeline_jobs 
+                UPDATE pipeline_jobs
                 SET status = 'running', started_at = NOW()
                 WHERE id = $1
                 """,
@@ -66,7 +66,7 @@ class JobManager:
             await conn.execute(
                 """
                 UPDATE pipeline_jobs
-                SET status = 'completed', 
+                SET status = 'completed',
                     completed_at = NOW(),
                     results = $2
                 WHERE id = $1
@@ -117,15 +117,15 @@ class JobManager:
                     job_id, node_id, status, result, error_message, started_at
                 )
                 VALUES ($1, $2, $3, $4, $5, NOW())
-                ON CONFLICT (job_id, node_id) 
+                ON CONFLICT (job_id, node_id)
                 DO UPDATE SET
                     status = EXCLUDED.status,
                     result = EXCLUDED.result,
                     error_message = EXCLUDED.error_message,
-                    completed_at = CASE 
-                        WHEN EXCLUDED.status IN ('completed', 'failed') 
-                        THEN NOW() 
-                        ELSE NULL 
+                    completed_at = CASE
+                        WHEN EXCLUDED.status IN ('completed', 'failed')
+                        THEN NOW()
+                        ELSE NULL
                     END
                 """,
                 job_id,

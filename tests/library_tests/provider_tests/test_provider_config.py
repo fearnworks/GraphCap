@@ -13,7 +13,6 @@ Classes:
     None (contains test functions only)
 """
 
-from pathlib import Path
 
 import pytest
 from graphcap.providers.provider_config import get_providers_config, validate_config

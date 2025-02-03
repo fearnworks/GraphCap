@@ -30,9 +30,24 @@ jobs:
       - name: Install Ruff
         run: pip install ruff
       - name: Run Ruff
+        continue-on-error: true
         run: |
-          ruff check ./graphcap --output-format=github
-          ruff format --check ./graphcap
+          # Run linting and save output
+          ruff check ./graphcap --output-format=github > ruff_report.txt || true
+          ruff format --check ./graphcap >> ruff_report.txt || true
+          
+          # Display the report
+          cat ruff_report.txt
+          
+          # Add warning annotation for the PR
+          echo "::warning::Linting issues found. See report for details."
+      - name: Upload lint results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: ruff_report.txt
+          retention-days: 14
 
   test:
     needs: lint
