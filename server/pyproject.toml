@@ -1,3 +1,4 @@
+# server/pyproject.toml
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -18,9 +19,6 @@ dependencies = [
     "uvicorn>=0.34.0",
 ]
 
-[tool.hatch.metadata]
-allow-direct-references = true
-
 [project.optional-dependencies]
 test = [
     "pytest>=7.0.0",
@@ -35,4 +33,7 @@ packages = ["server"]
 packages = ["server"]
 include = [
     "server/**/*.py",
-] 
+]
+
+[tool.uv.sources]
+graphcap = { workspace = true } 
