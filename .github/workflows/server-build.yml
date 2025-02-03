@@ -68,7 +68,6 @@ jobs:
           uv pip install -e ".[test]"
       - name: Run tests
         run: |
-          cd server
           uv run pytest tests/server_tests -v -m "server" --cov=server
 
   deploy:
