@@ -4,14 +4,14 @@ name: GraphCap Library CI
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "ci" ]
     paths:
       - 'graphcap/**'
       - 'tests/**'
       - 'pyproject.toml'
       - 'setup.py'
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "ci" ]
     paths:
       - 'graphcap/**'
       - 'tests/**'

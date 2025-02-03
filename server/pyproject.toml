@@ -35,4 +35,7 @@ packages = ["server"]
 packages = ["server"]
 include = [
     "server/**/*.py",
-] 
+]
+
+[tool.uv.sources]
+graphcap = { workspace = true } 
