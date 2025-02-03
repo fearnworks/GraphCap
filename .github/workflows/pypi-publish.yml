@@ -6,7 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: PyPi-graphcap
+name: GraphCap Library Release
 
 on:
   release:
@@ -17,10 +17,25 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-
+  verify:
     runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.11.8'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[test]"
+    - name: Verify package
+      run: |
+        pytest tests/ -v -m "not integration and not server" --cov=graphcap
 
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
