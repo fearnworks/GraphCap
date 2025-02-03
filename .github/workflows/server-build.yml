@@ -68,7 +68,7 @@ jobs:
           uv pip install -e ".[test]"
       - name: Run tests
         run: |
-          uv run pytest tests/server_tests -v -m "server" --cov=server
+          uv run pytest tests/server_tests -v -m "not integration" --cov=server
 
   deploy:
     needs: test
