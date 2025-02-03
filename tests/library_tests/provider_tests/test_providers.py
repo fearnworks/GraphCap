@@ -1,3 +1,24 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+graphcap.tests.lib.providers.test_providers
+
+Integration tests for provider clients and functionality.
+
+Key features:
+- Provider client initialization and configuration
+- Vision model testing for each provider
+- Structured output validation
+- Chat completion testing
+- Model availability checks
+
+Classes:
+    TestGeminiProvider: Tests for Gemini API integration
+    TestOllamaProvider: Tests for Ollama local deployment
+    TestVLLMProvider: Tests for VLLM local deployment
+    TestOpenRouterProvider: Tests for OpenRouter API integration
+    TestOpenAIVisionProvider: Tests for OpenAI vision capabilities
+"""
+
 import os
 from pathlib import Path
 
@@ -81,7 +102,7 @@ class TestGeminiProvider:
         assert isinstance(completion.choices[0].message.content, str), "Message should be string"
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
-    async def test_gemini_vision(self, test_logger, provider_manager):
+    async def test_gemini_vision(self, test_logger, provider_manager, provider_artifacts_dir):
         """
         GIVEN a Gemini client and a test image
         WHEN requesting vision analysis
@@ -89,7 +110,7 @@ class TestGeminiProvider:
         AND should have proper response structure
         """
         client = provider_manager.get_client("gemini")
-        image_path = Path(__file__).parent / "test_image.png"
+        image_path = provider_artifacts_dir / "test_image.png"
 
         completion = await client.vision(
             prompt="What's in this image? Describe it briefly.",
@@ -106,7 +127,7 @@ class TestGeminiProvider:
         assert isinstance(completion.choices[0].message.content, str), "Message should be string"
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
-    async def test_gemini_structured_vision(self, test_logger, provider_manager):
+    async def test_gemini_structured_vision(self, test_logger, provider_manager, provider_artifacts_dir):
         """
         GIVEN a Gemini client and a test image
         WHEN requesting structured vision analysis with schema
@@ -114,7 +135,7 @@ class TestGeminiProvider:
         AND should contain valid boolean and string fields
         """
         client = provider_manager.get_client("gemini")
-        image_path = Path(__file__).parent / "test_image.png"
+        image_path = provider_artifacts_dir / "test_image.png"
         await run_structured_vision(client, test_logger, image_path)
 
 
@@ -184,7 +205,7 @@ class TestVLLMProvider:
         assert isinstance(completion.choices[0].message.content, str), "Message should be string"
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
-    async def test_vllm_vision(self, test_logger, provider_manager):
+    async def test_vllm_vision(self, test_logger, provider_manager, provider_artifacts_dir):
         """
         GIVEN a VLLM client and test image
         WHEN requesting vision analysis
@@ -192,7 +213,7 @@ class TestVLLMProvider:
         AND should follow expected response format
         """
         client = provider_manager.get_client("vllm-pixtral")
-        image_path = Path(__file__).parent / "test_image.png"
+        image_path = provider_artifacts_dir / "test_image.png"
 
         completion = await client.vision(
             prompt="What's in this image? Describe it briefly.",
@@ -209,7 +230,7 @@ class TestVLLMProvider:
         assert isinstance(completion.choices[0].message.content, str), "Message should be string"
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
-    async def test_vllm_structured_vision(self, test_logger, provider_manager):
+    async def test_vllm_structured_vision(self, test_logger, provider_manager, provider_artifacts_dir):
         """
         GIVEN a VLLM client and test image
         WHEN requesting structured vision analysis
@@ -217,7 +238,7 @@ class TestVLLMProvider:
         AND should contain valid boolean and string fields
         """
         client = provider_manager.get_client("vllm-pixtral")
-        image_path = Path(__file__).parent / "test_image.png"
+        image_path = provider_artifacts_dir / "test_image.png"
         await run_structured_vision(client, test_logger, image_path)
 
 
@@ -273,7 +294,7 @@ class TestOpenRouterProvider:
         assert len(models.data) > 0, "Should have at least one model"
         assert any("gpt" in model.id for model in models.data), "Should have GPT models available"
 
-    async def test_openrouter_vision(self, test_logger, provider_manager):
+    async def test_openrouter_vision(self, test_logger, provider_manager, provider_artifacts_dir):
         """
         GIVEN an OpenRouter client and test image
         WHEN requesting vision analysis
@@ -281,7 +302,7 @@ class TestOpenRouterProvider:
         AND should handle potential API errors gracefully
         """
         client = provider_manager.get_client("openrouter")
-        image_path = Path(__file__).parent / "test_image.png"
+        image_path = provider_artifacts_dir / "test_image.png"
 
         try:
             completion = await client.vision(
@@ -303,7 +324,7 @@ class TestOpenRouterProvider:
         assert isinstance(completion.choices[0].message.content, str), "Message should be string"
         assert len(completion.choices[0].message.content) > 0, "Message should not be empty"
 
-    async def test_openrouter_structured_vision(self, test_logger, provider_manager):
+    async def test_openrouter_structured_vision(self, test_logger, provider_manager, provider_artifacts_dir):
         """
         GIVEN an OpenRouter client and test image
         WHEN requesting structured vision analysis
@@ -311,7 +332,7 @@ class TestOpenRouterProvider:
         AND should handle JSON parsing correctly
         """
         client = provider_manager.get_client("openrouter")
-        image_path = Path(__file__).parent / "test_image.png"
+        image_path = provider_artifacts_dir / "test_image.png"
         await run_structured_vision(client, test_logger, image_path)
 
 
@@ -374,7 +395,7 @@ class TestOpenAIVisionProvider:
             pytest.skip("No OPENAI_API_KEY found. Skipping OpenAI Vision tests.")
 
     @pytest.mark.asyncio
-    async def test_openai_vision(self, test_logger, provider_manager):
+    async def test_openai_vision(self, test_logger, provider_manager, provider_artifacts_dir):
         """
         GIVEN an OpenAI client
         WHEN requesting image analysis
@@ -382,7 +403,7 @@ class TestOpenAIVisionProvider:
         AND should handle the image format correctly
         """
         client = provider_manager.get_client("openai")
-        image_path = Path(__file__).parent / "test_image.png"
+        image_path = provider_artifacts_dir / "test_image.png"
 
         completion = await client.vision(
             prompt="What's in this image? Describe it briefly.",
@@ -394,7 +415,7 @@ class TestOpenAIVisionProvider:
         test_logger("openai_vision", completion.model_dump())
         assert completion.choices[0].message.content, "Expected non-empty response"
 
-    async def test_openai_structured_vision(self, test_logger, provider_manager):
+    async def test_openai_structured_vision(self, test_logger, provider_manager, provider_artifacts_dir):
         """
         GIVEN an OpenAI client and test image
         WHEN requesting structured vision analysis
@@ -402,7 +423,7 @@ class TestOpenAIVisionProvider:
         AND should parse JSON response correctly
         """
         client = provider_manager.get_client("openai")
-        image_path = Path(__file__).parent / "test_image.png"
+        image_path = provider_artifacts_dir / "test_image.png"
         await run_structured_vision(client, test_logger, image_path)
 
 

@@ -1,20 +1,33 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+graphcap.tests.lib.providers.test_provider_config
+
+Tests for provider configuration functionality.
+
+Key features:
+- Provider configuration loading and validation
+- Default model handling and propagation
+- Environment and model configuration verification
+
+Classes:
+    None (contains test functions only)
+"""
+
 from pathlib import Path
 
 import pytest
 from graphcap.providers.provider_config import get_providers_config, validate_config
 from graphcap.providers.provider_manager import ProviderManager
 
-ARTIFACTS_DIR = Path(__file__).parent / "artifacts"
 
-
-def test_load_provider_config():
+def test_load_provider_config(provider_artifacts_dir):
     """
     GIVEN a valid provider configuration file
     WHEN loading and parsing the configuration
     THEN should return all expected providers
     AND each provider should have correct configuration values
     """
-    config_path = ARTIFACTS_DIR / "provider.parse-config.toml"
+    config_path = provider_artifacts_dir / "provider.parse-config.toml"
     providers = get_providers_config(config_path)
 
     # Test that we got all expected providers
@@ -99,13 +112,13 @@ def test_default_model_handling():
     assert provider.default_model == "runtime-model"
 
 
-def test_validate_config():
+def test_validate_config(provider_artifacts_dir):
     """
     GIVEN a valid provider configuration
     WHEN validating the configuration
     THEN should return no validation errors
     """
-    config_path = ARTIFACTS_DIR / "provider.parse-config.toml"
+    config_path = provider_artifacts_dir / "provider.parse-config.toml"
     providers = get_providers_config(config_path)
     errors = validate_config(providers)
 
@@ -155,7 +168,7 @@ def test_missing_config_file():
         get_providers_config("nonexistent.toml")
 
 
-def test_provider_completeness():
+def test_provider_completeness(provider_artifacts_dir):
     """
     GIVEN a complete provider configuration file
     WHEN loading all provider configurations
@@ -164,7 +177,7 @@ def test_provider_completeness():
     AND should validate environment settings
     AND should verify model configurations
     """
-    config_path = ARTIFACTS_DIR / "provider.parse-config.toml"
+    config_path = provider_artifacts_dir / "provider.parse-config.toml"
     providers = get_providers_config(config_path)
 
     # Define expected provider configurations
@@ -234,14 +247,14 @@ def test_provider_completeness():
 
 
 @pytest.mark.integration
-def test_default_model_propagation():
+def test_default_model_propagation(provider_artifacts_dir):
     """
     GIVEN a provider manager with configuration
     WHEN initializing provider clients
     THEN should correctly set default models for each provider
     AND should handle both local and cloud providers
     """
-    config_path = ARTIFACTS_DIR / "provider.parse-config.toml"
+    config_path = provider_artifacts_dir / "provider.parse-config.toml"
     manager = ProviderManager(config_path)
 
     # Test providers with different model configurations

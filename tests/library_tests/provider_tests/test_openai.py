@@ -1,3 +1,19 @@
+"""
+# SPDX-License-Identifier: Apache-2.0
+graphcap.tests.lib.providers.test_openai
+
+Integration tests for OpenAI client functionality.
+
+Key features:
+- Model listing and availability
+- Basic chat completion functionality
+- API key validation
+- Response structure verification
+
+Classes:
+    None (contains test functions only)
+"""
+
 ## This tests the unwrapped client. Should help indicate config vs code issues
 
 import os

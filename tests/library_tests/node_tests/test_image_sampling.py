@@ -1,8 +1,18 @@
 """
 # SPDX-License-Identifier: Apache-2.0
-graphcap.tests.test_image_sampling
+graphcap.tests.lib.node_tests.test_image_sampling
 
-Tests for the image sampling node functionality.
+Tests for image sampling node functionality.
+
+Key features:
+- Image loading and validation
+- Sampling method verification
+- Sample size handling
+- Path validation
+- Sampling information accuracy
+
+Classes:
+    None (contains test functions only)
 """
 
 import json

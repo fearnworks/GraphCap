@@ -1,8 +1,18 @@
 """
 # SPDX-License-Identifier: Apache-2.0
-graphcap.tests.test_meta_nodes
+graphcap.tests.lib.node_tests.test_meta_nodes
 
-Tests for DAG meta nodes.
+Tests for DAG meta nodes functionality.
+
+Key features:
+- DAG visualization generation
+- Output format handling
+- Layout algorithm testing
+- Node and edge visualization
+- Graph metadata validation
+
+Classes:
+    None (contains test functions only)
 """
 
 from pathlib import Path

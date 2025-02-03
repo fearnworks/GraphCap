@@ -7,9 +7,6 @@ from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from graphcap.config.router import router
 from httpx import AsyncClient
 
 # Load environment variables from .env
@@ -41,20 +38,6 @@ def clean_logs():
     """Clean up log file at the start of test session"""
     if os.path.exists("test_logs.jsonl"):
         os.remove("test_logs.jsonl")
-
-
-@pytest.fixture
-def app():
-    """Create a test FastAPI application with our router mounted"""
-    app = FastAPI()
-    app.include_router(router)
-    return app
-
-
-@pytest.fixture
-def client(app):
-    """Create a test client using the test app"""
-    return TestClient(app)
 
 
 # Event loop setup with proper cleanup
@@ -134,3 +117,15 @@ def load_env():
     if not env_file.exists():
         print(f"Environment file not found: {env_file}")
     load_dotenv(env_file)
+
+
+@pytest.fixture(scope="session")
+def artifacts_dir() -> Path:
+    """Fixture providing path to test artifacts directory"""
+    return Path(__file__).parent / "artifacts"
+
+
+@pytest.fixture(scope="session")
+def provider_artifacts_dir(artifacts_dir) -> Path:
+    """Fixture providing path to provider test artifacts directory"""
+    return artifacts_dir / "provider"

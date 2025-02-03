@@ -1,12 +1,23 @@
 """
 # SPDX-License-Identifier: Apache-2.0
-graphcap.tests.test_perspective_node
+graphcap.tests.lib.node_tests.test_perspective_node
 
 Integration tests for perspective node functionality.
+
+Key features:
+- Art analysis perspective testing
+- Provider integration verification
+- Output format validation
+- Node configuration handling
+- Error handling and validation
+
+Classes:
+    None (contains test functions only)
 """
 
 import os
 from pathlib import Path
+import asyncio
 
 import pytest
 from dotenv import load_dotenv
@@ -163,28 +174,36 @@ async def test_perspective_node_outputs(test_dag_config, tmp_path):
         if "config" in node_config:
             dag.nodes[node_config["id"]].config = node_config["config"]
 
-    results = await dag.execute()
+    # Execute DAG and wait for completion
+    try:
+        results = await dag.execute()
+    except Exception as e:
+        pytest.fail(f"DAG execution failed: {str(e)}")
 
-    # Check output files
-    output_dir = Path(results["art_analysis"]["perspective_info"]["output_dir"])
-    assert output_dir.exists()
+    # Verify art analysis results
+    assert "art_analysis" in results, "Art analysis results should be present"
+    art_results = results["art_analysis"]["perspective_results"]
 
-    # Check for art critic specific files
-    batch_dir = next(output_dir.glob("batch_*"))  # Get the timestamped batch directory
-    assert batch_dir.exists()
+    # Check formal analysis
+    assert "formal" in art_results, "Formal analysis should be present"
+    formal = art_results["formal"]
+    assert "filename" in formal, "Formal analysis should have filename"
+    assert "content" in formal, "Formal analysis should have content"
+    assert formal["content"], "Formal analysis content should not be empty"
+    assert formal["filename"] == "formal_analysis.txt"
 
-    # Check for expected files
-    assert (batch_dir / "formal_analysis.txt").exists(), "Should have formal analysis file"
-    assert (batch_dir / "art_report.html").exists(), "Should have HTML report"
-    assert (batch_dir / "process.log").exists(), "Should have process log"
+    # Check HTML report
+    assert "html" in art_results, "HTML report should be present"
+    html = art_results["html"]
+    assert "filename" in html, "HTML report should have filename"
+    assert "content" in html, "HTML report should have content"
+    assert html["filename"] == "art_report.html"
 
-    # Check image copying
-    assert (batch_dir / "images").exists(), "Should have images directory"
-    assert any((batch_dir / "images").glob("*.jpg")), "Should have copied images"
+    # Check image path
+    assert "image_path" in art_results, "Image path should be present"
+    assert art_results["image_path"], "Image path should not be empty"
 
-    # Verify content
-    formal_analysis = (batch_dir / "formal_analysis.txt").read_text()
-    assert formal_analysis, "Formal analysis should not be empty"
-
-    html_report = (batch_dir / "art_report.html").read_text()
-    assert html_report, "HTML report should not be empty"
+    # Print results for verification
+    print("\nFormal Analysis Content:")
+    print(formal["content"][:200] + "...")
+    print(f"\nHTML Report Size: {len(html['content'])} bytes")
