@@ -22,6 +22,7 @@ import pytest
 from dotenv import load_dotenv
 from graphcap.caption.nodes import PerspectiveNode
 from graphcap.dag.dag import DAG
+from graphcap.io.nodes.image_sampling import ImageSamplingNode
 
 # Load environment variables from root .env file
 load_dotenv(Path(__file__).parents[2] / ".env")
@@ -80,10 +81,10 @@ async def test_perspective_node_execution(test_dag_config, tmp_path):
     # Update output directory to tmp_path
     test_dag_config["nodes"][1]["config"]["output"]["directory"] = str(tmp_path)
 
-    # Create and validate DAG
+    # Create and validate DAG with actual class types instead of strings
     node_classes = {
-        "ImageSamplingNode": "graphcap.io.nodes.image_sampling.ImageSamplingNode",
-        "PerspectiveNode": "graphcap.caption.nodes.perspective.PerspectiveNode",
+        "ImageSamplingNode": ImageSamplingNode,
+        "PerspectiveNode": PerspectiveNode,
     }
     dag = DAG.from_dict(test_dag_config, node_classes)
 
@@ -161,10 +162,10 @@ async def test_perspective_node_outputs(test_dag_config, tmp_path):
         }
     )
 
-    # Create and validate DAG
+    # Create and validate DAG with actual class types
     node_classes = {
-        "ImageSamplingNode": "graphcap.io.nodes.image_sampling.ImageSamplingNode",
-        "PerspectiveNode": "graphcap.caption.nodes.perspective.PerspectiveNode",
+        "ImageSamplingNode": ImageSamplingNode,
+        "PerspectiveNode": PerspectiveNode,
     }
     dag = DAG.from_dict(test_dag_config, node_classes)
 
