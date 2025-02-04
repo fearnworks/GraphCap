@@ -9,18 +9,15 @@ services:
     ports:
       - 32100:32100
     volumes:
-      - ./local/cache:/cache/local_cache
       - ./provider.config.toml:/app/server/provider.config.toml
       - ../lib/graphcap:/app/lib/graphcap
       - ../lib/pyproject.toml:/app/lib/pyproject.toml
       - ../server:/app/server
-      - ../server/_scripts:/app/server/_scripts
       - ../pyproject.toml:/app/pyproject.toml
-      - ../config:/config
+      - ../config:/workspace/config
+      - ../.local:/workspace/.local
+      - ../datasets:/workspace/datasets
     environment:
-      - HF_HOME=/cache/HF_HOME
-      - ODR_TEXT_MODEL=${ODR_TEXT_MODEL:-Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8}
-      - ODR_VISION_MODEL=${ODR_VISION_MODEL:-mistral-community/pixtral-12b}
       - HOST_PLATFORM=${HOST_PLATFORM:-linux}
       - PYTHONPATH=/app/server
       - DATABASE_URL=postgresql+asyncpg://graphcap:graphcap@gcap_postgres:5432/graphcap

@@ -1,0 +1,118 @@
+{
+    "id": "smoke_test_image_load",
+    "workflow_metadata": {
+        "name": "Image Loading Smoke Test",
+        "description": "Test the image loading and sampling functionality",
+        "version": "0.2.0"
+    },
+    "nodes": [
+        {
+            "id": "image_loader",
+            "type": "ImageSamplingNode",
+            "config": {
+                "path": "/workspace/datasets/os_img",
+                "sample_size": 1,
+                "sample_method": "random"
+            },
+            "dependencies": []
+        },
+        {
+            "id": "art_analysis",
+            "type": "PerspectiveNode",
+            "config": {
+                "perspective_type": "art",
+                "provider_name": "gemini",
+                "model_params": {
+                    "max_tokens": 4096,
+                    "temperature": 0.8,
+                    "top_p": 0.9,
+                    "max_concurrent": 2
+                }
+            },
+            "dependencies": ["image_loader"]
+        },
+        {
+            "id": "graph_analysis",
+            "type": "PerspectiveNode",
+            "config": {
+                "perspective_type": "graph",
+                "provider_name": "gemini",
+                "model_params": {
+                    "max_tokens": 4096,
+                    "temperature": 0.8,
+                    "top_p": 0.9,
+                    "max_concurrent": 2
+                }
+            },
+            "dependencies": ["image_loader"]
+        },
+        {
+            "id": "save_art_outputs",
+            "type": "PerspectiveOutputNode",
+            "config": {
+                "output": {
+                    "directory": "/workspace/.local/output/dags/smoke",
+                    "formats": ["html", "formal"],
+                    "store_logs": true,
+                    "copy_images": true
+                },
+                "perspective_type": "art"
+            },
+            "dependencies": ["art_analysis"]
+        },
+        {
+            "id": "save_graph_outputs",
+            "type": "PerspectiveOutputNode",
+            "config": {
+                "output": {
+                    "directory": "/workspace/.local/output/dags/smoke",
+                    "formats": ["html", "formal"],
+                    "store_logs": true,
+                    "copy_images": false
+                },
+                "perspective_type": "graph"
+            },
+            "dependencies": ["graph_analysis"]
+        },
+        {
+            "id": "dag_viz",
+            "type": "DAGVisualizerNode",
+            "config": {
+                "output_dir": "/workspace/.local/output/dags/smoke",
+                "format": "png",
+                "layout": "layered",
+                "style": {
+                    "node_color": "#F5F9FF",
+                    "edge_color": "#666666",
+                    "font_size": 14,
+                    "width": 16,
+                    "height": 10,
+                    "arrows": true,
+                    "arrowsize": 20,
+                    "with_labels": true,
+                    "font_weight": "bold",
+                    "edge_width": 2,
+                    "node_spacing": 1.8,
+                    "margin": 0.4
+                }
+            },
+            "dependencies": ["save_art_outputs", "save_graph_outputs"]
+        },
+        {
+            "id": "dataset_export",
+            "type": "DatasetExportNode",
+            "config": {
+                "dataset_config": {
+                    "name": "graphcap-smoke-test",
+                    "description": "Smoke test dataset with art and graph analysis",
+                    "tags": ["art-analysis", "graph-analysis", "image-captioning"],
+                    "include_images": true
+                },
+                "push_to_hub": true,
+                "hf_token_env": "HUGGING_FACE_HUB_TOKEN",
+                "private": true
+            },
+            "dependencies": ["save_art_outputs", "save_graph_outputs"]
+        }
+    ]
+} 

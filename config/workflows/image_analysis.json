@@ -1,0 +1,59 @@
+{
+    "id": "image_analysis_basic",
+    "workflow_metadata": {
+        "name": "Basic Image Analysis",
+        "description": "Basic workflow for analyzing images with art perspective",
+        "version": "0.1.0"
+    },
+    "nodes": [
+        {
+            "id": "image_loader",
+            "type": "ImageSamplingNode",
+            "config": {
+                "path": "/workspace/datasets/os_img",
+                "sample_size": 2,
+                "sample_method": "random"
+            },
+            "dependencies": []
+        },
+        {
+            "id": "art_analysis",
+            "type": "PerspectiveNode",
+            "config": {
+                "perspective_type": "art",
+                "provider_name": "gemini",
+                "model_params": {
+                    "max_tokens": 4096,
+                    "temperature": 0.8,
+                    "top_p": 0.9,
+                    "max_concurrent": 2
+                },
+                "output": {
+                    "directory": "/workspace/.local/output/dags/smoke",
+                    "formats": ["html", "formal"],
+                    "store_logs": true,
+                    "copy_images": true
+                }
+            },
+            "dependencies": ["image_loader"]
+        },
+        {
+            "id": "dag_viz",
+            "type": "DAGVisualizerNode", 
+            "config": {
+                "output_dir": "/workspace/.local/output/dags/smoke",
+                "layout": "kamada_kawai",
+                "format": "png",
+                "style": {
+                    "node_size": 2500,
+                    "node_color": "lightblue",
+                    "edge_color": "gray",
+                    "font_size": 12,
+                    "width": 16,
+                    "height": 10
+                }
+            },
+            "dependencies": ["art_analysis"]
+        }
+    ]
+} 

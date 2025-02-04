@@ -2,6 +2,10 @@
 description: Package Management and Project Structure
 globs: *.yml, *.md, *ini, *.toml
 ---
+---
+description: Package Management and Project Structure
+globs: *.yml, *.md, *ini, *.toml
+---
 # Release and Packaging Architecture
 
 ## Overview

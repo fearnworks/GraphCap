@@ -1,6 +1,10 @@
 ---
+description: 
+globs: *.py
+---
+---
 description: python code rules
-globs: 
+globs: *.py
 ---
 ---
 description: Developing the graphcap python client and server

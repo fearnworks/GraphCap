@@ -24,11 +24,11 @@ def upgrade() -> None:
     """Create initial schema."""
     # Create job_status enum type
     job_status = postgresql.ENUM(
-        "pending",
-        "running",
-        "completed",
-        "failed",
-        "cancelled",
+        "PENDING",
+        "RUNNING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED",
         name="job_status",
         create_type=False,
     )
@@ -39,7 +39,7 @@ def upgrade() -> None:
         "pipeline_jobs",
         sa.Column("id", postgresql.UUID(), server_default=sa.text("gen_random_uuid()"), nullable=False),
         sa.Column("pipeline_id", sa.Text(), nullable=False),
-        sa.Column("status", job_status, nullable=False, server_default="pending"),
+        sa.Column("status", job_status, nullable=False, server_default="PENDING"),
         sa.Column("config", postgresql.JSONB(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("NOW()"), nullable=False),
         sa.Column("started_at", sa.DateTime(timezone=True)),
@@ -56,7 +56,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(), server_default=sa.text("gen_random_uuid()"), nullable=False),
         sa.Column("job_id", postgresql.UUID(), nullable=False),
         sa.Column("node_id", sa.Text(), nullable=False),
-        sa.Column("status", job_status, nullable=False, server_default="pending"),
+        sa.Column("status", job_status, nullable=False, server_default="PENDING"),
         sa.Column("result", postgresql.JSONB()),
         sa.Column("error_message", sa.Text()),
         sa.Column("started_at", sa.DateTime(timezone=True)),

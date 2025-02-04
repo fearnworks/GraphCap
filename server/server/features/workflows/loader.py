@@ -1,78 +1,87 @@
 """
 # SPDX-License-Identifier: Apache-2.0
-Stock Workflow Loader
+Workflow Loader
 
-Loads predefined workflow configurations from JSON files.
+Handles loading and registration of stock workflows.
 """
 
 import json
+from pathlib import Path
+from typing import Optional
 
 from loguru import logger
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...config import settings
 from .models import Workflow
+from .schemas import WorkflowCreate, WorkflowMetadata
+
+WORKFLOW_DIR = Path("/workspace/config/workflows")
+
+
+async def load_workflow_file(path: Path, session: AsyncSession) -> Optional[Workflow]:
+    """
+    Load a workflow from a JSON file.
+
+    Args:
+        path: Path to workflow JSON file
+        session: Database session
+
+    Returns:
+        Created workflow or None if already exists
+    """
+    try:
+        # Load workflow JSON
+        workflow_data = json.loads(path.read_text())
+
+        # Check if workflow already exists by ID
+        workflow_id = workflow_data.get("id")
+        if workflow_id:
+            stmt = select(Workflow).where(Workflow.name == workflow_id)
+            result = await session.execute(stmt)
+            if result.scalar_one_or_none():
+                logger.info(f"Workflow {workflow_id} already exists, skipping")
+                return None
+
+        # Extract metadata
+        workflow_metadata = None
+        if "workflow_metadata" in workflow_data:
+            workflow_metadata = WorkflowMetadata(**workflow_data["workflow_metadata"])
+
+        # Create workflow using only the ID and metadata
+        workflow = WorkflowCreate(
+            name=workflow_id,
+            description=workflow_metadata.description if workflow_metadata else None,
+            config={"nodes": workflow_data["nodes"]},
+            workflow_metadata=workflow_metadata,
+        )
+
+        # Save to database
+        db_workflow = Workflow(**workflow.model_dump())
+        session.add(db_workflow)
+        await session.commit()
+        await session.refresh(db_workflow)
+
+        logger.info(f"Loaded workflow {workflow.name}")
+        return db_workflow
+
+    except Exception as e:
+        logger.error(f"Failed to load workflow {path}: {e}")
+        return None
 
 
 async def load_stock_workflows(session: AsyncSession) -> None:
     """
-    Load stock workflows from configuration files.
+    Load all stock workflows from the workflows directory.
 
     Args:
-        session: Database session to use for loading workflows
+        session: Database session
     """
-    config_dir = settings.CONFIG_PATH / "batch_configs/tests"
-    logger.info(f"Looking for stock workflows in: {config_dir}")
+    logger.info(f"Loading stock workflows from {WORKFLOW_DIR}")
 
-    try:
-        if not config_dir.exists():
-            logger.error(f"Config directory does not exist: {config_dir}")
-            return
+    if not WORKFLOW_DIR.exists():
+        logger.warning(f"Workflow directory {WORKFLOW_DIR} does not exist")
+        return
 
-        logger.debug(f"Directory contents: {list(config_dir.glob('*.json'))}")
-        workflow_files = list(config_dir.glob("*.json"))
-        logger.info(f"Found {len(workflow_files)} stock workflow files")
-
-        for workflow_file in workflow_files:
-            logger.info(f"Processing workflow file: {workflow_file}")
-            try:
-                # Log file existence and permissions
-                logger.debug(f"File exists: {workflow_file.exists()}")
-                logger.debug(f"File permissions: {oct(workflow_file.stat().st_mode)[-3:]}")
-
-                # Try to read the file and log its size
-                logger.debug(f"File size: {workflow_file.stat().st_size} bytes")
-
-                with open(workflow_file, "r") as f:
-                    logger.debug(f"Successfully opened {workflow_file}")
-                    try:
-                        config = json.load(f)
-                        logger.debug(f"Successfully parsed JSON from {workflow_file}")
-                    except json.JSONDecodeError as e:
-                        logger.error(f"JSON parsing error in {workflow_file}: {e}")
-                        continue
-
-                # Log workflow details before saving
-                logger.debug(f"Attempting to save workflow: {config.get('name', 'unnamed')}")
-
-                # Create all workflows in a batch
-                workflow = Workflow(
-                    name=config.get("name", workflow_file.stem),
-                    description=config.get("description", ""),
-                    config=config,
-                )
-                session.add(workflow)
-
-            except Exception as e:
-                logger.error(f"Error loading stock workflow {workflow_file}: {e}", exc_info=True)
-                await session.rollback()
-                continue
-
-        # Commit all workflows at once
-        await session.commit()
-        logger.info("Successfully committed all workflows")
-
-    except Exception as e:
-        logger.error(f"Error in load_stock_workflows: {e}", exc_info=True)
-        await session.rollback()
-        raise
+    for path in WORKFLOW_DIR.glob("*.json"):
+        await load_workflow_file(path, session)

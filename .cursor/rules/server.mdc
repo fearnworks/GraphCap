@@ -1,0 +1,34 @@
+---
+description: Server development
+globs: server/*/**.py
+---
+---
+description: Server development
+globs: server/*/**.py
+---
+# Overview
+**Server (`server`)**  
+   - A FastAPI application exposing GraphCap functionalities over HTTP.
+   - Handles orchestration, workflows, workspace management, and session management.
+   - Allows remote systems or UIs to invoke the same pipelines exposed by the library CLI.
+
+The server is written with fastapi. 
+
+Features should be organized under the features folder and should be developed independently when possible. 
+
+A feature should contain its DB models, Pydantic Schemas, Business Logic, and Router and should expose them as an index in __init__.py
+
+we utilize postgres 17 as an orchestration database, queue, and cache. 
+
+
+## Model and Schema Design 
+<Warning>
+- Do not use the term metadata in any schema or model.
+</Warning>
+
+
+## Logging
+The orchestration server should utilize detailed logs with information on all lifecycle methods, calls, and actions. 
+This data will be aggregated and used for monitoring long term production processes.
+Include relevant data in error, logs, and warnings
+Be careful about including sensitive information in logs.

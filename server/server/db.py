@@ -46,15 +46,21 @@ async def init_db_pool() -> None:
     """Initialize the database connection pool with retry logic."""
     global engine, SessionLocal
 
+    if engine is not None:
+        logger.warning("Database pool already initialized")
+        return
+
     try:
         logger.info(f"Connecting to database at {settings.DATABASE_URL}")
         engine = create_async_engine(
             settings.DATABASE_URL,
             echo=settings.SQL_DEBUG,
             pool_pre_ping=True,
+            pool_size=20,  # Increased pool size
+            max_overflow=10,  # Allow some overflow
         )
 
-        # Test the connection with proper SQL text object
+        # Test the connection
         async with engine.begin() as conn:
             await conn.execute(text("SELECT 1"))
 
@@ -72,6 +78,8 @@ async def init_db_pool() -> None:
 async def init_app_db(app: FastAPI) -> None:
     """Initialize database and attach session maker to app state."""
     await init_db_pool()
+    if engine is None or SessionLocal is None:
+        raise RuntimeError("Failed to initialize database")
     app.state.db_session = SessionLocal
 
 
@@ -79,8 +87,10 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """Get a database session."""
     if SessionLocal is None:
         await init_db_pool()
+        if SessionLocal is None:
+            raise RuntimeError("Failed to initialize database session")
 
-    async with SessionLocal() as session:  # type: ignore
+    async with SessionLocal() as session:
         try:
             yield session
         finally:

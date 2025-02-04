@@ -1,37 +1,19 @@
 """
 # SPDX-License-Identifier: Apache-2.0
-Pipeline Router
+Job Router
 
 Handles pipeline execution and job management endpoints.
 """
 
 import asyncio
-from typing import Any, Dict, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from graphcap.dag import DAG, NODE_TYPES
-from graphcap.job_manager import JobManager
 from loguru import logger
-from pydantic import BaseModel
 
-from ..dependencies import get_job_manager
-
-
-class PipelineConfig(BaseModel):
-    """Pipeline configuration model."""
-
-    config: Dict[str, Any]
-    start_node: Optional[str] = None
-
-
-class JobResponse(BaseModel):
-    """Job creation response model."""
-
-    job_id: UUID
-    pipeline_id: str
-    status: str
-
+from .dependencies import get_job_manager
+from .schemas import JobResponse, JobStatusResponse, PipelineConfig
+from .service import execute_pipeline
 
 router = APIRouter(prefix="/pipeline", tags=["pipeline"])
 
@@ -40,7 +22,7 @@ router = APIRouter(prefix="/pipeline", tags=["pipeline"])
 async def run_pipeline(
     pipeline_id: str,
     config: PipelineConfig,
-    job_manager: JobManager = Depends(get_job_manager),
+    job_manager=Depends(get_job_manager),
 ) -> JobResponse:
     """
     Start a pipeline execution.
@@ -63,7 +45,7 @@ async def run_pipeline(
         return JobResponse(
             job_id=job_id,
             pipeline_id=pipeline_id,
-            status="pending",
+            status="PENDING",
         )
 
     except Exception as e:
@@ -71,12 +53,12 @@ async def run_pipeline(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{pipeline_id}/job/{job_id}", response_model=Dict[str, Any])
+@router.get("/{pipeline_id}/job/{job_id}", response_model=JobStatusResponse)
 async def get_job_status(
     pipeline_id: str,
     job_id: UUID,
-    job_manager: JobManager = Depends(get_job_manager),
-) -> Dict[str, Any]:
+    job_manager=Depends(get_job_manager),
+) -> JobStatusResponse:
     """
     Get job status and results.
 
@@ -99,8 +81,8 @@ async def get_job_status(
 async def cancel_job(
     pipeline_id: str,
     job_id: UUID,
-    job_manager: JobManager = Depends(get_job_manager),
-) -> Dict[str, str]:
+    job_manager=Depends(get_job_manager),
+) -> dict[str, str]:
     """
     Cancel a running job.
 
@@ -116,39 +98,8 @@ async def cancel_job(
     if not job_state:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    if job_state.status not in ["pending", "running"]:
+    if job_state.status not in ["PENDING", "RUNNING"]:
         raise HTTPException(status_code=400, detail="Job cannot be cancelled")
 
     await job_manager.fail_job(job_id, "Job cancelled by user")
     return {"status": "cancelled"}
-
-
-async def execute_pipeline(
-    job_id: UUID,
-    config: PipelineConfig,
-    job_manager: JobManager,
-) -> None:
-    """
-    Execute pipeline asynchronously.
-
-    Args:
-        job_id: Job identifier
-        config: Pipeline configuration
-        job_manager: Job manager instance
-    """
-    try:
-        await job_manager.start_job(job_id)
-
-        # Create and validate DAG
-        dag = DAG.from_dict(config.config, node_classes=NODE_TYPES)
-        dag.validate()
-
-        # Execute DAG
-        results = await dag.execute(start_node=config.start_node)
-
-        # Update job with results
-        await job_manager.complete_job(job_id, results)
-
-    except Exception as e:
-        logger.error(f"Pipeline execution failed for job {job_id}: {e}")
-        await job_manager.fail_job(job_id, str(e))
