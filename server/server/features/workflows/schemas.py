@@ -5,27 +5,48 @@ Workflow Schemas
 Pydantic models for workflow validation and serialization.
 """
 
-from typing import Optional
+from datetime import datetime
+from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class WorkflowMetadata(BaseModel):
-    """Workflow metadata model."""
+    """Workflow metadata schema."""
 
-    name: str = Field(..., description="Human-readable workflow name")
-    description: str = Field(..., description="Workflow description")
-    version: str = Field(..., description="Workflow version")
+    name: str
+    description: str | None = None
+    version: str
 
 
-class WorkflowCreate(BaseModel):
-    """Workflow creation model."""
+class WorkflowBase(BaseModel):
+    """Base workflow schema."""
 
-    name: str = Field(..., description="Human-readable workflow name")
-    description: Optional[str] = Field(None, description="Optional workflow description")
-    config: dict = Field(..., description="DAG configuration")
-    workflow_metadata: Optional[WorkflowMetadata] = Field(None, description="Optional workflow metadata")
+    name: str
+    description: str | None = None
+    config: dict[str, Any]
+    workflow_metadata: WorkflowMetadata | None = None
+    file_hash: str | None = None  # Add file hash field
+
+
+class WorkflowCreate(WorkflowBase):
+    """Workflow creation schema."""
+
+    pass
+
+
+class Workflow(WorkflowBase):
+    """Complete workflow schema."""
+
+    id: int
+    created_at: datetime
+    updated_at: datetime | None = None
+
+    class Config:
+        """Pydantic config."""
+
+        from_attributes = True
 
 
 class WorkflowResponse(BaseModel):

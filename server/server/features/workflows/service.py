@@ -159,6 +159,14 @@ async def execute_workflow(
 
         # Validate workflow config with GraphCap DAG
         try:
+            # Log the workflow configuration for debugging
+            logger.debug(f"Workflow config: {workflow.config}")
+
+            # Ensure workflow.config has a 'nodes' key
+            if "nodes" not in workflow.config:
+                logger.error(f"Invalid workflow config format - missing 'nodes' key: {workflow.config}")
+                raise ValueError("Workflow configuration must contain a 'nodes' list")
+
             dag = DAG.from_dict(workflow.config, node_classes=NODE_CLASS_MAPPINGS)
             dag.validate()
             logger.info(f"Workflow {workflow_id} DAG validated successfully")
@@ -166,16 +174,22 @@ async def execute_workflow(
             logger.error(f"Workflow {workflow_id} validation failed: {e}")
             raise HTTPException(status_code=400, detail=f"Invalid workflow configuration: {str(e)}")
 
-        # Create pipeline config
-        pipeline_config = PipelineConfig(config=workflow.config, start_node=start_node)
+        # Create pipeline config - pass the entire workflow config
+        pipeline_config = PipelineConfig(
+            config=workflow.config,  # Pass the entire config which contains the 'nodes' key
+            start_node=start_node,
+        )
 
         # Create and start job
         job_id = await job_manager.create_job(str(workflow_id), pipeline_config.model_dump())
         logger.info(
             "Workflow execution started",
-            workflow_id=workflow_id,
-            job_id=job_id,
-            start_node=start_node,
+            extra={
+                "workflow_id": workflow_id,
+                "job_id": job_id,
+                "start_node": start_node,
+                "config": workflow.config,  # Log the config for debugging
+            },
         )
 
         return job_id

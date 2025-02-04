@@ -6,7 +6,7 @@ cd /app/server
 # Wait for 5 seconds to allow services to initialize
 sleep 5
 echo "Starting server..."
-
+uv run pip install -e "../lib[test]"
 # Run database migrations
 echo "Running database migrations..."
 echo "Current directory: $(pwd)"

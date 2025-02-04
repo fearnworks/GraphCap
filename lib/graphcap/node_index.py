@@ -3,7 +3,7 @@ from graphcap.caption.nodes import PerspectiveNode, PerspectiveOutputNode
 from graphcap.dag.nodes import DAGVisualizerNode
 from graphcap.dataset.nodes import DatasetExportNode
 
-from .io import ImageSamplingNode
+from .io import CopyImagesNode, ImageSamplingNode
 
 # Add this dictionary to map node types to their classes
 NODE_CLASS_MAPPINGS = {
@@ -12,4 +12,5 @@ NODE_CLASS_MAPPINGS = {
     "PerspectiveOutputNode": PerspectiveOutputNode,
     "DAGVisualizerNode": DAGVisualizerNode,
     "DatasetExportNode": DatasetExportNode,
+    "CopyImagesNode": CopyImagesNode,
 }

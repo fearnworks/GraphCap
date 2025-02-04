@@ -5,11 +5,13 @@ Database Connection Management
 Provides database connection and session management.
 """
 
-from typing import AsyncGenerator
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator, TypeVar
 
 from fastapi import FastAPI
 from loguru import logger
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -25,6 +27,8 @@ from tenacity import (
 )
 
 from .config import settings
+
+T = TypeVar("T")
 
 
 class Base(DeclarativeBase):
@@ -68,6 +72,7 @@ async def init_db_pool() -> None:
             engine,
             class_=AsyncSession,
             expire_on_commit=False,
+            autoflush=True,  # Enable autoflush
         )
         logger.info("Database pool initialized successfully")
     except Exception as e:
@@ -83,8 +88,14 @@ async def init_app_db(app: FastAPI) -> None:
     app.state.db_session = SessionLocal
 
 
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    """Get a database session."""
+@asynccontextmanager
+async def managed_transaction() -> AsyncGenerator[AsyncSession, None]:
+    """
+    Context manager for handling database transactions with automatic rollback on error.
+
+    Yields:
+        AsyncSession: Database session with transaction management
+    """
     if SessionLocal is None:
         await init_db_pool()
         if SessionLocal is None:
@@ -93,5 +104,52 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with SessionLocal() as session:
         try:
             yield session
+            await session.commit()
+        except SQLAlchemyError as e:
+            await session.rollback()
+            logger.error(f"Transaction failed, rolling back: {e}")
+            raise
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"Unexpected error in transaction, rolling back: {e}")
+            raise
         finally:
             await session.close()
+
+
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    """Get a database session."""
+    if SessionLocal is None:
+        await init_db_pool()
+        if SessionLocal is None:
+            raise RuntimeError("Failed to initialize database session")
+
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        # Only close if session hasn't been closed already
+        if session.is_active:
+            await session.close()
+
+
+async def run_in_transaction(operation: T) -> T:
+    """
+    Run an operation in a transaction with automatic rollback on error.
+
+    Args:
+        operation: Async operation to run in transaction
+
+    Returns:
+        Result of the operation
+
+    Raises:
+        Exception: If operation fails
+    """
+    async with managed_transaction() as session:
+        try:
+            result = await operation
+            return result
+        except Exception as e:
+            logger.error(f"Operation failed in transaction: {e}")
+            raise

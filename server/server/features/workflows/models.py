@@ -18,7 +18,7 @@ from typing import Optional
 from uuid import UUID, uuid4
 
 from server.db import Base
-from sqlalchemy import DateTime, String, Text
+from sqlalchemy import DateTime, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -39,16 +39,16 @@ class Workflow(Base):
         workflow_metadata (dict): Optional workflow metadata
         created_at (datetime): Creation timestamp
         updated_at (datetime): Last update timestamp
+        file_hash (str): File hash for version tracking
     """
 
     __tablename__ = "workflows"
 
     id: Mapped[UUID] = mapped_column(PgUUID, primary_key=True, default=uuid4)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     description: Mapped[Optional[str]] = mapped_column(Text)
     config: Mapped[dict] = mapped_column(JSONB, nullable=False)
     workflow_metadata: Mapped[Optional[dict]] = mapped_column(JSONB)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    file_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), onupdate=func.now())

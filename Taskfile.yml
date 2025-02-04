@@ -17,9 +17,16 @@ tasks:
       - uv pip install -e "lib[test]"
       - uv pip install -e "server[test]"
 
+  watch:
+    desc: Watch the server for changes
+    cmds:
+      - docker compose -f ./config/docker-compose.yml up  --watch
+
   dev:server:
     desc: Run the server in development mode with Docker
+
     cmds:
+
       - docker compose -f ./config/docker-compose.yml up --build --watch
 
   test:

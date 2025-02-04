@@ -6,10 +6,10 @@ Handles workflow CRUD operations and execution.
 """
 
 import asyncio
-from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from loguru import logger
 from server.db import get_session
 from server.features.job.dependencies import get_job_manager
 from server.features.job.schemas import JobResponse
@@ -26,27 +26,45 @@ router = APIRouter(prefix="/workflows", tags=["workflows"])
 @router.post("/", response_model=WorkflowResponse)
 async def create_workflow(workflow: WorkflowCreate, session: AsyncSession = Depends(get_session)) -> WorkflowResponse:
     """Create a new workflow."""
-    db_workflow = Workflow(**workflow.model_dump())
-    session.add(db_workflow)
-    await session.commit()
-    await session.refresh(db_workflow)
-    return db_workflow
+    async with session.begin():
+        db_workflow = Workflow(**workflow.model_dump())
+        session.add(db_workflow)
+        await session.flush()
+        await session.refresh(db_workflow)
+        # Convert to response model before returning
+        return WorkflowResponse.model_validate(db_workflow)
 
 
-@router.get("/", response_model=List[WorkflowResponse])
-async def list_workflows(session: AsyncSession = Depends(get_session)) -> List[WorkflowResponse]:
-    """List all workflows."""
-    result = await session.execute(select(Workflow).order_by(Workflow.created_at.desc()))
-    return result.scalars().all()
+@router.get("/", response_model=list[WorkflowResponse])
+async def list_workflows(session: AsyncSession = Depends(get_session)) -> list[WorkflowResponse]:
+    """
+    List all workflows.
+
+    Returns:
+        List of workflows ordered by creation date
+    """
+    try:
+        async with session.begin():
+            stmt = select(Workflow).order_by(Workflow.created_at.desc())
+            result = await session.execute(stmt)
+            workflows = result.scalars().all()
+            logger.debug(f"Found {len(workflows)} workflows")
+            # Convert each workflow to response model
+            return [WorkflowResponse.model_validate(w) for w in workflows]
+    except Exception as e:
+        logger.error(f"Failed to list workflows: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list workflows")
 
 
 @router.get("/{workflow_id}", response_model=WorkflowResponse)
 async def get_workflow(workflow_id: UUID, session: AsyncSession = Depends(get_session)) -> WorkflowResponse:
     """Get a workflow by ID."""
-    workflow = await session.get(Workflow, workflow_id)
-    if not workflow:
-        raise HTTPException(status_code=404, detail="Workflow not found")
-    return workflow
+    async with session.begin():
+        workflow = await session.get(Workflow, workflow_id)
+        if not workflow:
+            raise HTTPException(status_code=404, detail="Workflow not found")
+        # Convert to response model before returning
+        return WorkflowResponse.model_validate(workflow)
 
 
 @router.post("/{workflow_id}/run", response_model=JobResponse)
@@ -68,13 +86,19 @@ async def run_workflow(
     Returns:
         Job creation response
     """
-    job_id = await execute_workflow(workflow_id, job_manager, session, start_node)
+    try:
+        # Use a new session for workflow execution to avoid state conflicts
+        async with session.begin():
+            job_id = await execute_workflow(workflow_id, job_manager, session, start_node)
 
-    # Start async execution
-    asyncio.create_task(execute_pipeline(job_id, job_manager))
+            # Create task after transaction is complete
+            asyncio.create_task(execute_pipeline(job_id, job_manager))
 
-    return JobResponse(
-        job_id=job_id,
-        pipeline_id=str(workflow_id),
-        status="PENDING",
-    )
+            return JobResponse(
+                job_id=job_id,
+                pipeline_id=str(workflow_id),
+                status="PENDING",
+            )
+    except Exception as e:
+        logger.error(f"Failed to run workflow {workflow_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
