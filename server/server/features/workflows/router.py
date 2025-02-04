@@ -5,6 +5,7 @@ Workflow Router
 Handles workflow CRUD operations and execution.
 """
 
+import asyncio
 from typing import List
 from uuid import UUID
 
@@ -17,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import Workflow
 from .schemas import WorkflowCreate, WorkflowResponse
-from .service import execute_workflow
+from .service import execute_pipeline, execute_workflow
 
 router = APIRouter(prefix="/workflows", tags=["workflows"])
 
@@ -68,6 +69,9 @@ async def run_workflow(
         Job creation response
     """
     job_id = await execute_workflow(workflow_id, job_manager, session, start_node)
+
+    # Start async execution
+    asyncio.create_task(execute_pipeline(job_id, job_manager))
 
     return JobResponse(
         job_id=job_id,

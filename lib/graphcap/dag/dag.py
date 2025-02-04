@@ -231,13 +231,13 @@ class DAG:
             raise ValueError(f"DAG validation failed: {str(e)}")
 
     @classmethod
-    def from_dict(cls, config: Dict[str, Any], node_classes: Dict[str, str]) -> "DAG":
+    def from_dict(cls, config: dict[str, Any], node_classes: dict[str, type[BaseNode]]) -> "DAG":
         """
         Create a DAG instance from a dictionary configuration.
 
         Args:
             config: Dictionary containing DAG configuration
-            node_classes: Mapping of node type names to class paths
+            node_classes: Mapping of node type names to node classes
 
         Returns:
             DAG instance
@@ -254,13 +254,16 @@ class DAG:
             if node_type not in node_classes:
                 raise ValueError(f"Unknown node type: {node_type}")
 
-            # Import node class
-            module_path, class_name = node_classes[node_type].rsplit(".", 1)
-            module = __import__(module_path, fromlist=[class_name])
-            node_class = getattr(module, class_name)
+            # Get node class directly from mapping
+            node_class = node_classes[node_type]
 
             # Create node instance
             node = node_class(id=node_config["id"], dependencies=node_config.get("dependencies", []))
+
+            # Set node config if provided
+            if "config" in node_config:
+                node.config = node_config["config"]
+
             dag.add_node(node)
 
         return dag

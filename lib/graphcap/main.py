@@ -7,11 +7,8 @@ import click
 from dotenv import load_dotenv
 from loguru import logger
 
-# from graphcap.caption.graph_caption import GraphCaptionProcessor
-from graphcap.caption.nodes import PerspectiveNode
-
 from .dag.dag import DAG
-from .io import ImageSamplingNode
+from .node_index import NODE_CLASS_MAPPINGS
 
 load_dotenv()
 
@@ -20,13 +17,6 @@ load_dotenv()
 def cli():
     """graphcap CLI tool"""
     pass
-
-
-# Add this dictionary to map node types to their classes
-NODE_CLASS_MAPPINGS = {
-    "ImageSamplingNode": ImageSamplingNode,
-    "PerspectiveNode": PerspectiveNode,
-}
 
 
 @cli.command("dag-validate")
