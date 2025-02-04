@@ -6,7 +6,7 @@ Handles job state management and persistence using SQLAlchemy ORM.
 """
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, Sequence
 from uuid import UUID
 
 from loguru import logger
@@ -91,3 +91,55 @@ class JobManager:
             self.session.add(node_state)
             await self.session.commit()
             logger.info(f"Updated node {node_id} state for job {job_id}: {status}")
+
+    async def cancel_job(self, job_id: UUID) -> None:
+        """Cancel a running job."""
+        job = await self.get_job_state(job_id)
+        if job:
+            if job.status in [JobStatus.PENDING, JobStatus.RUNNING]:
+                job.status = JobStatus.CANCELLED
+                job.completed_at = datetime.utcnow()
+                job.error_message = "Job cancelled by user"
+                await self.session.commit()
+                logger.info(f"Cancelled job {job_id}")
+            else:
+                logger.warning(f"Cannot cancel job {job_id} in state {job.status}")
+
+    async def get_active_jobs(self) -> Sequence[PipelineJob]:
+        """Get all active (pending or running) jobs."""
+        result = await self.session.execute(
+            select(PipelineJob).where(PipelineJob.status.in_([JobStatus.PENDING, JobStatus.RUNNING]))
+        )
+        return result.scalars().all()
+
+    async def cancel_all_jobs(self) -> dict[str, Any]:
+        """
+        Cancel all active jobs.
+
+        Returns:
+            Dictionary with cancellation results
+        """
+        active_jobs = await self.get_active_jobs()
+        cancelled_count = 0
+        failed_count = 0
+        job_results = []
+
+        for job in active_jobs:
+            try:
+                await self.cancel_job(job.id)
+                cancelled_count += 1
+                job_results.append({"job_id": str(job.id), "status": "cancelled"})
+            except Exception as e:
+                failed_count += 1
+                job_results.append({"job_id": str(job.id), "status": "failed", "error": str(e)})
+                logger.error(f"Failed to cancel job {job.id}: {e}")
+
+        results = {
+            "total_jobs": len(active_jobs),
+            "cancelled_count": cancelled_count,
+            "failed_count": failed_count,
+            "job_results": job_results,
+        }
+
+        logger.info(f"Cancelled {cancelled_count} jobs, {failed_count} failed", extra={"results": results})
+        return results

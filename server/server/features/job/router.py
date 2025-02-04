@@ -6,6 +6,7 @@ Handles pipeline execution and job management endpoints.
 """
 
 import asyncio
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -103,3 +104,21 @@ async def cancel_job(
 
     await job_manager.fail_job(job_id, "Job cancelled by user")
     return {"status": "cancelled"}
+
+
+@router.post("/cancel-all", response_model=dict[str, Any])
+async def cancel_all_jobs(
+    job_manager=Depends(get_job_manager),
+) -> dict[str, Any]:
+    """
+    Cancel all active jobs.
+
+    Returns:
+        Dictionary containing cancellation results
+    """
+    try:
+        results = await job_manager.cancel_all_jobs()
+        return results
+    except Exception as e:
+        logger.error(f"Failed to cancel all jobs: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to cancel all jobs: {str(e)}")
