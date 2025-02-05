@@ -13,7 +13,15 @@ all aimed at facilitating image captioning workflows, dataset generation, and op
    :maxdepth: 2
    :caption: Contents:
 
-   concepts/dag
+   introduction.md
+   quickstart.md
+   design.md
+   contributing/packaging.md
+   use_cases/app_configuration.md
+   use_cases/caption_generation.md
+   use_cases/dataset_export.md
+   use_cases/image_management.md
+   use_cases/quality_control.md
 
 Indices and tables
 ==================
