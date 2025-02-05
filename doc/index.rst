@@ -1,5 +1,6 @@
 GraphCap Documentation
 =======================
+[logo](./static/logo.png)
 
 Welcome to the GraphCap project documentation. GraphCap is an experimental repository
 focused on generating graph structures from multimodal data using vision and language models.
