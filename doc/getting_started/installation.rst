@@ -57,4 +57,3 @@ Configuration
 
 - **Batch Configurations**: Customize batch processing settings in `config/batch_configs/`.
 
-For more detailed information on each component, refer to the [README.md](../README.md) and the [Taskfile.yml](../Taskfile.yml).

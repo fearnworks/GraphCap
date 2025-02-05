@@ -17,26 +17,23 @@ Configuration
 
 The provider system is configured using a TOML file (`provider.config.toml`) that defines both cloud and custom providers. This configuration file specifies the API keys, base URLs, and available models for each provider.
 
-Example Configuration:
-----------------------
+.. code-block:: toml
 
-```toml
-[openai]
-kind = "openai"
-environment = "cloud"
-env_var = "OPENAI_API_KEY"
-base_url = "https://api.openai.com/v1"
-models = ["gpt-4o-mini", "gpt-4o"]
-default_model = "gpt-4o-mini"
+   [openai]
+   kind = "openai"
+   environment = "cloud"
+   env_var = "OPENAI_API_KEY"
+   base_url = "https://api.openai.com/v1"
+   models = ["gpt-4o-mini", "gpt-4o"]
+   default_model = "gpt-4o-mini"
 
-[gemini]
-kind = "gemini"
-environment = "cloud"
-env_var = "GOOGLE_API_KEY"
-base_url = "https://generativelanguage.googleapis.com/v1beta"
-models = ["gemini-2.0-flash-exp"]
-default_model = "gemini-2.0-flash-exp"
-```
+   [gemini]
+   kind = "gemini"
+   environment = "cloud"
+   env_var = "GOOGLE_API_KEY"
+   base_url = "https://generativelanguage.googleapis.com/v1beta"
+   models = ["gemini-2.0-flash-exp"]
+   default_model = "gemini-2.0-flash-exp"
 
 Provider Types
 ==============
