@@ -1,14 +1,6 @@
 ---
-description: 
-globs: *.py
----
----
-description: python code rules
-globs: *.py
----
----
 description: Developing the graphcap python client and server
-globs: *.py
+globs:  *.py
 ---
 # Python rules 
 - use >3.11 python standards

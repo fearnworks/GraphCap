@@ -1,10 +1,6 @@
 ---
-description: 
-globs: tests/*
----
----
 description: Unit, integration, and e2e tests
-globs: 
+globs: tests/*
 ---
 # Test Overview
 

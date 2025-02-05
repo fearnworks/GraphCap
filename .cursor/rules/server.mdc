@@ -2,10 +2,6 @@
 description: Server development
 globs: server/*/**.py
 ---
----
-description: Server development
-globs: server/*/**.py
----
 # Overview
 **Server (`server`)**  
    - A FastAPI application exposing GraphCap functionalities over HTTP.
