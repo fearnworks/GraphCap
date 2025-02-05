@@ -1,7 +1,11 @@
 # graphcap
 > **SPDX-License-Identifier: Apache-2.0**
 
-![Image](./docs/static/flow.png)
+<p align="center">
+| <a href="https://fearnworks.github.io/GraphCap/"><b>Documentation</b></a> | <a href="https://pypi.org/project/graphcap/"><b>PyPI</b></a> |
+</p>
+
+![Image](./doc/static/logo.png)
 
 **graphcap** is a work-in-progress repository dedicated to experimenting with **structured outputs** and **scene-based captions** to support open-source dataset generation. By leveraging models capable of producing detailed annotations (including bounding boxes, attributes, relationships, and textual captions), graphcap aims to streamline the creation of rich, shareable metadata for images.
 

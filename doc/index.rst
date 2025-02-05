@@ -1,14 +1,28 @@
-.. Example documentation master file, created by
-   sphinx-quickstart on Sat Sep 23 20:35:12 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+GraphCap Documentation
+=======================
 
-Welcome to Example's documentation!
-===================================
+Welcome to the GraphCap project documentation. GraphCap is an experimental repository
+focused on generating graph structures from multimodal data using vision and language models.
+The project comprises a core library, a FastAPI server, and various supporting utilities,
+all aimed at facilitating image captioning workflows, dataset generation, and open dataset sharing.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   some-feature.md
-   another-feature.md
+   introduction.md
+   quickstart.md
+   design.md
+   contributing/packaging.md
+   use_cases/app_configuration.md
+   use_cases/caption_generation.md
+   use_cases/dataset_export.md
+   use_cases/image_management.md
+   use_cases/quality_control.md
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search` 

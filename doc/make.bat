@@ -2,7 +2,7 @@
 
 pushd %~dp0
 
-REM Command file for Sphinx documentation
+REM Command file for building GraphCap documentation with Sphinx
 
 if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=sphinx-build
@@ -13,13 +13,11 @@ set BUILDDIR=_build
 %SPHINXBUILD% >NUL 2>NUL
 if errorlevel 9009 (
 	echo.
-	echo.The 'sphinx-build' command was not found. Make sure you have Sphinx
-	echo.installed, then set the SPHINXBUILD environment variable to point
-	echo.to the full path of the 'sphinx-build' executable. Alternatively you
-	echo.may add the Sphinx directory to PATH.
+	echo.The 'sphinx-build' command was not found. Please ensure Sphinx is installed.
+	echo.Set the SPHINXBUILD environment variable to the full path of the 'sphinx-build' executable.
+	echo.Or add the Sphinx directory to your PATH.
 	echo.
-	echo.If you don't have Sphinx installed, grab it from
-	echo.https://www.sphinx-doc.org/
+	echo.Download Sphinx from https://www.sphinx-doc.org/
 	exit /b 1
 )
 
@@ -32,4 +30,4 @@ goto end
 %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 
 :end
-popd
+popd 
