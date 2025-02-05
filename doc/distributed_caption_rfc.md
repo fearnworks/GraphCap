@@ -22,7 +22,7 @@ Pulled 1/22/2025
 
 ## 1. Summary & Overview
 
-The **OMI Distributed Captioning System** is a platform that enables a community of contributors to collaboratively build a large, high-quality, open-source image caption dataset. The system combines local processing (for caption generation) with a centrally-managed backend (for secure uploads, moderation, and indexing) to support both simple text captions and more advanced scene-based annotations (GraphCaption). By decentralizing heavy computation to contributors’ local machines, it minimizes central infrastructure costs while enabling a robust, scalable, and flexible annotation pipeline.
+The **OMI Distributed Captioning System** is a platform that enables a community of contributors to collaboratively build a large, high-quality, open-source image caption dataset. The system combines local processing (for caption generation) with a centrally-managed backend (for secure uploads, moderation, and indexing) to support both simple text captions and more advanced scene-based annotations (GraphCaption). By decentralizing heavy computation to contributors' local machines, it minimizes central infrastructure costs while enabling a robust, scalable, and flexible annotation pipeline.
 
 
 
@@ -60,7 +60,7 @@ We propose a **hybrid architecture** featuring:
 
 ### 3.2 Architectural Principles
 
-- **Modularity & Extensibility**: Multiple models, easy to swap or add new “perspectives.”  
+- **Modularity & Extensibility**: Multiple models, easy to swap or add new "perspectives."  
 - **Enhanced Handling of Complexity**: Existing Text-based captions remain easy; advanced scene-graph data can be stored in the same structure.  
 - **Security & Compliance**: Authenticated uploads, moderation pipeline, short-lived tokens.  
 - **Interoperability & Standardization**: Use JSONL for export, GraphCaption stored in JSONB, minimal schema changes.  
@@ -106,6 +106,15 @@ To further enrich caption diversity and quality, the system utilizes a "perspect
 
 - **Annotation Storage**: JSONB field for storing both simple text captions and GraphCaption data.
 - **Indexes**: Potential GIN indexes on JSONB for performance.
+
+### Perspectives
+
+In the GraphCap system, perspectives are specialized modules that provide unique analyses of images. Each perspective focuses on different aspects of the image, such as artistic composition or structured scene analysis. This modular approach allows contributors to generate diverse and rich annotations for images.
+
+- **GraphCaption**: Focuses on structured scene analysis with categorized tags.
+- **ArtCritic**: Provides artistic analysis focusing on visual and technical elements.
+
+Perspectives are integral to the distributed captioning system, enabling flexible and scalable image analysis.
 
 ## 5. Data Model and Storage
 

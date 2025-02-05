@@ -15,4 +15,9 @@ Key features:
 Caption Types:
     GraphCaption: Structured analysis with tags and descriptions
     ArtCritic: Artistic analysis focusing on composition and technique
+
+Perspectives:
+    Perspectives in GraphCap are specialized modules that provide unique analyses.
+    Each perspective focuses on different aspects of the image, allowing for comprehensive
+    and diverse image analysis.
 """

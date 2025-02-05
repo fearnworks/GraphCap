@@ -14,8 +14,9 @@ all aimed at facilitating image captioning workflows, dataset generation, and op
    :caption: Contents:
 
    getting_started/
-   providers/
    concepts/
+   development/
+   providers/
 
 Indices and tables
 ==================

@@ -1,4 +1,3 @@
-
 # GraphCap System Design
 
 ![design](./static/component_design.png)
@@ -32,12 +31,21 @@ Its outputs are typically structured JSON data and HTML reports, optionally asse
    - Allows remote systems or UIs to invoke the same pipelines exposed by the library CLI.
 
 3. **Core UI**  
-   - A (not fully shown here) front‐end interface that calls the server’s REST endpoints.
+   - A (not fully shown here) front‐end interface that calls the server's REST endpoints.
    - Used for dataset management, pipeline configuration, and interactive usage without coding.
 
 4. **Agentic Systems**  
    - Downstream consumers that can call the server or library for AI‐powered tasks.
    - May automate dataset creation by orchestrating pipelines programmatically.
+
+### Perspectives
+
+Perspectives are a core feature of the GraphCap system, providing different analytical views on images. Each perspective is implemented as a node in the DAG workflow, allowing for flexible and modular image processing.
+
+- **GraphCaption**: Structured analysis with tags and descriptions.
+- **ArtCritic**: Artistic analysis focusing on composition and technique.
+
+These perspectives enable the system to produce diverse outputs, catering to various use cases and requirements.
 
 ### 2.2 Typical Flow
 
@@ -84,8 +92,8 @@ Below is an example of a dag (produced by a meta node during execution) for the 
   - **`base_caption.py`**: Abstract base classes for caption processors; handles prompt structure, Pydantic schemas.
   - **`batch_config.py`**: Tools for sampling images, applying model parameters, etc.
   - **`perspectives/`**:  
-    - **`graph`**: `GraphCaptionProcessor` (scene graph style tags, relationships). Includes HTML “graph report” and network diagram features.  
-    - **`art_critic`**: `ArtCriticProcessor` (formal analysis of images, e.g. lines, composition). Includes Jinja templates for “art_report”.
+    - **`graph`**: `GraphCaptionProcessor` (scene graph style tags, relationships). Includes HTML "graph report" and network diagram features.  
+    - **`art_critic`**: `ArtCriticProcessor` (formal analysis of images, e.g. lines, composition). Includes Jinja templates for "art_report".
   - **`nodes/`**:
     - **`PerspectiveNode`**: Runs a chosen perspective (graph or art critic) on a set of images.
     - **`PerspectiveOutputNode`**: Organizes outputs (logs, copying images, final files).
@@ -95,18 +103,18 @@ Below is an example of a dag (produced by a meta node during execution) for the 
 - **`dataset/`**  
   - **`dataset_manager.py`**: Class (`DatasetManager`) that takes caption outputs, optionally merges them into JSONL, and can push them to Hugging Face.
   - **`nodes/export.py`**: `DatasetExportNode` for constructing a final dataset from pipeline outputs.
-  - **`file_handler.py`, `hf_client.py`, `metadata.py`**: Utilities for writing JSON, generating dataset “cards,” handling Hugging Face integration.
+  - **`file_handler.py`, `hf_client.py`, `metadata.py`**: Utilities for writing JSON, generating dataset "cards," handling Hugging Face integration.
 
 ### 3.5 I/O Nodes
 
 - **`io/`**  
-  - **`ImageSamplingNode`**: Node that reads images from disk and samples them (random, latest, incremental). Frequently the pipeline’s starting point.
+  - **`ImageSamplingNode`**: Node that reads images from disk and samples them (random, latest, incremental). Frequently the pipeline's starting point.
 
 ### 3.6 Provider Integrations
 
 - **`providers/`**  
   - **`clients/`**: Multiple Python clients offering an *OpenAI‐style* interface, but for various backends (OpenAI, Gemini, VLLM, Ollama, etc.).  
-  - **`provider_manager.py`**: Discovers configuration from environment variables or a TOML file, then yields the correct client for a pipeline node’s provider choice.
+  - **`provider_manager.py`**: Discovers configuration from environment variables or a TOML file, then yields the correct client for a pipeline node's provider choice.
 
 ---
 
@@ -151,7 +159,7 @@ This UI layer ensures a user-friendly experience without requiring direct CLI us
 1. **Image Input**:
    - A user or system provides images. In a DAG, this is typically handled by `ImageSamplingNode`.
 2. **Caption Generation**:
-   - Various nodes run perspectives like “ArtCritic” or “GraphCaption,” each producing structured JSON or HTML artifacts.
+   - Various nodes run perspectives like "ArtCritic" or "GraphCaption," each producing structured JSON or HTML artifacts.
 3. **Organization and Export**:
    - `PerspectiveOutputNode` consolidates logs and files.
    - `DatasetExportNode` can produce a final dataset or upload it to Hugging Face.
