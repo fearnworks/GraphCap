@@ -1,5 +1,5 @@
 =================================
-Server Documentation Index
+Orchestration Server
 =================================
 
 .. toctree::

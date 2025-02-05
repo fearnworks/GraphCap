@@ -1,8 +1,9 @@
 =================================
-Core Documentation Index
+Core Library (graphcap)
 =================================
 
 .. toctree::
+
 
    :maxdepth: 2
 
