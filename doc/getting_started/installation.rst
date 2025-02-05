@@ -18,35 +18,35 @@ Setup Instructions
 
    Clone the GraphCap repository from GitHub:
 
-   ```bash
-   git clone https://github.com/fearnworks/graphcap.git
-   cd graphcap
-   ```
+   .. code-block:: bash
+
+      git clone https://github.com/fearnworks/graphcap.git
+      cd graphcap
 
 2. **Set Up the Environment [Dev] **
    Use the task runner to install all necessary dependencies. You can skip this step if you are not developing the project:
 
-   ```bash
-   task install
-   ```
+   .. code-block:: bash
+
+      task install
 
 4. **Configure Environment Variables**
 
    Copy the environment template and configure your environment variables:
 
-   ```bash
-   cp .env.caption.template .env
-   cp ./config/provider.config.toml.example ./config/provider.config.toml
-   # Edit .env and provider config to set your API keys and other configurations
-   ```
+   .. code-block:: bash
+
+      cp .env.caption.template .env
+      cp ./config/provider.config.toml.example ./config/provider.config.toml
+      # Edit .env and provider config to set your API keys and other configurations
 
 5. **Run the Server**
 
    Start the server using Docker Compose:
 
-   ```bash
-   task dev:server
-   ```
+   .. code-block:: bash
+
+      task dev:server
 
 Configuration
 =============
