@@ -11,6 +11,7 @@ The project comprises a core library, a FastAPI orchestration server, and variou
    :maxdepth: 2
    :caption: Contents:
 
+   overview
    getting_started/index
    core/index
    server/index
