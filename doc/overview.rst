@@ -2,7 +2,7 @@
 .. graphcap.module.doc.overview
 
 =================================
-GraphCap Project Overview
+Overview
 =================================
 
 GraphCap is a platform that leverages advanced vision and language models to generate graph structures from multimodal data.
