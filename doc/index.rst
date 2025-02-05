@@ -15,6 +15,7 @@ The project comprises a core library, a FastAPI orchestration server, and variou
    core/index
    server/index
    development/index
+   ui/index
 
 Indices and tables
 ==================
