@@ -15,17 +15,17 @@ Key Features
   The server is fully containerized and deployed using Docker. This ensures consistency between development and production environments.
   
 - **Volume Mounting and Hot Reloading:**  
-  Key directories such as `lib/graphcap`, `server`, and `config` are mounted into the container for seamless code updates and rapid development iterations.
+  Key directories such as ``lib/graphcap``, ``server``, and ``config`` are mounted into the container for seamless code updates and rapid development iterations.
   
 - **Database Integration:**  
-  The server connects to a PostgreSQL database (defined as `gcap_postgres` in Docker Compose) for persistent storage of configurations, metadata, and workflow states.
+  The server connects to a PostgreSQL database (defined as ``gcap_postgres`` in Docker Compose) for persistent storage of configurations, metadata, and workflow states.
   
 - **Configurable Environment:**  
-  Environment variables are specified via external `.env` files (with a template available as `server/.env.local.template`), making it easy to adjust settings such as database URLs, paths, and debug options.
+  Environment variables are specified via external ``.env`` files (with a template available as ``server/.env.local.template``), making it easy to adjust settings such as database URLs, paths, and debug options.
 
 Docker Compose Deployment
 -------------------------
-The orchestration server is orchestrated together with its dependencies (e.g., PostgreSQL) using Docker Compose. The main configuration is defined in `config/docker-compose.yml`. For example, the service configuration for the server is as follows:
+The orchestration server is orchestrated together with its dependencies (e.g., PostgreSQL) using Docker Compose. The main configuration is defined in ``config/docker-compose.yml``. For example, the service configuration for the server is as follows:
 
 .. code-block:: yaml
 
@@ -68,4 +68,4 @@ To launch the orchestration server and all of its required services, run the fol
     # or 
     task dev:server
 
-This command builds the server image (using `server/Dockerfile.server`), starts the PostgreSQL database, and mounts necessary volumes for code, configuration, and datasets. The server is then accessible on port 32100.
+This command builds the server image (using ``server/Dockerfile.server``), starts the PostgreSQL database, and mounts necessary volumes for code, configuration, and datasets. The server is then accessible on port 32100.

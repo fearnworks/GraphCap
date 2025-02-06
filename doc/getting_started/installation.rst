@@ -52,9 +52,9 @@ Setup Instructions
 Configuration
 =============
 
-- **Docker Compose**: The project uses Docker Compose for managing services. You can customize the services by editing `config/docker-compose.override.example.yml` and renaming it to `docker-compose.override.yml`.
+- **Docker Compose**: The project uses Docker Compose for managing services. You can customize the services by editing ``config/docker-compose.override.example.yml`` and renaming it to ``docker-compose.override.yml``.
 
-- **Provider Configuration**: Configure AI providers in `config/provider.config.toml`. Uncomment and set up the providers you wish to use.
+- **Provider Configuration**: Configure AI providers in ``config/provider.config.toml``. Uncomment and set up the providers you wish to use.
 
-- **Batch Configurations**: Customize batch processing settings in `config/batch_configs/`.
+- **Batch Configurations**: Customize batch processing settings in ``config/batch_configs/``.
 

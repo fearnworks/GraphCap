@@ -15,7 +15,7 @@ Key Objectives
 Configuration
 =============
 
-The provider system is configured using a TOML file (`provider.config.toml`) that defines both cloud and custom providers. This configuration file specifies the API keys, base URLs, and available models for each provider.
+The provider system is configured using a TOML file (``provider.config.toml``) that defines both cloud and custom providers. This configuration file specifies the API keys, base URLs, and available models for each provider.
 
 .. code-block:: toml
 
@@ -44,12 +44,13 @@ Provider Types
 Usage
 =====
 
-The provider system is managed through the `ProviderManager` class, which handles the initialization and management of provider clients.
+The provider system is managed through the ``ProviderManager`` class, which handles the initialization and management of provider clients.
 
 Basic Usage:
 ------------
 
 .. code-block:: python
+   
    from graphcap.providers.provider_manager import ProviderManager
 
    # Initialize the manager
@@ -68,4 +69,4 @@ Features
 - **Configuration Management**: Centralized configuration using TOML files.
 - **Error Handling**: Robust error handling with detailed logging.
 
-For more detailed information on each component, refer to the [README.md]<../README.md> and the [provider.config.toml]<../config/provider.config.toml>.
+For more detailed information on each component, refer to `the README <../README.md>`_ and `the provider config <../../../config/provider.example.config.toml>`_.

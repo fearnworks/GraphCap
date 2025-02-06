@@ -10,6 +10,7 @@ This guide outlines the steps to add a new node, register it within the system, 
 Prerequisites
 -------------
 Before creating a new node, ensure that you are familiar with:
+
 - The overall DAG architecture and workflow management in GraphCap.
 - The node interface as defined in ``lib/graphcap/dag/node.py`` (the ``BaseNode`` class).
 - Existing node implementations in the ``lib/graphcap/dag/nodes/`` directory.
@@ -17,7 +18,8 @@ Before creating a new node, ensure that you are familiar with:
 
 Step 1: Create Your Node Implementation
 -----------------------------------------
-1. Create a new node class by inheriting from `BaseNode`. Implement the required methods:
+1. Create a new node class by inheriting from ``BaseNode``. Implement the required methods:
+
    - Override the ``schema()`` to define input configurations.
    - Override the ``outputs()`` to specify output types.
    - Implement the asynchronous ``execute()`` method containing your node logic.
@@ -99,11 +101,12 @@ Step 3: Add Integration Tests
 -----------------------------
 Integration tests help ensure that your node behaves correctly within the DAG.
 
-1. Create a test file in the :dir:`tests/library_tests/node_tests/` directory (for example, :file:`test_my_custom_node.py`).
+1. Create a test file in the ``tests/library_tests/node_tests/`` directory (for example, ``test_my_custom_node.py``).
 2. Write tests that:
-   - Validate the node's schema enforcement.
-   - Check correct node execution under expected input conditions.
-   - Verify error handling in case of missing or invalid inputs.
+
+   * Validate the node's schema enforcement.
+   * Check correct node execution under expected input conditions.
+   * Verify error handling in case of missing or invalid inputs.
 
 Example test snippet:
 
@@ -130,7 +133,7 @@ Example test snippet:
 
 Step 4: Update Batch Configurations (if applicable)
 ----------------------------------------------------
-If your new node is part of a batch process or integrates with existing batch workflows, add or update sample configuration files in :dir:`config/batch_configs/`.
+If your new node is part of a batch process or integrates with existing batch workflows, add or update sample configuration files in ``config/batch_configs/``.
 
 For example, add a section in a sample TOML configuration (e.g., :file:`config/batch_configs/example_config.toml`) to include your node:
    
