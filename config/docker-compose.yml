@@ -98,6 +98,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - VITE_API_URL=http://localhost:32100/api
+      - VITE_WORKSPACE_PATH=/workspace/.local
+      
 
     networks:
       - graphcap
