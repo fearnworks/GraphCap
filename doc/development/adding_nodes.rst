@@ -11,7 +11,7 @@ Prerequisites
 -------------
 Before creating a new node, ensure that you are familiar with:
 
-- The overall DAG architecture and workflow management in GraphCap.
+- The overall DAG architecture and workflow management in graphcap .
 - The node interface as defined in ``lib/graphcap/dag/node.py`` (the ``BaseNode`` class).
 - Existing node implementations in the ``lib/graphcap/dag/nodes/`` directory.
 - Python 3.11+ standards, strong typing, and project coding style.

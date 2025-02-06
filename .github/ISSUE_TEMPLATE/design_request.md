@@ -1,6 +1,6 @@
 ---
 name: Design/UX Enhancement
-about: Suggest an improvement to the design or user experience of GraphCap
+about: Suggest an improvement to the design or user experience of graphcap
 title: "[DESIGN] "
 labels: enhancement, design
 assignees: ''

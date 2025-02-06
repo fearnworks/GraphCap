@@ -3,7 +3,7 @@ Adding a New Provider Integration
 
 Overview
 --------
-This guide explains how to add a new provider integration into GraphCap. The process
+This guide explains how to add a new provider integration into graphcap . The process
 involves the following steps:
 
 - Adding a provider configuration example in the configuration file.

@@ -87,4 +87,4 @@ Refer to our workflow configuration files for concrete examples:
 
 Conclusion
 ==========
-Caption Perspective Nodes extend GraphCap's capabilities by offering flexible, configurable image analysis. Their integration into batch workflows allows for automated processing, structured output generation, and seamless export of results, thereby supporting advanced image captioning strategies. 
+Caption Perspective Nodes extend graphcap 's capabilities by offering flexible, configurable image analysis. Their integration into batch workflows allows for automated processing, structured output generation, and seamless export of results, thereby supporting advanced image captioning strategies. 

@@ -4,7 +4,7 @@
 
 ## 1. Introduction
 
-**GraphCap** is a system for generating *structured image captions* (e.g., scene graphs, art critiques, attribute listings) by orchestrating image‐processing pipelines. It provides:
+**graphcap ** is a system for generating *structured image captions* (e.g., scene graphs, art critiques, attribute listings) by orchestrating image‐processing pipelines. It provides:
 
 - A **DAG-driven workflow engine** for orchestrating steps such as image loading, caption generation, and dataset export.
 - **Pluggable model providers**, allowing you to call into OpenAI, Gemini, or local LLMs for caption generation.

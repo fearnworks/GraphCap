@@ -37,7 +37,7 @@ Key Features
 
 Getting Started
 ---------------
-To get up and running with GraphCap, review the respective sections of the documentation:
+To get up and running with graphcap , review the respective sections of the documentation:
 
 - Installation and project setup using modern Python packaging with Hatchling.
 - Running the server component via Docker Compose or task runner commands.
