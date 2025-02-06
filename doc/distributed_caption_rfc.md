@@ -109,7 +109,7 @@ To further enrich caption diversity and quality, the system utilizes a "perspect
 
 ### Perspectives
 
-In the GraphCap system, perspectives are specialized modules that provide unique analyses of images. Each perspective focuses on different aspects of the image, such as artistic composition or structured scene analysis. This modular approach allows contributors to generate diverse and rich annotations for images.
+In the graphcap system, perspectives are specialized modules that provide unique analyses of images. Each perspective focuses on different aspects of the image, such as artistic composition or structured scene analysis. This modular approach allows contributors to generate diverse and rich annotations for images.
 
 - **GraphCaption**: Focuses on structured scene analysis with categorized tags.
 - **ArtCritic**: Provides artistic analysis focusing on visual and technical elements.

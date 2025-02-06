@@ -4,10 +4,10 @@ Release and Packaging Architecture
 Overview
 --------
 
-GraphCap uses modern Python packaging tools and practices to manage dependencies, testing, and distribution. The project is structured as a workspace with multiple components:
+graphcap uses modern Python packaging tools and practices to manage dependencies, testing, and distribution. The project is structured as a workspace with multiple components:
 
-- `graphcap` - Core library package
-- `server` - FastAPI server package
+- ``graphcap`` - Core library package
+- ``server`` - FastAPI server package
 - Additional workspace components (UI, etc.)
 
 1. Build System
@@ -28,6 +28,7 @@ We use Hatchling as our build backend for its modern features and extensibility:
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: text
+
     .cursor/rules/               # Context store for software agents
     .github/workflows/           # GitHub Actions workflows
     .venv/                      # Root local environment spawned by uv
@@ -75,10 +76,11 @@ The project uses GitHub Actions for continuous integration and deployment with t
 
 This workflow handles the core library package quality checks:
 
-- **Trigger**: Runs on pushes/PRs to `main` and `ci` branches that modify library code, tests, or package configs
+- **Trigger**: Runs on pushes/PRs to ``main`` and ``ci`` branches that modify library code, tests, or package configs
 - **Jobs**:
-  - `lint`: Runs Ruff for code style and quality checks
-  - `test`: Executes library unit tests using pytest (excluding integration and server tests)
+  
+  - ``lint``: Runs Ruff for code style and quality checks
+  - ``test``: Executes library unit tests using pytest (excluding integration and server tests)
 
 2.2 PyPI Release (`pypi-publish.yml`)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -87,19 +89,21 @@ Manages the publication of library releases to PyPI:
 
 - **Trigger**: Runs when a new GitHub release is published or manually
 - **Jobs**:
-  - `verify`: Runs test suite to validate release
-  - `publish`: Builds and publishes package to PyPI using build and twine
+  
+  - ``verify``: Runs test suite to validate release
+  - ``publish``: Builds and publishes package to PyPI using build and twine
 
 2.3 Server CI/CD (`server-build.yml`)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Handles the FastAPI server component testing and deployment:
 
-- **Trigger**: Runs on pushes to `main`, `dev`, `feature/*`, and `ci` branches that modify server code or on version tags
+- **Trigger**: Runs on pushes to ``main``, ``dev``, ``feature/*``, and ``ci`` branches that modify server code or on version tags
 - **Jobs**:
-  - `lint`: Runs Ruff checks on server code
-  - `test`: Executes server-specific tests
-  - `deploy`: Builds and pushes Docker image to GitHub Container Registry (ghcr.io)
+  
+  - ``lint``: Runs Ruff checks on server code
+  - ``test``: Executes server-specific tests
+  - ``deploy``: Builds and pushes Docker image to GitHub Container Registry (ghcr.io)
 
 2.4 Documentation (`documentation.yml`)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,4 +112,5 @@ Builds and deploys the documentation to GitHub Pages:
 
 - **Trigger**: Runs on pushes, pull requests, and manual dispatch
 - **Jobs**:
-  - `docs`: Builds the documentation using Sphinx and deploys it to GitHub Pages
+  
+  - ``docs``: Builds the documentation using Sphinx and deploys it to GitHub Pages

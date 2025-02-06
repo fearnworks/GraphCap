@@ -85,8 +85,8 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI application
 app = FastAPI(
-    title="GraphCap Server",
-    description="API server for GraphCap image processing and graph generation",
+    title="graphcap Server",
+    description="API server for graphcap image processing and graph generation",
     version="0.0.2",
     lifespan=lifespan,
 )

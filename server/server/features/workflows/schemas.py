@@ -6,10 +6,10 @@ Pydantic models for workflow validation and serialization.
 """
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class WorkflowMetadata(BaseModel):
@@ -36,33 +36,25 @@ class WorkflowCreate(WorkflowBase):
     pass
 
 
-class Workflow(WorkflowBase):
-    """Complete workflow schema."""
-
-    id: int
-    created_at: datetime
-    updated_at: datetime | None = None
-
-    class Config:
-        """Pydantic config."""
-
-        from_attributes = True
-
-
 class WorkflowResponse(BaseModel):
     """Workflow response model."""
 
+    model_config = ConfigDict(from_attributes=True)  
+
     id: UUID
-    name: str
-    description: Optional[str] = None
-    config: dict
-    workflow_metadata: Optional[WorkflowMetadata] = None
+    name: str 
+    description: str | None = None
+    config: dict[str, Any]
+    workflow_metadata: WorkflowMetadata | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    file_hash: str | None = None
 
 
 class WorkflowUpdate(BaseModel):
     """Workflow update model."""
 
-    name: Optional[str] = None
-    description: Optional[str] = None
-    config: Optional[dict] = None
-    workflow_metadata: Optional[WorkflowMetadata] = None
+    name: str | None = None
+    description: str | None = None
+    config: dict[str, Any] | None = None
+    workflow_metadata: WorkflowMetadata | None = None

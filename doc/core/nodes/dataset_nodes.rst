@@ -4,7 +4,7 @@ Dataset Nodes
 
 Overview
 ========
-Dataset Nodes in GraphCap are a specialized set of nodes designed to transform raw caption outputs into structured datasets that can be used for analysis, model training, or sharing on platforms like HuggingFace Hub. These nodes interact with the dataset management modules to handle exporting, metadata generation, and (optionally) uploading the generated datasets.
+Dataset Nodes in graphcap are a specialized set of nodes designed to transform raw caption outputs into structured datasets that can be used for analysis, model training, or sharing on platforms like HuggingFace Hub. These nodes interact with the dataset management modules to handle exporting, metadata generation, and (optionally) uploading the generated datasets.
 
 Major Node Types
 ================
@@ -51,7 +51,8 @@ Major Node Types
 
 Future Extensions
 =================
-GraphCap is designed for extensibility. Future dataset nodes may include:
+graphcap is designed for extensibility. Future dataset nodes may include:
+
 - **DatasetImportNode:** To import and validate existing dataset structures.
 - **DatasetMergeNode:** To combine multiple datasets into a unified dataset.
 - **DatasetCleanseNode:** For filtering and cleansing caption data before export.

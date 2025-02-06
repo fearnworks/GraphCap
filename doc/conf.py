@@ -10,7 +10,7 @@
 
 # -- Project information -----------------------------------------------------
 project = "GraphCap"
-copyright = "2025, GraphCap Contributors"
+copyright = "2025, graphcap Contributors"
 author = "GraphCap"
 release = "0.1"
 

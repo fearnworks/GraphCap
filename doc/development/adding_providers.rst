@@ -15,7 +15,7 @@ Prerequisites
 -------------
 Before you begin, ensure you have the following:
 - A clear understanding of the new provider's API, credentials, and requirements.
-- Familiarity with the GraphCap configuration structure (TOML) and provider client design.
+- Familiarity with the graphcap configuration structure (TOML) and provider client design.
 - A working development environment with Python 3.11+ and all required dependencies installed.
 
 Step 1: Add Provider Configuration Example
@@ -117,7 +117,7 @@ Additional Considerations
 
 Conclusion
 ----------
-Following this guide will help you add a new provider integration to GraphCap while maintaining consistency with
+Following this guide will help you add a new provider integration to graphcap while maintaining consistency with
 existing project standards. Be sure to thoroughly test your integration and update all related documentation.
 
 Happy coding!

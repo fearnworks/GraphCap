@@ -9,11 +9,8 @@ services:
     ports:
       - 32100:32100
     volumes:
-      - ./provider.config.toml:/app/server/provider.config.toml
       - ../lib/graphcap:/app/lib/graphcap
-      - ../lib/pyproject.toml:/app/lib/pyproject.toml
       - ../server:/app/server
-      - ../pyproject.toml:/app/pyproject.toml
       - ../config:/workspace/config
       - ../.local:/workspace/.local
       - ../datasets:/workspace/datasets
@@ -58,6 +55,50 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - graphcap
+
+  gcap_ui:
+    container_name: gcap_ui
+    build:
+      context: ../ui
+      dockerfile: Dockerfile.client
+      args:
+        - VITE_API_URL=http://localhost:32200/api
+    ports:
+      - "32200:32200"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:32200"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+    develop:
+      watch:
+        - action: sync
+          path: ../ui/src
+          target: /app/src
+          ignore:
+            - "**/.git"
+            - "**/node_modules"
+            - "**/.DS_Store"
+        - action: sync
+          path: ../ui/public
+          target: /app/public
+        - action: sync
+          path: ../ui/index.html
+          target: /app/index.html
+        - action: sync
+          path: ../ui/vite.config.ts
+          target: /app/vite.config.ts
+        - action: sync+restart
+          path: ../ui/package.json
+          target: /app/package.json
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - VITE_API_URL=http://localhost:32100/api
+
     networks:
       - graphcap
 

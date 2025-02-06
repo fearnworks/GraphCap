@@ -1,10 +1,10 @@
-GraphCap Documentation
+graphcap Documentation
 =======================
 .. image:: ./static/logo.png
-   :alt: GraphCap Logo
+   :alt: graphcap Logo
    :width: 100%
 
-Welcome to the GraphCap project documentation. GraphCap is a platform that leverages advanced vision and language models to generate graph structures from multimodal data. 
+Welcome to the graphcap project documentation. graphcap is a platform that leverages advanced vision and language models to generate graph structures from multimodal data. 
 The project comprises a core library, a FastAPI orchestration server, and various utilities designed to streamline image captioning workflows, dataset generation, and open dataset sharing.
 
 .. toctree::

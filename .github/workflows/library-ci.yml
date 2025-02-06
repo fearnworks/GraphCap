@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-name: GraphCap Library CI
+name: graphcap Library CI
 
 on:
   workflow_dispatch:

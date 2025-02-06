@@ -17,7 +17,7 @@ Caption Types:
     ArtCritic: Artistic analysis focusing on composition and technique
 
 Perspectives:
-    Perspectives in GraphCap are specialized modules that provide unique analyses.
+    Perspectives in graphcap are specialized modules that provide unique analyses.
     Each perspective focuses on different aspects of the image, allowing for comprehensive
     and diverse image analysis.
 """

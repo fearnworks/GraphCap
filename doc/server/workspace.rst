@@ -4,7 +4,7 @@ Workspace Concept Overview
 
 Overview
 --------
-The GraphCap system uses the concept of a "workspace" to organize and manage various runtime assets and configuration files in a centralized manner. 
+The graphcap system uses the concept of a "workspace" to organize and manage various runtime assets and configuration files in a centralized manner. 
 The workspace is implemented as a mounted volume that brings essential directories from the host system into the running container. 
 This design allows for persistent storage, hot reloading of changes, and easy management of configuration data and datasets.
 
@@ -20,7 +20,7 @@ Within the workspace, several key directories are mounted:
 - **datasets:**  
   Serves as the working area for datasets, including both example data and user-provided files used in processing pipelines.
 
-These directories are brought into the container as defined in the Docker Compose configuration. For example, the volume mounts in `config/docker-compose.yml` include:
+These directories are brought into the container as defined in the Docker Compose configuration. For example, the volume mounts in ``config/docker-compose.yml`` include:
 
 .. code-block:: yaml
 

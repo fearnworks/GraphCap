@@ -1,5 +1,13 @@
 # graphcap
-> **SPDX-License-Identifier: Apache-2.0**
+
+[![Python version](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![GitHub last commit](https://img.shields.io/github/last-commit/fearnworks/GraphCap)](https://github.com/fearnworks/GraphCap/commits/main)
+[![GitHub issues](https://img.shields.io/github/issues/fearnworks/GraphCap)](https://github.com/fearnworks/GraphCap/issues)
+
+**Keywords:** image captioning, scene graph, DAG, FastAPI, multimodal, machine learning, open source, artificial intelligence, datasets, open model initiative, OMI
+
+graphcap is a platform that leverages advanced vision and language models to generate structured image captions and scene graphs from multimodal data.
 
 <p align="center">
 | <a href="https://fearnworks.github.io/GraphCap/"><b>Documentation</b></a> | <a href="https://pypi.org/project/graphcap/"><b>PyPI</b></a> |
@@ -31,9 +39,9 @@ Original RFC : [link](https://github.com/Open-Model-Initiative/OMI-Data-Pipeline
 
 ## Architecture
 
-GraphCap is organized into three main components that work together to provide a complete dataset generation and management solution:
+graphcap is organized into three main components that work together to provide a complete dataset generation and management solution:
 
-1. **GraphCap Library (`graphcap`)**
+1. **graphcap Library (`graphcap`)**
    - Core Library: Fundamental utilities and shared functionality
    - CLI: Command-line interface for direct interactions
    - DAG: Directed Acyclic Graph implementation for pipeline workflows
@@ -60,6 +68,6 @@ GraphCap is organized into three main components that work together to provide a
 
 ### Integration
 
-- The server component uses the GraphCap library for core functionality
+- The server component uses the graphcap library for core functionality
 - The UI communicates with the server through a client/server relationship
 - Users interact primarily through the UI, while developers can access all components directly

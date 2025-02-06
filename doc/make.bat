@@ -2,7 +2,7 @@
 
 pushd %~dp0
 
-REM Command file for building GraphCap documentation with Sphinx
+REM Command file for building graphcap documentation with Sphinx
 
 if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=sphinx-build
