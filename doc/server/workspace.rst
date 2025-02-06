@@ -20,7 +20,7 @@ Within the workspace, several key directories are mounted:
 - **datasets:**  
   Serves as the working area for datasets, including both example data and user-provided files used in processing pipelines.
 
-These directories are brought into the container as defined in the Docker Compose configuration. For example, the volume mounts in `config/docker-compose.yml` include:
+These directories are brought into the container as defined in the Docker Compose configuration. For example, the volume mounts in ``config/docker-compose.yml`` include:
 
 .. code-block:: yaml
 

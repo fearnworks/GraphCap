@@ -52,6 +52,7 @@ Major Node Types
 Future Extensions
 =================
 GraphCap is designed for extensibility. Future dataset nodes may include:
+
 - **DatasetImportNode:** To import and validate existing dataset structures.
 - **DatasetMergeNode:** To combine multiple datasets into a unified dataset.
 - **DatasetCleanseNode:** For filtering and cleansing caption data before export.

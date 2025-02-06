@@ -23,9 +23,10 @@ Components
 Usage
 -----
 
-### Creating a DAG
+Creating a DAG
+^^^^^^^^^^^^^^
 
-To create a DAG, instantiate the `DAG` class with a list of nodes. Each node should inherit from `BaseNode` and define its own execution logic.
+To create a DAG, instantiate the ``DAG`` class with a list of nodes. Each node should inherit from ``BaseNode`` and define its own execution logic.
 
 .. code-block:: python
 
@@ -44,7 +45,8 @@ To create a DAG, instantiate the `DAG` class with a list of nodes. Each node sho
     dag = DAG(nodes=nodes)
     dag.validate()
 
-### Executing a DAG
+Executing a DAG
+^^^^^^^^^^^^^^^
 
 Once the DAG is validated, you can execute it asynchronously. The execution will follow the topological order of the nodes.
 
@@ -52,9 +54,10 @@ Once the DAG is validated, you can execute it asynchronously. The execution will
 
     results = await dag.execute()
 
-### Visualizing a DAG
+Visualizing a DAG
+^^^^^^^^^^^^^^^^^
 
-Use the `DAGVisualizerNode` to generate a visualization of the DAG structure.
+Use the ``DAGVisualizerNode`` to generate a visualization of the DAG structure.
 
 .. code-block:: python
 
@@ -65,7 +68,7 @@ Use the `DAGVisualizerNode` to generate a visualization of the DAG structure.
 Node Development
 ----------------
 
-To create a new node, inherit from `BaseNode` and implement the `execute` method. Define the input schema and outputs using the `schema` and `outputs` class methods.
+To create a new node, inherit from ``BaseNode`` and implement the ``execute`` method. Define the input schema and outputs using the ``schema`` and ``outputs`` class methods.
 
 .. code-block:: python
 

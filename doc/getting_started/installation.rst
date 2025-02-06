@@ -23,14 +23,15 @@ Setup Instructions
       git clone https://github.com/fearnworks/graphcap.git
       cd graphcap
 
-2. **Set Up the Environment [Dev] **
+2. **Set Up the Dev Environment**
+
    Use the task runner to install all necessary dependencies. You can skip this step if you are not developing the project:
 
    .. code-block:: bash
 
       task install
 
-4. **Configure Environment Variables**
+3. **Configure Environment Variables**
 
    Copy the environment template and configure your environment variables:
 
@@ -40,7 +41,7 @@ Setup Instructions
       cp ./config/provider.config.toml.example ./config/provider.config.toml
       # Edit .env and provider config to set your API keys and other configurations
 
-5. **Run the Server**
+4. **Run the Server**
 
    Start the server using Docker Compose:
 
@@ -51,9 +52,9 @@ Setup Instructions
 Configuration
 =============
 
-- **Docker Compose**: The project uses Docker Compose for managing services. You can customize the services by editing `config/docker-compose.override.example.yml` and renaming it to `docker-compose.override.yml`.
+- **Docker Compose**: The project uses Docker Compose for managing services. You can customize the services by editing ``config/docker-compose.override.example.yml`` and renaming it to ``docker-compose.override.yml``.
 
-- **Provider Configuration**: Configure AI providers in `config/provider.config.toml`. Uncomment and set up the providers you wish to use.
+- **Provider Configuration**: Configure AI providers in ``config/provider.config.toml``. Uncomment and set up the providers you wish to use.
 
-- **Batch Configurations**: Customize batch processing settings in `config/batch_configs/`.
+- **Batch Configurations**: Customize batch processing settings in ``config/batch_configs/``.
 

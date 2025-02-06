@@ -7,18 +7,19 @@ Overview
 The GraphCap orchestration server includes a robust workflow and job management system to facilitate the execution of image processing pipelines. 
 Workflows are defined as Directed Acyclic Graphs (DAGs) and are stored as JSON configuration files. 
 These definitions are then loaded, validated, and persisted in a PostgreSQL database.
- In parallel, a job manager oversees the asynchronous execution of these workflows.
+
+In parallel, a job manager oversees the asynchronous execution of these workflows.
 
 Workflow Definition and Loading
 ---------------------------------
 - **JSON-Based Configurations:**  
-  Workflows are defined in JSON files located in the `/workspace/config/workflows` directory. Each file contains a list of nodes and their dependencies.
+  Workflows are defined in JSON files located in the ``/workspace/config/workflows`` directory. Each file contains a list of nodes and their dependencies.
   
 - **Version Tracking:**  
   A hash is computed for each workflow file. This hash is stored along with the workflow information in the database, which helps in detecting updates and managing versions.
   
 - **Schema Validation:**  
-  Before execution, each workflow is validated to ensure it contains the required structure (e.g., a `nodes` key) and adheres to the expected format.
+  Before execution, each workflow is validated to ensure it contains the required structure (e.g., a ``nodes`` key) and adheres to the expected format.
 
 Workflow Execution and Job Management
 ---------------------------------------
@@ -34,6 +35,7 @@ Workflow Execution and Job Management
 API Endpoints and Integration
 -----------------------------
 The server integrates workflow and job management through RESTful endpoints:
+
 - **CRUD Operations for Workflows:**  
   Endpoints allow creation, listing, retrieval, and updates of workflow configurations.
   
