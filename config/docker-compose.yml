@@ -93,8 +93,8 @@ services:
           path: ../ui/vite.config.ts
           target: /app/vite.config.ts
         - action: sync+restart
-          path: ../ui/package-lock.json
-          target: /app/package-lock.json
+          path: ../ui/pnpm-lock.yaml
+          target: /app/pnpm-lock.yaml
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - VITE_API_URL=http://localhost:32100/api
