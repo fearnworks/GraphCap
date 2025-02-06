@@ -1,106 +1,146 @@
 ---
-description: Frontend ui development 
-globs: *.tsx, *.ts, *.svelte
+description: Frontend ui development
+globs: *.tsx, *.ts
 ---
-<Svelte>
-Full Svelte 5 documentation can be found in the repository at ./docs/ai_docs/frontend
+=================================
+UI Architecture
+=================================
 
-- For events use the new svelte 5 syntax of onclick instead of on:click
-- Use drizzle for orm
+graphcap Studio's UI architecture follows a hybrid modular pattern that emphasizes separation of concerns, reusability, and maintainability.
 
-Structure : 
-root : knowledge-viewer
-src/lib ($lib alias): Contains shared business logic and components 
-src/lib/api: Contains business logic for working with the api, should not handle ui specific logic
-src/lib/components : Contains shared components
-src/lib/db : Contains logic for connecting to the database
-src/lib/db/schemas : Contains the drizzle schemas for postgres
-src/routes/: contains the pages of the application and ui logic
-src/routes/api: public api logic for connecting to external apis 
+Directory Structure
+=================
 
-# Svelte 5 Reminders
+The UI codebase is organized into the following key directories:
 
-## 1. Overview
-- **Version 5 Enhancements**: Introduces revamped syntax and reactivity system
-- **Compatibility**: Supports both Svelte 4 and 5 syntax; components can be mixed
-- **Migration Tools**: Provides migration script (`npx sv migrate svelte-5`) for automatic upgrades
+.. code-block:: text
 
-## 2. Reactivity Syntax Changes
-### Runes API
-Core of reactivity using functions prefixed with `$`
+   ui/src/
+   ├── app/           # Application initialization and global config
+   ├── features/      # Feature-specific modules
+   ├── common/        # Shared components and utilities  
+   └── services/      # Application-wide services
 
-### State Variables
-- Svelte 4: `let count = 0;` (implicitly reactive)
-- Svelte 5: `let count = $state(0);` (explicitly reactive)
+Core Principles
+=============
 
-### Derived State
-- Svelte 4: `$: double = count * 2;`
-- Svelte 5: `const double = $derived(count * 2);`
+1. **Modular Organization**: Code is organized by feature and responsibility
+2. **Component Separation**: Clear distinction between presentational and container components
+3. **Code Reusability**: Common utilities and components are centralized
+4. **Service Isolation**: Business logic is separated from UI concerns
 
-### Effects
-- Svelte 4: `$: if (count > 5) alert('High!');`
-- Svelte 5: `$effect(() => { if (count > 5) alert('High!'); });`
+Key Directories
+=============
 
-## 3. Component Properties
-### Exporting Props
-- Svelte 4: `export let prop;`
-- Svelte 5: `let { prop } = $props();`
+app/
+----
+The ``app/`` directory contains core application initialization code and global configuration:
 
-### Advanced Prop Handling
-- Renaming: `let { class: klass } = $props();`
-- Spreading: `let { foo, bar, ...rest } = $props();`
-- All Props: `let props = $props();`
+- Entry point (``main.tsx``)
+- Global providers (Theme, Auth, etc.)
+- High-level routing logic
+- Global styling and configuration
 
-## 4. Event Handling
-### Event Attributes
-- Svelte 4: `on:click={handler}`
-- Svelte 5: `onclick={handler}`
+features/
+--------
+The ``features/`` directory contains domain-specific code organized into feature modules. Each feature has:
 
-### Multiple Handlers
-- **Combine handlers**: `<button onclick={(e) => { one(e); two(e); }}>...</button>`
-- **Event Modifiers**: Use function wrappers: `<button onclick={once(preventDefault(handler))}>...</button>`
-- **Component Events**: Replace createEventDispatcher with callback props
+- ``components/``: Presentational UI components
+- ``containers/``: Logic-heavy components with state management
+- ``hooks/``: Feature-specific custom hooks
+- ``services/``: (Optional) Feature-specific business logic
 
-## 5. Slots and Snippets
-- **Slots Deprecated**: Replaced by more powerful snippets
-- **Default Content**:
-  - Svelte 4: `<slot />`
-  - Svelte 5: `{@render children()}`
-- **Multiple Placeholders**: Use named props and `{@render ...}` instead of named slots
+Example feature structure:
 
-## 6. Migration Script Features
-### Automated Changes
-- Updates syntax to runes (`let` to `$state`)
-- Converts event directives to attributes
-- Transforms slots to snippets
-- Adjusts component instantiation
+.. code-block:: text
 
-### Manual Adjustments Needed
-- createEventDispatcher usage
-- Lifecycle methods (beforeUpdate, afterUpdate)
-- Class-based components to function-based
+   features/gallery/
+   ├── components/     # "Dumb" UI components
+   ├── containers/     # "Smart" components with logic
+   ├── hooks/         # Feature-specific hooks
+   └── services/      # Gallery-specific services
 
-## 7. Breaking Changes
-- **Component Instantiation**:
-  - Svelte 4: `new Component({ target: ... })`
-  - Svelte 5: `mount(Component, { target: ... })`
-- **Server API**: Use `render` from svelte/server
-- **Typing Changes**: Replace SvelteComponent with Component type
-- **bind:this Behavior**: Returns instance exports
-- **Whitespace Handling**: Simplified rules
-- **Browser Requirements**: Modern browsers only (no IE)
+common/
+-------
+The ``common/`` directory contains reusable code shared across features:
 
-## 8. Compiler Options Changes
-- **Removed/Changed Options**:
-  - css option values updated
-  - hydratable, enableSourcemap, tag removed
-- **Namespace Restrictions**: Limited to html, mathml, and svg
+- ``components/``: Generic UI components (buttons, forms, etc.)
+- ``hooks/``: Shared custom hooks
+- ``utils/``: Utility functions and constants
+- ``styles/``: Global styling assets and Tailwind configuration
 
-## 9. Additional Changes
-- **Attribute Syntax**: Strict quoting for complex values
-- **HTML Structure**: Stricter enforcement (e.g., required `<tbody>`)
-- **Contenteditable**: Bindings take full control
-- **Hydration**: Uses comments for efficient hydration
-- **CSS Handling**: Scoped CSS uses `:where(...)` for specificity
-</Svelte 5 Reminders>
-</Svelte>
+services/
+--------
+The ``services/`` directory contains application-wide business logic and integrations:
+
+- API clients
+- Data transformation services
+- Shared business logic
+- External integrations
+
+Best Practices
+============
+
+Component Architecture
+--------------------
+- Separate presentational and container components
+- Keep components focused and single-purpose
+- Use TypeScript for type safety
+- Follow Tailwind CSS conventions for styling
+
+Code Organization
+---------------
+- Place feature-specific code in appropriate feature directory
+- Move reusable code to ``common/``
+- Keep services stateless when possible
+- Document complex logic and APIs
+
+State Management
+--------------
+- Use React hooks for local state
+- Implement container components for complex state
+- Keep state close to where it's used
+- Document state management patterns
+
+Testing
+-------
+- Write unit tests for services
+- Test components in isolation
+- Document testing patterns and expectations
+- Use TypeScript to catch type-related issues early
+
+Development Workflow
+==================
+
+1. **Feature Development**:
+   - Create new feature directory if needed
+   - Implement components and logic
+   - Write tests and documentation
+
+2. **Common Code**:
+   - Identify reusable patterns
+   - Move shared code to ``common/``
+   - Update documentation
+
+3. **Services**:
+   - Implement business logic in services
+   - Keep services focused and testable
+   - Document APIs and interfaces
+
+4. **Integration**:
+   - Connect components to services
+   - Test integrations
+   - Update documentation
+
+Conclusion
+=========
+
+This architecture promotes:
+
+- Clear separation of concerns
+- Code reusability
+- Maintainable codebase
+- Scalable feature development
+- Consistent development patterns
+
+The modular approach allows teams to work independently on features while maintaining consistency through shared components and services. 

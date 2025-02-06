@@ -16,9 +16,6 @@ RUN chmod +x /usr/local/bin/client_entrypoint.sh
 # Copy the rest of the application
 COPY . .
 
-# Clear any existing node_modules
-RUN rm -rf node_modules
-
 EXPOSE 32200
 
 # Use the entrypoint script

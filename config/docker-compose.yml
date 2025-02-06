@@ -92,9 +92,13 @@ services:
         - action: sync
           path: ../ui/vite.config.ts
           target: /app/vite.config.ts
+        - action: sync+restart
+          path: ../ui/package.json
+          target: /app/package.json
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - VITE_API_URL=http://localhost:32100/api
+
     networks:
       - graphcap
 
