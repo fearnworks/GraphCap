@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import './App.css'
-import './theme/theme.css'
 
 import 'tailwindcss'
 
