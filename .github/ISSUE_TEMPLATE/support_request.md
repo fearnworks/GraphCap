@@ -1,6 +1,6 @@
 ---
 name: Support Request
-about: Use this template to ask for help with using GraphCap
+about: Use this template to ask for help with using graphcap
 title: "[SUPPORT] "
 labels: question
 assignees: ''

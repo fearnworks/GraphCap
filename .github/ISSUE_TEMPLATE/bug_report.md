@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Create a report to help us improve GraphCap
+about: Create a report to help us improve graphcap
 title: "[BUG] "
 labels: bug
 assignees: ''

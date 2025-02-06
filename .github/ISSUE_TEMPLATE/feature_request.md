@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an idea for GraphCap
+about: Suggest an idea for graphcap
 title: "[FEATURE] "
 labels: enhancement
 assignees: ''
