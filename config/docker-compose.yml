@@ -9,11 +9,8 @@ services:
     ports:
       - 32100:32100
     volumes:
-      - ./provider.config.toml:/app/server/provider.config.toml
       - ../lib/graphcap:/app/lib/graphcap
-      - ../lib/pyproject.toml:/app/lib/pyproject.toml
       - ../server:/app/server
-      - ../pyproject.toml:/app/pyproject.toml
       - ../config:/workspace/config
       - ../.local:/workspace/.local
       - ../datasets:/workspace/datasets

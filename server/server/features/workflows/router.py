@@ -49,10 +49,34 @@ async def list_workflows(session: AsyncSession = Depends(get_session)) -> list[W
             result = await session.execute(stmt)
             workflows = result.scalars().all()
             logger.debug(f"Found {len(workflows)} workflows")
-            # Convert each workflow to response model
-            return [WorkflowResponse.model_validate(w) for w in workflows]
+            
+            response_workflows = []
+            for workflow in workflows:
+                try:
+                    # Convert each workflow and log any validation errors
+                    response = WorkflowResponse.model_validate(workflow)
+                    response_workflows.append(response)
+                except Exception as e:
+                    logger.error(
+                        "Failed to validate workflow",
+                        extra={
+                            "workflow_id": workflow.id,
+                            "workflow_name": workflow.name,
+                            "error": str(e)
+                        }
+                    )
+                    # Optionally re-raise if you want to fail the whole request
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"Failed to validate workflow {workflow.id} ({workflow.name}): {str(e)}"
+                    )
+            
+            return response_workflows
+
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Failed to list workflows: {e}")
+        logger.error(f"Failed to list workflows: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to list workflows")
 
 
