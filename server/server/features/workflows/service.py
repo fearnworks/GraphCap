@@ -157,7 +157,7 @@ async def execute_workflow(
             logger.error(f"Workflow {workflow_id} not found")
             raise HTTPException(status_code=404, detail="Workflow not found")
 
-        # Validate workflow config with GraphCap DAG
+        # Validate workflow config with graphcap DAG
         try:
             # Log the workflow configuration for debugging
             logger.debug(f"Workflow config: {workflow.config}")

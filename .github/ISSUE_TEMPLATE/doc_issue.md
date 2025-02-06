@@ -1,6 +1,6 @@
 ---
 name: Documentation Issue
-about: Report an issue or suggest improvements to the GraphCap documentation
+about: Report an issue or suggest improvements to the graphcap documentation
 title: "[DOC] "
 labels: documentation
 assignees: ''

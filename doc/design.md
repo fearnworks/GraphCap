@@ -1,10 +1,10 @@
-# GraphCap System Design
+# graphcap System Design
 
 ![design](./static/component_design.png)
 
 ## 1. Introduction
 
-**GraphCap** is a system for generating *structured image captions* (e.g., scene graphs, art critiques, attribute listings) by orchestrating image‐processing pipelines. It provides:
+**graphcap ** is a system for generating *structured image captions* (e.g., scene graphs, art critiques, attribute listings) by orchestrating image‐processing pipelines. It provides:
 
 - A **DAG-driven workflow engine** for orchestrating steps such as image loading, caption generation, and dataset export.
 - **Pluggable model providers**, allowing you to call into OpenAI, Gemini, or local LLMs for caption generation.
@@ -21,12 +21,12 @@ Its outputs are typically structured JSON data and HTML reports, optionally asse
 
 ### 2.1 Components
 
-1. **GraphCap Library (`graphcap`)**  
+1. **graphcap Library (`graphcap`)**  
    - Core Python code for DAG execution, node definitions, and specialized *perspectives* (like scene graphs or art critic analyses).
    - Provides a CLI (`dag-validate`, `dag-run`) and can run locally with only Python.
 
 2. **Server (`server`)**  
-   - A FastAPI application exposing GraphCap functionalities over HTTP.
+   - A FastAPI application exposing graphcap functionalities over HTTP.
    - Handles orchestration, multi‐user workflows, and session management.
    - Allows remote systems or UIs to invoke the same pipelines exposed by the library CLI.
 
@@ -40,7 +40,7 @@ Its outputs are typically structured JSON data and HTML reports, optionally asse
 
 ### Perspectives
 
-Perspectives are a core feature of the GraphCap system, providing different analytical views on images. Each perspective is implemented as a node in the DAG workflow, allowing for flexible and modular image processing.
+Perspectives are a core feature of the graphcap system, providing different analytical views on images. Each perspective is implemented as a node in the DAG workflow, allowing for flexible and modular image processing.
 
 - **GraphCaption**: Structured analysis with tags and descriptions.
 - **ArtCritic**: Artistic analysis focusing on composition and technique.

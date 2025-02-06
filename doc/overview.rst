@@ -5,18 +5,18 @@
 Overview
 =================================
 
-GraphCap is a platform that leverages advanced vision and language models to generate graph structures from multimodal data.
+graphcap is a platform that leverages advanced vision and language models to generate graph structures from multimodal data.
  It is designed to support structured outputs that provide detailed image annotations, scene graphs, and rich metadata for open-source datasets.
 
 Overview
 --------
-GraphCap is composed of several core components:
+graphcap is composed of several core components:
 
-- **GraphCap Library**  
+- **graphcap Library**  
   The core Python library provides utilities for constructing Directed Acyclic Graphs (DAGs) to orchestrate image processing workflows, manage nodes, and generate structured captions.
 
 - **Server Component**  
-  A FastAPI-based orchestration server that manages workflow execution, job management, and resource allocation. It enables both local and remote inference and integrates with the GraphCap library for core functionalities.
+  A FastAPI-based orchestration server that manages workflow execution, job management, and resource allocation. It enables both local and remote inference and integrates with the graphcap library for core functionalities.
 
 - **UI Component**  
   A web-based interface for managing datasets, configuring pipelines, and visually monitoring workflow progress and outputs.
@@ -37,7 +37,7 @@ Key Features
 
 Getting Started
 ---------------
-To get up and running with GraphCap, review the respective sections of the documentation:
+To get up and running with graphcap , review the respective sections of the documentation:
 
 - Installation and project setup using modern Python packaging with Hatchling.
 - Running the server component via Docker Compose or task runner commands.

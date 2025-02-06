@@ -4,7 +4,7 @@ Release and Packaging Architecture
 Overview
 --------
 
-GraphCap uses modern Python packaging tools and practices to manage dependencies, testing, and distribution. The project is structured as a workspace with multiple components:
+graphcap uses modern Python packaging tools and practices to manage dependencies, testing, and distribution. The project is structured as a workspace with multiple components:
 
 - ``graphcap`` - Core library package
 - ``server`` - FastAPI server package

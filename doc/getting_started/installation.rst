@@ -2,7 +2,7 @@
 Installation Instructions
 ===========================
 
-This document provides a step-by-step guide to setting up the GraphCap project for development and usage.
+This document provides a step-by-step guide to setting up the graphcap project for development and usage.
 
 Prerequisites
 =============
@@ -16,7 +16,7 @@ Setup Instructions
 
 1. **Clone the Repository**
 
-   Clone the GraphCap repository from GitHub:
+   Clone the graphcap repository from GitHub:
 
    .. code-block:: bash
 

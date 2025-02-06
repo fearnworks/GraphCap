@@ -1,8 +1,8 @@
 ===========================
-Perspectives in GraphCap
+Perspectives in graphcap 
 ===========================
 
-A perspective in GraphCap is a unique approach to analyzing and captioning images. Each perspective provides a different way of understanding and describing visual content, allowing for a comprehensive analysis of images.
+A perspective in graphcap is a unique approach to analyzing and captioning images. Each perspective provides a different way of understanding and describing visual content, allowing for a comprehensive analysis of images.
 
 Key Concepts
 ============
@@ -13,7 +13,7 @@ Key Concepts
 Usage
 =====
 
-Perspectives are implemented as nodes in the GraphCap DAG (Directed Acyclic Graph) workflow. They process images and produce structured outputs that can be further used for dataset creation or analysis.
+Perspectives are implemented as nodes in the graphcap DAG (Directed Acyclic Graph) workflow. They process images and produce structured outputs that can be further used for dataset creation or analysis.
 
 Example Perspectives
 ====================

@@ -1,0 +1,184 @@
+---
+description: graphcap studio style guide
+globs: *.tsx, *.css
+---
+# graphcap Studio Styling & CSS Management Guide
+
+This document serves as an **information-dense manual** for AI agents (and developers) responsible for managing styling and CSS in graphcap Studio. It covers the architecture, best practices, integration with Tailwind CSS 4, theming, plugin support, and maintenance strategies. Follow these guidelines to ensure consistency, performance, and maintainability across the application.
+
+---
+
+## 1. Overview
+
+- **Objective:** Provide a single source of truth for styling practices in graphcap Studio.
+- **Scope:** Cover the migration from CSS Modules to Tailwind CSS 4, theming (light/dark and custom themes), component styling, and plugin/extensibility support.
+- **Audience:** AI agents (automated systems, code analysis tools) and human developers.
+
+---
+
+## 2. Styling Architecture
+
+- **Utility-First Approach:**  
+  graphcap Studio adopts a Tailwind CSS 4 utility-first strategy, using atomic classes directly in markup for layout, spacing, color, typography, and states (hover, focus, active).
+
+- **Centralized Theme Tokens:**  
+  All design tokens (colors, fonts, spacing, etc.) are defined centrally. They are exposed as CSS custom properties (via the new Tailwind `@theme` directive) and can be overridden for dark mode or custom themes.
+
+- **Component Isolation:**  
+  Each UI component should either be a self-contained Tailwind utility composition or a reusable React component that encapsulates a common design pattern (e.g., `<Button>`, `<Card>`, `<Modal>`).  
+  Avoid inline styles and unnecessary CSS specificity.
+
+- **Plugin-Friendly Design:**  
+  The styling system must be modular. Plugins must use GraphCap’s theme tokens and Tailwind classes to ensure consistency. Plugin styles should be encapsulated (preferably scoped under a container class) and registered with the main content paths in Tailwind’s configuration.
+
+---
+
+## 3. Tailwind CSS 4 Integration
+
+### Installation & Configuration
+
+1. **Installation:**  
+   Ensure Tailwind CSS 4 (and its Vite integration) is installed:
+   ```bash
+   npm install -D tailwindcss @tailwindcss/vite @tailwindcss/postcss
+   ```
+2. **Tailwind Initialization:**  
+   Initialize the config (if not using CSS-only configuration):
+   ```bash
+   npx tailwindcss init
+   ```
+3. **Vite Configuration:**  
+   Add the Tailwind Vite plugin in `vite.config.js`:
+   ```js
+   import { defineConfig } from 'vite';
+   import tailwindcss from '@tailwindcss/vite';
+
+   export default defineConfig({
+     plugins: [tailwindcss()],
+   });
+   ```
+4. **Global CSS Entry:**  
+   Create an `index.css` (or equivalent) containing:
+   ```css
+   @import "tailwindcss";
+   ```
+   This file must be imported in the React entry point (e.g., `main.jsx`).
+
+### Using Tailwind Utilities
+
+- **Markup Styling:**  
+  Write Tailwind utility classes directly in JSX:
+  ```jsx
+  <button className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">
+    Submit
+  </button>
+  ```
+- **Responsive & State Variants:**  
+  Use responsive (`sm:`, `md:`, etc.) and state variants (`hover:`, `focus:`, `active:`) inline:
+  ```jsx
+  <div className="p-4 md:p-6 bg-white dark:bg-gray-900">
+    Content here...
+  </div>
+  ```
+
+- **Arbitrary Values:**  
+  For one-off values, use arbitrary value syntax (e.g., `w-[37%]`).  
+  **Note:** Prefer adding to the theme when values are reused frequently.
+
+---
+
+## 4. Theming & Dark Mode
+
+### Centralized Theme Tokens with `@theme`
+
+- **Define Design Tokens:**
+  ```css
+  @import "tailwindcss";
+
+  @theme {
+    --color-background: 255, 255, 255; /* light mode: white */
+    --color-text: 17, 24, 39;          /* light mode: dark gray */
+    --color-primary: 37, 99, 235;      /* light mode: blue */
+  }
+  ```
+- **Override for Dark Mode:**  
+  Use a `.dark` class on the root element to override tokens:
+  ```css
+  .dark {
+    --color-background: 17, 24, 39;    /* dark mode: dark gray */
+    --color-text: 229, 231, 235;       /* dark mode: light gray */
+    --color-primary: 168, 85, 247;     /* dark mode: purple */
+  }
+  ```
+- **Usage in Classes:**  
+  Use utilities that reference these variables (e.g., `bg-[rgb(var(--color-background))]`) or extend Tailwind to create semantic classes (`bg-primary`).
+
+### Dark Mode Strategy
+
+- **Manual Toggle:**  
+  Use a JavaScript toggle (e.g., add/remove `.dark` on `<html>` or `<body>`) to switch themes.
+- **Automatic Preference:**  
+  Optionally, initialize based on `prefers-color-scheme` and allow user override.
+- **Multiple Themes:**  
+  For more than two themes (e.g., “light”, “dark”, “contrast”), manage via data attributes (e.g., `<body data-theme="contrast">`) and adjust CSS variables accordingly.
+
+---
+
+## 5. Plugin & Extensibility Guidelines
+
+### Consistent Design for Plugins
+
+- **Mandatory Use of Design Tokens:**  
+  Plugin developers must use GraphCap’s design tokens (e.g., `bg-primary`, `text-secondary`) to ensure visual consistency.
+- **Scoped Markup:**  
+  Wrap plugin components in a container (e.g., `<div className="plugin-container">`) to localize styling.
+- **Content Inclusion:**  
+  Ensure all plugin files are included in Tailwind’s `content` configuration so that all used classes are generated.
+- **Safelisting:**  
+  If plugins generate classes dynamically, use the safelist option in `tailwind.config.js` to prevent purging.
+
+### Plugin CSS Best Practices
+
+- **Avoid Global Overrides:**  
+  Plugins should not override core styles. Use Tailwind’s low-specificity utility classes.
+- **Optional Customization via @apply:**  
+  For advanced cases, plugins may use `@apply` in isolated CSS files to merge utilities, but keep these to a minimum.
+- **Documentation:**  
+  Each plugin must include documentation on the Tailwind classes and theme tokens it utilizes.
+
+---
+
+## 6. Best Practices & “Do/Don’t” Guidelines
+
+### **Do:**
+
+- **Use Tailwind Utilities Directly:**  
+  Prefer applying Tailwind classes inline rather than writing custom CSS files.
+- **Leverage Semantic Naming:**  
+  Always use semantic names (e.g., `bg-primary`, `text-error`) linked to design tokens.
+- **Utilize Responsive and State Variants:**  
+  Use Tailwind’s variants to handle hover, focus, active, and responsive design.
+- **Document Customizations:**  
+  When extending the Tailwind config (e.g., adding new spacing or color tokens), document these changes in the repository’s design guide.
+- **Component Abstraction:**  
+  Encapsulate commonly used style patterns in React components to promote reuse.
+
+### **Don’t:**
+
+- **Avoid Overusing `@apply`:**  
+  Do not shift excessive styling logic back into custom CSS when utilities can be applied directly.
+- **Do Not Hard-Code Values:**  
+  Never use arbitrary hex codes or pixel values inline that bypass the design system. Instead, use tokens.
+- **Avoid Dynamic Class Construction Without Safelisting:**  
+  Do not build class names dynamically in a way that prevents Tailwind’s JIT from detecting them.
+- **Don’t Ignore Accessibility:**  
+  Ensure that color choices (especially for dark mode) adhere to accessibility standards for contrast.
+- **Do Not Neglect Plugin Style Isolation:**  
+  Ensure plugin styles are scoped and do not interfere with core application styles.
+
+
+
+---
+
+*This guide is intended as the single point of reference for styling management in graphcap Studio. All AI agents and developers must adhere to these practices to maintain a consistent, scalable, and high-performance styling system.*
+```

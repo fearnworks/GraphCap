@@ -4,7 +4,7 @@ globs: server/*/**.py
 ---
 # Overview
 **Server (`server`)**  
-   - A FastAPI application exposing GraphCap functionalities over HTTP.
+   - A FastAPI application exposing graphcap functionalities over HTTP.
    - Handles orchestration, workflows, workspace management, and session management.
    - Allows remote systems or UIs to invoke the same pipelines exposed by the library CLI.
 

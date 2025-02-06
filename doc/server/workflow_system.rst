@@ -4,7 +4,7 @@ Workflow and Job Management System
 
 Overview
 --------
-The GraphCap orchestration server includes a robust workflow and job management system to facilitate the execution of image processing pipelines. 
+The graphcap orchestration server includes a robust workflow and job management system to facilitate the execution of image processing pipelines. 
 Workflows are defined as Directed Acyclic Graphs (DAGs) and are stored as JSON configuration files. 
 These definitions are then loaded, validated, and persisted in a PostgreSQL database.
 
@@ -27,7 +27,7 @@ Workflow Execution and Job Management
   When a workflow is triggered, it is executed as a job. The job encapsulates the entire workflow configuration and maintains its current state.
   
 - **Asynchronous Execution:**  
-  Workflows are executed asynchronously using the GraphCap DAG system. After validation, the DAG representing the workflow is executed, and the output is processed for job completion.
+  Workflows are executed asynchronously using the graphcap DAG system. After validation, the DAG representing the workflow is executed, and the output is processed for job completion.
   
 - **Status Tracking:**  
   The job manager tracks each job's lifecycle—including start, progress, and completion. API endpoints enable clients to query and update job status.

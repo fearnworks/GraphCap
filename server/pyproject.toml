@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 [project]
 name = "graphcap-server"
 version = "0.0.2"
-description = "Server component for GraphCap"
+description = "Server component for graphcap "
 requires-python = ">=3.11"
 dependencies = [
     "graphcap",

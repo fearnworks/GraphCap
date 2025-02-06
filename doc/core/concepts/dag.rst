@@ -4,7 +4,7 @@ DAG System Documentation
 Overview
 --------
 
-The Directed Acyclic Graph (DAG) system in GraphCap provides a flexible framework for building and executing workflows for image processing and analysis. It allows for the definition of nodes and their dependencies, ensuring that tasks are executed in the correct order.
+The Directed Acyclic Graph (DAG) system in graphcap provides a flexible framework for building and executing workflows for image processing and analysis. It allows for the definition of nodes and their dependencies, ensuring that tasks are executed in the correct order.
 
 Key Features:
 - DAG construction and validation

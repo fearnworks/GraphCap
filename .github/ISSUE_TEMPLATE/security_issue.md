@@ -1,6 +1,6 @@
 ---
 name: Security Vulnerability Report
-about: Report a potential security vulnerability in GraphCap
+about: Report a potential security vulnerability in graphcap
 title: "[SECURITY] "
 labels: security
 assignees: ''
@@ -15,5 +15,3 @@ List the steps someone could take to observe the vulnerability (if safe to share
 ### Impact Assessment
 Explain the potential impact or risk associated with the vulnerability.
 
-### Confidential Disclosure
-If you believe the issue should not be public, please [contact us directly](mailto:your-email@example.com) instead of using this template.

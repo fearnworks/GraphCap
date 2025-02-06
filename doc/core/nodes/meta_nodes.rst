@@ -4,7 +4,7 @@ DAG Meta Nodes
 
 Overview
 ========
-Meta nodes in the GraphCap DAG package extend the basic node functionality with enhancements that help visualize and analyze the workflow structure. They are designed to support tasks such as:
+Meta nodes in the graphcap DAG package extend the basic node functionality with enhancements that help visualize and analyze the workflow structure. They are designed to support tasks such as:
 
 - Visualizing the overall DAG structure.
 - Analyzing node dependencies and execution order.

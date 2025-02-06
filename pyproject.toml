@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 [project]
 name = "graphcap-workspace"
 version = "0.0.2"
-description = "GraphCap workspace root"
+description = "graphcap workspace root"
 requires-python = ">=3.11"
 
 [tool.hatch.build.targets.wheel]

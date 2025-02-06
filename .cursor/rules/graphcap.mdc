@@ -99,7 +99,7 @@ Note:
 """
 graphcap.utils
 
-Collection of utility functions and helpers used throughout the GraphCap server.
+Collection of utility functions and helpers used throughout the graphcap server.
 
 Key features:
 - Logging configuration

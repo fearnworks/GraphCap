@@ -9,9 +9,9 @@
 # -----------------------------------------------------------------------------
 
 # -- Project information -----------------------------------------------------
-project = "GraphCap"
-copyright = "2025, GraphCap Contributors"
-author = "GraphCap"
+project = "graphcap "
+copyright = "2025, graphcap Contributors"
+author = "graphcap "
 release = "0.1"
 
 # -- General configuration ---------------------------------------------------

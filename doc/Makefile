@@ -1,6 +1,6 @@
-# GraphCap Documentation Makefile
+# graphcap Documentation Makefile
 #
-# This minimal makefile is used to build the GraphCap project documentation with Sphinx.
+# This minimal makefile is used to build the graphcap project documentation with Sphinx.
 # You can set or override the following variables from the command line or the environment:
 #   SPHINXOPTS, SPHINXBUILD, etc.
 SPHINXOPTS    ?=

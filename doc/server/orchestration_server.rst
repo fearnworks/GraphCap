@@ -4,7 +4,7 @@ Orchestration Server Overview
 
 Overview
 --------
-The GraphCap orchestration server is a FastAPI-based service that manages the execution and coordination of image processing and captioning pipelines. It provides the API endpoints for task orchestration, dataset management, and workflow execution. Designed with modern Python standards (>3.11), the server leverages asynchronous operations to ensure high performance and scalability.
+The graphcap orchestration server is a FastAPI-based service that manages the execution and coordination of image processing and captioning pipelines. It provides the API endpoints for task orchestration, dataset management, and workflow execution. Designed with modern Python standards (>3.11), the server leverages asynchronous operations to ensure high performance and scalability.
 
 Key Features
 ------------
