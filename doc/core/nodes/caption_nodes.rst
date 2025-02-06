@@ -81,6 +81,7 @@ In practice, Caption Perspective Nodes are seamlessly integrated into batch work
 
 Example Batch Configs:
 Refer to our workflow configuration files for concrete examples:
+
 - `config/workflows/smoke_test_image_load.json` demonstrates a smoke test including both art and graph perspective analyses.
 - `config/workflows/image_analysis.json` details a full workflow for art analysis, integrating sampling, perspective processing, and output management.
 

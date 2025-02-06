@@ -49,15 +49,15 @@ The provider system is managed through the `ProviderManager` class, which handle
 Basic Usage:
 ------------
 
-```python
-from graphcap.providers.provider_manager import ProviderManager
+.. code-block:: python
+   from graphcap.providers.provider_manager import ProviderManager
 
-# Initialize the manager
-manager = ProviderManager("provider.config.toml")
+   # Initialize the manager
+   manager = ProviderManager("provider.config.toml")
 
-# Get a specific client
-openai_client = manager.get_client("openai")
-```
+   # Get a specific client
+   openai_client = manager.get_client("openai")
+
 
 Features
 ========
@@ -68,4 +68,4 @@ Features
 - **Configuration Management**: Centralized configuration using TOML files.
 - **Error Handling**: Robust error handling with detailed logging.
 
-For more detailed information on each component, refer to the [README.md](../README.md) and the [provider.config.toml](../config/provider.config.toml).
+For more detailed information on each component, refer to the [README.md]<../README.md> and the [provider.config.toml]<../config/provider.config.toml>.

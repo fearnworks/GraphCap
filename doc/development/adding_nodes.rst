@@ -11,16 +11,16 @@ Prerequisites
 -------------
 Before creating a new node, ensure that you are familiar with:
 - The overall DAG architecture and workflow management in GraphCap.
-- The node interface as defined in `lib/graphcap/dag/node.py` (the `BaseNode` class).
-- Existing node implementations in the :dir:`lib/graphcap/dag/nodes/` directory.
+- The node interface as defined in ``lib/graphcap/dag/node.py`` (the ``BaseNode`` class).
+- Existing node implementations in the ``lib/graphcap/dag/nodes/`` directory.
 - Python 3.11+ standards, strong typing, and project coding style.
 
 Step 1: Create Your Node Implementation
 -----------------------------------------
 1. Create a new node class by inheriting from `BaseNode`. Implement the required methods:
-   - Override the `schema()` to define input configurations.
-   - Override the `outputs()` to specify output types.
-   - Implement the asynchronous `execute()` method containing your node logic.
+   - Override the ``schema()`` to define input configurations.
+   - Override the ``outputs()`` to specify output types.
+   - Implement the asynchronous ``execute()`` method containing your node logic.
 
 For example:
 
@@ -77,7 +77,7 @@ Step 2: Register the New Node
 ------------------------------
 To make your new node available to the DAG system, register it in the node index.
 
-1. Open :file:`lib/graphcap/node_index.py`.
+1. Open ``lib/graphcap/node_index.py``.
 2. Add an entry mapping your node's type name to the class.
 
 For example, update the mapping as shown below:
