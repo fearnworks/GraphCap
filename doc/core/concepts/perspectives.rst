@@ -1,5 +1,5 @@
 ===========================
-Perspectives in GraphCap
+Perspectives in graphcap 
 ===========================
 
 A perspective in graphcap is a unique approach to analyzing and captioning images. Each perspective provides a different way of understanding and describing visual content, allowing for a comprehensive analysis of images.
