@@ -65,11 +65,11 @@ main() {
     
     # Perform clean install
     # clean_install || exit 1
-    log "Installing dependencies..."
+        log "Installing dependencies..."
     pnpm install --frozen-lockfile || {
         error "Failed to install dependencies"
         return 1
-        
+    }
     log "✅ All checks passed"
     log "🚀 Starting development server..."
     
