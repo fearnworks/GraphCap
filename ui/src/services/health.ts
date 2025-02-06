@@ -4,8 +4,12 @@
  * Health check service for server connectivity monitoring
  * 
  * @module HealthService
+ * 
+ * @exports {function} healthQuery - Query configuration for server health check
+ * @exports {type} HealthStatus - Health status response type
  */
 
+import { QueryFunction } from '@tanstack/react-query'
 import { API_BASE_URL } from './api'
 
 export interface HealthStatus {
@@ -23,13 +27,14 @@ export interface HealthStatus {
   }
 }
 
+
+
 /**
- * Check server health and connectivity
+ * Fetches server health status
  * 
  * @returns Health status including latency and connection details
- * @throws Error if server is unreachable
  */
-export async function checkServerHealth(): Promise<HealthStatus> {
+const fetchHealthStatus: QueryFunction<HealthStatus> = async () => {
   const startTime = performance.now()
   const endpoint = `${API_BASE_URL}/health`
   
@@ -73,22 +78,20 @@ export async function checkServerHealth(): Promise<HealthStatus> {
     return healthStatus
 
   } catch (error) {
-    const failureTime = Math.round(performance.now() - startTime)
-    
     console.error('Health check failed', {
       error: error instanceof Error ? error.message : 'Unknown error',
       endpoint,
-      failureTime: `${failureTime}ms`
     })
-
-    return {
-      status: 'error',
-      latency: failureTime,
-      connectionDetails: {
-        endpoint,
-        responseTime: failureTime,
-        statusCode: 0 // Indicates connection failure
-      }
-    }
+    throw error 
   }
 } 
+
+/**
+ * Query configuration for server health check
+ */
+export const healthQuery = {
+    queryKey: ['health'],
+    queryFn: fetchHealthStatus,
+    refetchInterval: 30000, // Refetch every 30 seconds
+    retry: 2,
+  }

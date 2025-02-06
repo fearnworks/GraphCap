@@ -10,6 +10,7 @@ const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000,   // 10 minutes
       retry: 1,
       refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
     },
   },
 })
@@ -22,7 +23,9 @@ export function QueryProvider({ children }: QueryProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
     </QueryClientProvider>
   )
 } 

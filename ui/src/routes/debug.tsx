@@ -1,17 +1,19 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { checkServerHealth } from '../services/health'
+import { healthQuery } from '../services/health'
 
 export const Route = createLazyFileRoute('/debug')({
   component: Debug,
 })
 
 function Debug() {
-  const { data: health, error, isLoading, dataUpdatedAt } = useQuery({
-    queryKey: ['health'],
-    queryFn: checkServerHealth,
-    refetchInterval: 30000, // Refetch every 30 seconds
-  })
+  const { 
+    data: health, 
+    error, 
+    isLoading, 
+    dataUpdatedAt,
+    isFetching 
+  } = useQuery(healthQuery)
 
   return (
     <div className="space-y-6">
@@ -21,9 +23,16 @@ function Debug() {
         </h2>
         
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            Server Health
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              Server Health
+            </h3>
+            {isFetching && (
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Refreshing...
+              </span>
+            )}
+          </div>
           
           {isLoading ? (
             <p className="text-gray-600 dark:text-gray-400">
