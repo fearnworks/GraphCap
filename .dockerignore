@@ -3,3 +3,34 @@ c_venv
 local
 .venv 
 docker 
+# Exclude version control directories
+.git
+.gitignore
+
+# Exclude virtual environment directories
+.venv
+
+# Exclude Python cache files
+__pycache__
+*.pyc
+
+# Exclude Node modules
+node_modules
+
+# Exclude local environment files
+.env
+.env.*
+
+# Exclude log files
+*.log
+
+# (Optionally) Exclude other files or directories not needed for building the server image
+docs
+datasets
+.local
+.vscode
+.ruff_cache
+
+# Exclude problematic files
+*.sock
+./config/

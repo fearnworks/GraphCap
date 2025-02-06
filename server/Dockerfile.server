@@ -10,21 +10,22 @@ COPY pyproject.toml /app/pyproject.toml
 COPY lib/pyproject.toml /app/lib/pyproject.toml
 COPY server/pyproject.toml /app/server/pyproject.toml
 
-# Create venv and upgrade pip (matching Taskfile.yml)
-RUN uv venv && \
-    uv pip install --upgrade pip
+# Create venv in a standard location and set permissions
+ENV VIRTUAL_ENV=/opt/venv
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copy source code
 COPY lib/graphcap /app/lib/graphcap
 COPY server /app/server
 COPY server/_scripts/endpoints-entrypoint.sh /app/server/_scripts/endpoints-entrypoint.sh
 
-# Install packages (exactly as in Taskfile.yml)
-RUN . .venv/bin/activate && \
+# Install packages (using the venv from $VIRTUAL_ENV)
+RUN uv pip install --upgrade pip && \
     cd /app && \
     uv pip install -e "lib[test]" && \
     uv pip install -e "server[test]" && \
-    chmod 775 /app/server/_scripts/endpoints-entrypoint.sh
+    chmod +x /app/server/_scripts/endpoints-entrypoint.sh
 
 # Test stage
 FROM python-base AS test
@@ -34,9 +35,8 @@ WORKDIR /app
 COPY tests /app/tests
 
 # Install test dependencies
-RUN . .venv/bin/activate && \
-    uv pip install pytest pytest-asyncio pytest-cov && \
-    ln -s /app/.venv/bin/pytest /usr/local/bin/pytest
+RUN uv pip install pytest pytest-asyncio pytest-cov && \
+    ln -s $VIRTUAL_ENV/bin/pytest /usr/local/bin/pytest
 
 # Production stage
 FROM python-base AS prod
