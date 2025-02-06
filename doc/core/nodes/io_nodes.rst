@@ -4,7 +4,7 @@ IO Nodes
 
 Overview
 ========
-IO Nodes in GraphCap handle file and data input/output operations. They provide functionality for loading, sampling, and copying images as well as managing file system interactions for datasets. These nodes ensure that image assets are efficiently and correctly prepared for further processing within the GraphCap pipeline.
+IO Nodes in graphcap handle file and data input/output operations. They provide functionality for loading, sampling, and copying images as well as managing file system interactions for datasets. These nodes ensure that image assets are efficiently and correctly prepared for further processing within the graphcap pipeline.
 
 Major IO Node Types
 ===================

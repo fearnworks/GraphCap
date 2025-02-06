@@ -4,7 +4,7 @@ Caption Perspective Nodes
 
 Overview
 ========
-Caption Perspective Nodes are a specialized category within GraphCap that execute various image captioning perspectives. These nodes leverage advanced vision and language models to extract structured analyses from images. They are a core part of the ``graphcap.caption`` module, enabling both artistic analysis and structured graph-based analysis.
+Caption Perspective Nodes are a specialized category within graphcap that execute various image captioning perspectives. These nodes leverage advanced vision and language models to extract structured analyses from images. They are a core part of the ``graphcap.caption`` module, enabling both artistic analysis and structured graph-based analysis.
 
 Major Node Types
 ================

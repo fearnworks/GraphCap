@@ -1,8 +1,8 @@
 ====================================
-GraphCap Nodes Documentation
+graphcap Nodes Documentation
 ====================================
 
-This section covers the various nodes available in GraphCap for building and managing data pipelines. The nodes are grouped by functionality into specialized categories.
+This section covers the various nodes available in graphcap for building and managing data pipelines. The nodes are grouped by functionality into specialized categories.
 
 .. toctree::
    :maxdepth: 2

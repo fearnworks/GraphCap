@@ -26,8 +26,14 @@ tasks:
     desc: Run the server in development mode with Docker
 
     cmds:
-
+      - docker compose -f ./config/docker-compose.yml down
       - docker compose -f ./config/docker-compose.yml up --build --watch
+
+  dev:studio:
+    desc: Run the studio in development mode with Docker
+    cmds:
+      - docker compose -f ./config/docker-compose.yml down
+      - docker compose -f ./config/docker-compose.yml up gcap_ui --build --watch
 
   test:
     desc: Run all tests
@@ -89,3 +95,8 @@ tasks:
     desc: Stop all services
     cmds:
       - docker compose -f ./config/docker-compose.yml down
+
+  clean-containers:
+    desc: Stop all services
+    cmds:
+      - docker compose -f ./config/docker-compose.yml down --remove-orphans

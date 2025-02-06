@@ -2,13 +2,13 @@
 Provider System Overview
 ===========================
 
-The provider system in GraphCap is designed to abstract the core functionalities from specific inference providers. 
+The provider system in graphcap is designed to abstract the core functionalities from specific inference providers. 
 This separation allows for flexibility in model inference and reduces the resources needed to run the application locally by leveraging the OpenAI API specification.
 
 Key Objectives
 ==============
 
-- **Abstraction Layer**: The provider system acts as a layer that separates the core GraphCap system from specific inference providers.
+- **Abstraction Layer**: The provider system acts as a layer that separates the core graphcap system from specific inference providers.
 - **Flexibility**: Initially focused on transformer-based models, the system uses the OpenAI API spec for inference, allowing for flexible model integration.
 - **Resource Efficiency**: By utilizing cloud-based inference, the system minimizes local resource requirements.
 

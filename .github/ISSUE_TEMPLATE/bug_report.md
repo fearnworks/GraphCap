@@ -29,7 +29,7 @@ If applicable, add screenshots to help explain your problem.
 Please complete the following information:
 - **OS:** e.g., Windows 10, macOS Monterey, Ubuntu 20.04
 - **Browser/Platform:** if applicable
-- **GraphCap Version:** if applicable
+- **graphcap Version:** if applicable
 - **Other Relevant Info:** any other details that might help
 
 ### Additional Context
