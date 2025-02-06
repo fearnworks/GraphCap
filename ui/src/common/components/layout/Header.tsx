@@ -28,6 +28,12 @@ export function Header() {
           >
             Gallery
           </Link>
+          <Link 
+            to="/debug" 
+            className="px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            Debug
+          </Link>
         </nav>
 
         {/* Mobile menu button */}
@@ -58,6 +64,12 @@ export function Header() {
               className="block px-3 py-2 rounded-md text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               Gallery
+            </Link>
+            <Link 
+              to="/debug" 
+              className="block px-3 py-2 rounded-md text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Debug
             </Link>
           </div>
         </div>
