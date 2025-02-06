@@ -153,6 +153,7 @@ class BaseClient(AsyncOpenAI, ABC):
                     presence_penalty=repetition_penalty,
                     temperature=temperature,
                     top_p=top_p,
+                    timeout=60,
                 )
             else:
                 completion = await self.chat.completions.create(
@@ -162,6 +163,7 @@ class BaseClient(AsyncOpenAI, ABC):
                     presence_penalty=repetition_penalty,
                     temperature=temperature,
                     top_p=top_p,
+                    timeout=60,
                     **kwargs,
                 )
             return completion

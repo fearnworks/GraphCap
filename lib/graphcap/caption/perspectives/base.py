@@ -7,7 +7,7 @@ Provides base classes and utilities for implementing caption perspectives.
 
 from abc import abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from pydantic import BaseModel
 from rich.table import Table
@@ -47,20 +47,12 @@ class BasePerspective(BaseCaptionProcessor):
             prompt=prompt,
             schema=schema,
         )
-        self._captions = []  # Store captions for batch processing
 
     @abstractmethod
     def create_rich_table(self, caption_data: Dict[str, Any]) -> Table:
         """Create Rich table for displaying caption data."""
         pass
 
-    @property
-    @abstractmethod
-    def supported_formats(self) -> List[str]:
-        """List of supported output formats."""
-        pass
-
-    @abstractmethod
-    def write_format(self, format_name: str, job_dir: Path, caption_data: Dict[str, Any]) -> None:
-        """Write caption data in specified format."""
+    def write_outputs(self, job_dir: Path, caption_data: Dict[str, Any]) -> None:
+        """Write perspective outputs to the job directory."""
         pass

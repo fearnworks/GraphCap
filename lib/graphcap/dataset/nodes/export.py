@@ -31,28 +31,13 @@ class DatasetExportNode(BaseNode):
     """
 
     @classmethod
-    def outputs(cls) -> Dict[str, Any]:
-        """Define node outputs."""
-        return {
-            "dataset_path": {
-                "type": "STRING",
-                "description": "Path to exported dataset JSONL file",
-            },
-            "dataset_url": {
-                "type": "STRING",
-                "description": "HuggingFace dataset URL if uploaded",
-                "optional": True,
-            },
-        }
-
-    @classmethod
     def schema(cls) -> Dict[str, Dict[str, Any]]:
         """Define node schema."""
         return {
             "required": {
-                "output_paths": {
-                    "type": "DICT",
-                    "description": "Paths to perspective outputs",
+                "perspective_results": {
+                    "type": "LIST",
+                    "description": "List of perspective results from analysis nodes",
                 },
                 "batch_dir": {
                     "type": "STRING",
@@ -88,6 +73,14 @@ class DatasetExportNode(BaseNode):
             },
         }
 
+    @property
+    def outputs(self) -> Dict[str, str]:
+        """Define node outputs."""
+        return {
+            "dataset_path": "STRING",
+            "dataset_url": "STRING",
+        }
+
     async def execute(self, **kwargs) -> Dict[str, Any]:
         """Execute dataset export."""
         self.validate_inputs(**kwargs)
@@ -100,35 +93,22 @@ class DatasetExportNode(BaseNode):
         # Create dataset config
         config = DatasetConfig(**kwargs["dataset_config"])
 
-        # Convert perspective outputs to dataset format
+        # Convert perspective results to dataset format
         captions = []
-        output_paths = kwargs["output_paths"]
+        for result in kwargs["perspective_results"]:
+            if not isinstance(result, dict) or "filename" not in result:
+                logger.warning(f"Skipping invalid result: {result}")
+                continue
 
-        for path_key, path in output_paths.items():
-            if path_key.endswith("_formal"):
-                # Extract perspective type
-                perspective_type = path_key.replace("_formal", "")
-
-                # Read formal analysis
-                formal_path = Path(path)
-                formal_content = formal_path.read_text()
-
-                # Get associated image path
-                image_path = output_paths.get("image", "")
-
-                # Create caption entry
-                caption = {
-                    "filename": str(image_path),
-                    "perspective": perspective_type,
-                    "formal_analysis": formal_content,
-                    "config_name": "default",
-                    "version": "1.0",
-                    "provider": "gemini",
-                    "parsed": {
-                        "formal_analysis": formal_content,
-                    },
-                }
-                captions.append(caption)
+            caption = {
+                "filename": result["filename"],
+                "config_name": result.get("config_name", ""),
+                "version": result.get("version", ""),
+                "model": result.get("model", ""),
+                "provider": result.get("provider", ""),
+                "parsed": result.get("parsed", {}),
+            }
+            captions.append(caption)
 
         # Export to JSONL
         jsonl_path = await dataset_manager.export_to_jsonl(captions)
@@ -152,6 +132,6 @@ class DatasetExportNode(BaseNode):
                 private=kwargs.get("private", False),
             )
             logger.info(f"Uploaded dataset to {hf_url}")
-            return {"dataset_url": hf_url}
+            return {"dataset_path": str(jsonl_path), "dataset_url": hf_url}
 
         return {"dataset_path": str(jsonl_path)}

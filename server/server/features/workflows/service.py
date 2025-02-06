@@ -5,6 +5,7 @@ Workflow Service
 Provides business logic for workflow management and execution.
 """
 
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
@@ -14,6 +15,7 @@ from graphcap.node_index import NODE_CLASS_MAPPINGS
 from loguru import logger
 from server.features.job.manager import JobManager
 from server.features.job.schemas import PipelineConfig
+from server.features.workflows.schemas import CombinedPerspectiveResult, PerspectiveResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import Workflow
@@ -82,51 +84,153 @@ async def execute_pipeline(job_id: UUID, job_manager: JobManager) -> None:
 
 
 def process_dag_results(results: dict[str, Any]) -> dict[str, Any]:
-    """
-    Process DAG execution results into a format suitable for storage.
+    """Process DAG execution results into a format suitable for storage."""
 
-    Args:
-        results: Raw DAG execution results
+    def get_perspective_type(node_id: str) -> str | None:
+        """Extract perspective type from node ID."""
+        if "art" in node_id.lower():
+            return "art"
+        elif "graph" in node_id.lower():
+            return "graph"
+        return None
 
-    Returns:
-        Processed results dictionary
-    """
+    import pprint
 
-    def convert_paths(obj: Any) -> Any:
-        """Convert Path objects to strings recursively."""
-        from pathlib import Path
+    def is_valid_result(result: dict[str, Any]) -> bool:
+        """Check if result is valid and not an error."""
+        logger.debug("Validating perspective result")
+        logger.debug(f"Result: {pprint.pformat(result)}")
+        # Check each validation condition and log the result
+        is_dict = isinstance(result, dict)
 
-        if isinstance(obj, Path):
-            return str(obj)
-        elif isinstance(obj, dict):
-            return {k: convert_paths(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            return [convert_paths(i) for i in obj]
-        return obj
+        logger.debug(f"Is dictionary: {is_dict}")
+        if not is_dict:
+            logger.warning("Result is not a dictionary")
+            return False
 
-    # Convert all results to JSON-serializable format
-    processed: dict[str, Any] = {
-        "node_results": {},
-        "outputs": {},
-        "metadata": {
-            "completed_nodes": list(results.keys()),
-            "has_errors": False,
+        has_filename = "filename" in result
+        logger.debug(f"Has filename: {has_filename}")
+        if not has_filename:
+            logger.warning("Result missing filename")
+            return False
+
+        has_parsed = "parsed" in result
+        logger.debug(f"Has parsed data: {has_parsed}")
+        if not has_parsed:
+            logger.warning("Result missing parsed data")
+            return False
+
+        no_error = not result.get("error")
+        logger.debug(f"No error present: {no_error}")
+        if not no_error:
+            logger.warning(f"Result contains error: {result.get('error')}")
+            return False
+
+        valid_analysis = result.get("formal_analysis") != "No formal analysis available"
+        logger.debug(f"Has valid analysis: {valid_analysis}")
+        if not valid_analysis:
+            logger.warning("Result has invalid or missing formal analysis")
+            return False
+
+        # Log the full validation details
+        logger.debug(
+            "Validation details",
+            extra={
+                "result_keys": list(result.keys()),
+                "has_filename": has_filename,
+                "has_parsed": has_parsed,
+                "no_error": no_error,
+                "valid_analysis": valid_analysis,
+                "result_content": result,
+            },
+        )
+
+        if not (is_dict and has_filename and has_parsed and no_error and valid_analysis):
+            logger.warning("Result validation failed")
+            return False
+
+        return True
+
+    # Log incoming results
+    logger.debug(
+        "Processing DAG results",
+        extra={
+            "node_ids": list(results.keys()),
+            "result_types": {k: type(v).__name__ for k, v in results.items()},
+            "result_keys": {k: list(v.keys()) if isinstance(v, dict) else None for k, v in results.items()},
         },
-    }
+    )
+
+    perspective_results: dict[str, dict[str, Any]] = {}
 
     for node_id, node_result in results.items():
-        # Convert any Path objects in the results to strings
-        processed_result = convert_paths(node_result)
-        processed["node_results"][node_id] = processed_result
+        if not isinstance(node_result, dict):
+            logger.warning(
+                f"Skipping non-dict result for node {node_id}", extra={"result_type": type(node_result).__name__}
+            )
+            continue
 
-        # If node produced output files, store their paths
-        if isinstance(processed_result, dict):
-            if "output_paths" in processed_result:
-                processed["outputs"][node_id] = processed_result["output_paths"]
-            elif "visualization" in processed_result:
-                processed["outputs"][node_id] = processed_result["visualization"]
+        perspective_type = get_perspective_type(node_id)
+        if not perspective_type:
+            logger.debug(f"Node {node_id} is not a perspective node")
+            continue
 
-    return processed
+        if is_valid_result(node_result):
+            logger.info(
+                f"Valid {perspective_type} result found",
+                extra={
+                    "node_id": node_id,
+                    "filename": node_result["filename"],
+                    "result_keys": list(node_result.keys()),
+                },
+            )
+            perspective_results[perspective_type] = PerspectiveResult(
+                filename=node_result["filename"],
+                perspective_type=perspective_type,
+                provider=node_result["provider"],
+                model=node_result["model"],
+                version=node_result["version"],
+                parsed=node_result["parsed"],
+                formal_analysis=node_result.get("formal_analysis"),
+            ).model_dump()
+
+    # Log perspective results
+    logger.info(
+        "Processed perspective results",
+        extra={"perspective_count": len(perspective_results), "perspective_types": list(perspective_results.keys())},
+    )
+
+    # Create final combined result
+    if perspective_results:
+        first_result = next(iter(perspective_results.values()))
+        combined = CombinedPerspectiveResult(
+            filename=first_result["filename"], perspectives=perspective_results
+        ).model_dump()
+
+        result = {
+            "result": combined,
+            "metadata": {
+                "perspectives": list(perspective_results.keys()),
+                "has_errors": False,
+                "timestamp": datetime.utcnow().isoformat(),
+            },
+        }
+        logger.info(
+            "Created combined result",
+            extra={
+                "filename": combined["filename"],
+                "perspective_count": len(combined["perspectives"]),
+                "has_errors": False,
+            },
+        )
+        return result
+
+    # Return error state if no valid perspectives
+    logger.warning("No valid perspective results found")
+    return {
+        "error": "No valid perspective results generated",
+        "metadata": {"perspectives": [], "has_errors": True, "timestamp": datetime.utcnow().isoformat()},
+    }
 
 
 async def execute_workflow(

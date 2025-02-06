@@ -6,6 +6,7 @@ Provides artistic analysis of images focusing on formal analysis and
 concrete visual elements, following ArtCoT methodology for reduced hallucination.
 """
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -14,8 +15,7 @@ from rich.table import Table
 from typing_extensions import override
 
 from ..base import BasePerspective
-from .report import generate_art_report
-from .types import ArtCriticResult, ArtCriticSchema, CaptionDict
+from .types import ArtCriticResult, ArtCriticSchema
 
 instruction = """Analyze this image using formal analysis principles, focusing exclusively on observable elements.
  Avoid adding any subjective commentary or unnecessary filler details. Your response must follow this structured format:
@@ -62,7 +62,6 @@ class ArtCriticProcessor(BasePerspective):
             prompt=instruction,
             schema=ArtCriticSchema,
         )
-        self._captions: list[CaptionDict] = []
 
     @override
     def create_rich_table(self, caption_data: dict[str, ArtCriticResult]) -> Table:
@@ -84,28 +83,26 @@ class ArtCriticProcessor(BasePerspective):
         logger.info(f"Art analysis complete for {caption_data['filename']}")
         return table
 
-    @property
     @override
-    def supported_formats(self) -> list[str]:
-        return ["html", "formal"]
+    def write_outputs(self, job_dir: Path, caption_data: dict[str, Any]) -> None:
+        """Write art critic outputs to the job directory."""
+        result = caption_data["parsed"]
 
-    @override
-    def write_format(self, format_name: str, job_dir: Path, caption_data: dict[str, Any]) -> None:
-        """Write caption data in specified format.
-
-        Args:
-            format_name: Name of the output format
-            job_dir: Directory to write output to
-            caption_data: Caption data dictionary
-        """
-        if format_name == "html":
-            # Store caption for batch HTML generation
-            caption_dict = caption_data.copy()  # Make a copy to avoid modifying original
-            caption_dict["input_path"] = caption_dict["filename"]
-            self._captions.append(caption_dict)
-            # Generate report after all captions are collected
-            generate_art_report(self._captions, job_dir)
-        elif format_name == "formal":
-            formal_file = job_dir / "formal_analysis.txt"
-            with formal_file.open("a") as f:
-                f.write(f"{caption_data['parsed']['formal_analysis']}\n---\n")
+        # Write structured response to JSON file
+        response_file = job_dir / "art_critic_response.json"
+        with response_file.open("a") as f:
+            json.dump(
+                {
+                    "filename": caption_data["filename"],
+                    "analysis": {
+                        "visual_elements": result["visual_elements"],
+                        "technical_elements": result["technical_elements"],
+                        "style_elements": result["style_elements"],
+                        "formal_tags": result["formal_tags"],
+                        "formal_analysis": result["formal_analysis"],
+                    },
+                },
+                f,
+                indent=2,
+            )
+            f.write("\n")  # Add newline between entries

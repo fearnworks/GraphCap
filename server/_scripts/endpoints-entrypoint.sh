@@ -31,4 +31,4 @@ asyncio.run(test_db())
 
 # Start the FastAPI server with uvicorn using the virtual environment's Python
 echo "Running uvicorn with uv..."
-uv run python -m uvicorn server.main:app --host 0.0.0.0 --port 32100 --reload --reload-dir /app/server/server
+uv run python -m uvicorn server.main:app --host 0.0.0.0 --port 32100 --reload --reload-dir /app/server/server --reload-dir /app/lib --reload-dir /workspace/config/workflows

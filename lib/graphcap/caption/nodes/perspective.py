@@ -12,13 +12,53 @@ Key features:
 - Configurable outputs
 """
 
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from ...dag.node import BaseNode
 from ...providers.provider_manager import ProviderManager
 from ..perspectives import ArtCriticProcessor, GraphCaptionProcessor
+
+
+@retry(
+    retry=retry_if_exception_type((KeyError, ConnectionError)),
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+    stop=stop_after_attempt(3),
+)
+async def process_with_retries(
+    processor: Any,
+    provider: Any,
+    image_paths: list[str],
+    **kwargs: Any,
+) -> list[dict[str, Any]]:
+    """
+    Process images with retries.
+
+    Args:
+        processor: The perspective processor to use
+        provider: The provider client
+        image_paths: List of image paths to process
+        **kwargs: Additional arguments for processing
+
+    Returns:
+        List of processing results
+
+    Raises:
+        Exception: If processing fails after all retries
+    """
+    return await processor.process_batch(
+        provider=provider,
+        image_paths=image_paths,
+        **kwargs,
+    )
 
 
 class PerspectiveNode(BaseNode):
@@ -95,11 +135,6 @@ class PerspectiveNode(BaseNode):
                             "description": "Base directory for outputs",
                             "default": "./outputs",
                         },
-                        "formats": {
-                            "type": "LIST[STRING]",
-                            "description": "Output formats to generate",
-                            "default": ["dense"],
-                        },
                         "store_logs": {
                             "type": "BOOL",
                             "description": "Whether to store processing logs",
@@ -119,8 +154,7 @@ class PerspectiveNode(BaseNode):
     def outputs(self) -> Dict[str, str]:
         """Define node outputs."""
         return {
-            "captions": "LIST[CAPTION]",
-            "perspective_info": "DICT",
+            "perspective_results": "LIST[DICT]",
         }
 
     @property
@@ -128,43 +162,15 @@ class PerspectiveNode(BaseNode):
         """Define node category."""
         return "Caption"
 
-    def validate_inputs(self, **kwargs) -> bool:
-        """
-        Validate node inputs.
+    def validate_inputs(self, **kwargs) -> None:
+        """Validate node inputs."""
+        required = {"image_paths", "perspective_type", "provider_name", "model_params", "output"}
+        missing = required - set(kwargs.keys())
+        if missing:
+            raise ValueError(f"Missing required inputs: {missing}")
 
-        Args:
-            **kwargs: Node input parameters
-
-        Returns:
-            True if inputs are valid
-
-        Raises:
-            ValueError: If required parameters are missing or invalid
-        """
-        # Check required parameters
-        if "image_paths" not in kwargs:
-            raise ValueError("Missing required parameter: image_paths")
-
-        if "perspective_type" not in kwargs:
-            raise ValueError("Missing required parameter: perspective_type")
-
-        # Validate perspective type
         if kwargs["perspective_type"] not in self.PERSPECTIVE_TYPES:
-            raise ValueError(
-                f"Invalid value for perspective_type. Must be one of: {list(self.PERSPECTIVE_TYPES.keys())}"
-            )
-
-        # Validate model parameters
-        model_params = kwargs.get("model_params", {})
-        if not isinstance(model_params, dict):
-            raise ValueError("model_params must be a dictionary")
-
-        # Validate output configuration
-        output_config = kwargs.get("output", {})
-        if not isinstance(output_config, dict):
-            raise ValueError("output must be a dictionary")
-
-        return True
+            raise ValueError(f"Invalid perspective type: {kwargs['perspective_type']}")
 
     async def execute(self, **kwargs) -> Dict[str, Any]:
         """Execute perspective processing."""
@@ -182,36 +188,26 @@ class PerspectiveNode(BaseNode):
         provider_manager = ProviderManager()
         provider = provider_manager.get_client(kwargs["provider_name"])
 
-        # Process images
-        results = await processor.process_batch(
-            provider=provider,
-            image_paths=image_paths,
-            max_tokens=kwargs["model_params"]["max_tokens"],
-            temperature=kwargs["model_params"]["temperature"],
-            top_p=kwargs["model_params"]["top_p"],
-            max_concurrent=kwargs["model_params"]["max_concurrent"],
-        )
+        try:
+            # Process images with retries
+            results = await process_with_retries(
+                processor=processor,
+                provider=provider,
+                image_paths=image_paths,
+                max_tokens=kwargs["model_params"]["max_tokens"],
+                temperature=kwargs["model_params"]["temperature"],
+                top_p=kwargs["model_params"]["top_p"],
+                max_concurrent=kwargs["model_params"]["max_concurrent"],
+            )
 
-        # Format results for output node - handle first image's results
-        first_result = results[0]  # Get first image result
-        logger.debug(f"Raw processor result: {first_result}")
+            # Write outputs for all results
+            output_dir = Path(kwargs["output"]["directory"])
+            for result in results:
+                processor.write_outputs(output_dir, result)
+                logger.debug(f"Wrote output for {result['filename']}")
 
-        # Extract content from parsed results
-        parsed = first_result.get("parsed", {})
-        logger.debug(f"Parsed content: {parsed}")
+            return {"perspective_results": results}
 
-        perspective_results = {
-            "formal": {
-                "filename": "formal_analysis.txt",
-                "content": parsed.get("formal_analysis", "No formal analysis available"),
-            },
-            "html": {
-                "filename": "art_report.html",
-                "content": first_result.get("html_report", "No HTML report available"),
-            },
-            "logs": first_result.get("logs", ""),
-            "image_path": str(image_paths[0]),
-        }
-
-        logger.info(f"Formatted perspective results for output node: {list(perspective_results.keys())}")
-        return {"perspective_results": perspective_results}
+        except Exception as e:
+            logger.error(f"Failed to process images with {perspective_type} perspective: {str(e)}")
+            raise

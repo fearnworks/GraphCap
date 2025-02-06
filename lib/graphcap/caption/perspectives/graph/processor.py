@@ -5,6 +5,7 @@ Graph Caption Processor
 Implements structured analysis of images with categorized tags and descriptions.
 """
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -13,9 +14,7 @@ from rich.table import Table
 from typing_extensions import override
 
 from ..base import BasePerspective
-from .network import generate_network_diagram
-from .report import generate_graph_report
-from .types import CaptionData, GraphCaptionData, ParsedData
+from .types import GraphCaptionData, ParsedData
 
 instruction = """<Task>You are a structured image analysis agent. Generate comprehensive tag list, caption,
 and dense caption for an image classification system.</Task>
@@ -78,7 +77,6 @@ class GraphCaptionProcessor(BasePerspective):
             prompt=instruction,
             schema=GraphCaptionData,
         )
-        self._captions: list[CaptionData] = []
 
     @override
     def create_rich_table(self, caption_data: dict[str, ParsedData]) -> Table:
@@ -121,36 +119,25 @@ class GraphCaptionProcessor(BasePerspective):
         logger.info(result["dense_caption"])
         return table
 
-    @property
     @override
-    def supported_formats(self) -> list[str]:
-        return ["dense", "html", "network"]
+    def write_outputs(self, job_dir: Path, caption_data: dict[str, Any]) -> None:
+        """Write graph caption outputs to the job directory."""
+        result = caption_data["parsed"]
 
-    @override
-    def write_format(self, format_name: str, job_dir: Path, caption_data: dict[str, Any]) -> None:
-        if format_name == "dense":
-            dense_file = job_dir / "dense_captions.txt"
-            with dense_file.open("a") as f:
-                _ = f.write(f"{caption_data['parsed']['dense_caption']}\n---\n")
-        elif format_name == "html":
-            # Store caption for batch HTML generation
-            self._captions.append(
+        # Write structured response to JSON file
+        response_file = job_dir / "graph_response.json"
+        with response_file.open("a") as f:
+            json.dump(
                 {
-                    "filename": str(caption_data["filename"]),
-                    "input_path": str(caption_data["filename"]),
-                    "parsed": caption_data["parsed"],
-                }
-            )  # type: ignore
-            # Generate report after all captions are collected
-            generate_graph_report(self._captions, job_dir)
-        elif format_name == "network":
-            # Store caption for network diagram
-            self._captions.append(
-                {
-                    "filename": str(caption_data["filename"]),
-                    "input_path": str(caption_data["filename"]),
-                    "parsed": caption_data["parsed"],
-                }
-            )  # type: ignore
-            # Generate network diagram after all captions are collected
-            generate_network_diagram(self._captions, job_dir)
+                    "filename": caption_data["filename"],
+                    "analysis": {
+                        "tags_list": result["tags_list"],
+                        "short_caption": result["short_caption"],
+                        "verification": result["verification"],
+                        "dense_caption": result["dense_caption"],
+                    },
+                },
+                f,
+                indent=2,
+            )
+            f.write("\n")  # Add newline between entries

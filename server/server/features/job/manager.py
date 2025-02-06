@@ -55,9 +55,39 @@ class JobManager:
         if job:
             job.status = JobStatus.COMPLETED
             job.completed_at = datetime.utcnow()
+
+            # Log detailed result structure
+            logger.debug(
+                "Processing job results",
+                extra={
+                    "job_id": str(job_id),
+                    "result_keys": list(results.keys()),
+                    "has_result": "result" in results,
+                    "has_metadata": "metadata" in results,
+                    "metadata": results.get("metadata", {}),
+                },
+            )
+
+            # Ensure we have valid results
+            if not results.get("result"):
+                logger.warning(
+                    f"Job {job_id} completed but no valid result found",
+                    extra={"error": results.get("error"), "metadata": results.get("metadata", {})},
+                )
+                results["error_message"] = "No valid result generated"
+
             job.results = results
             await self.session.commit()
-            logger.info(f"Completed job {job_id}")
+
+            logger.info(
+                f"Completed job {job_id}",
+                extra={
+                    "perspectives": results.get("metadata", {}).get("perspectives", []),
+                    "has_errors": results.get("metadata", {}).get("has_errors", True),
+                    "error_message": results.get("error_message"),
+                    "result_type": type(results.get("result")).__name__ if results.get("result") else None,
+                },
+            )
 
     async def fail_job(self, job_id: UUID, error: str) -> None:
         """Mark job as failed with error."""
