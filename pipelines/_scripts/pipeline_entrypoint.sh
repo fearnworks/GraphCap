@@ -71,6 +71,29 @@ check_environment() {
     pip list
 }
 
+# Function to setup Dagster environment
+setup_dagster() {
+    # Set Dagster home if not set
+    if [ -z "$DAGSTER_HOME" ]; then
+        export DAGSTER_HOME="/workspace/.local/.dagster"
+        log "Setting DAGSTER_HOME to $DAGSTER_HOME"
+    fi
+    
+    # Ensure Dagster directory exists with proper permissions
+    mkdir -p "$DAGSTER_HOME"
+    chmod -R 777 "$DAGSTER_HOME"
+
+    # Copy config file if it doesn't exist
+    if [ ! -f "$DAGSTER_HOME/dagster.yaml" ]; then
+        cp /app/pipelines/dagster.example.yml "$DAGSTER_HOME/dagster.yaml"
+        log "Copied dagster config file"
+    fi
+
+    # Create workspace directory for Unix sockets
+    mkdir -p /tmp/dagster_grpc
+    chmod -R 777 /tmp/dagster_grpc
+}
+
 # Main startup sequence
 main() {
     log "🚀 Starting pipeline service..."
@@ -84,32 +107,21 @@ main() {
     # Wait for postgres
     wait_for_postgres
     
-    # Set Dagster home if not set
-    if [ -z "$DAGSTER_HOME" ]; then
-        export DAGSTER_HOME="/workspace/.local/.dagster"
-        log "Setting DAGSTER_HOME to $DAGSTER_HOME"
-    fi
+    # Setup Dagster environment
+    setup_dagster
     
-    # Ensure Dagster directory exists
-    mkdir -p "$DAGSTER_HOME"
-    chmod -R 777 "$DAGSTER_HOME"
-
-    # Copy config file if it doesn't exist
-    if [ ! -f "$DAGSTER_HOME/dagster.yaml" ]; then
-        cp /app/pipelines/dagster.example.yml "$DAGSTER_HOME/dagster.yaml"
-    fi
-    log "Copied dagster config file"
-
+    # Ensure logs directory exists
+    mkdir -p /workspace/logs
+    chmod -R 777 /workspace/logs
+    
     PORT=$DAGSTER_PORT
     log "Starting Dagster webserver..."
     cd /app/pipelines
     
-    # Ensure logs directory exists
-    mkdir -p /workspace/logs
-    
-    # Start the Dagster server with proper environment
+    # Set environment variables for Dagster
     export DAGSTER_CURRENT_IMAGE="gcap_pipelines"
     export PYTHONPATH="/app:${PYTHONPATH}"
+    export DAGSTER_GRPC_SOCKET_DIR="/tmp/dagster_grpc"
     
     exec > >(tee -a /workspace/logs/dagster_pipeline.log) 2>&1
     exec dagster dev -h 0.0.0.0 -p $PORT --python-file /app/pipelines/pipelines/definitions.py
