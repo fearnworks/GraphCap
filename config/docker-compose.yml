@@ -103,7 +103,42 @@ services:
 
     networks:
       - graphcap
+  gcap_pipelines:
+    build:
+      context: ../pipelines
+      dockerfile: Dockerfile.pipelines
 
+    container_name: gcap_pipelines
+
+    environment:
+      - DAGSTER_PORT=32300
+      - ENVIRONMENT=DEVELOPMENT
+    ports:
+      - "32300:32300"
+    networks:
+      - graphcap
+    develop:
+      watch:
+        - action: sync
+
+          path: ./pipelines
+          target: /app/pipelines
+          ignore:
+            - __pycache__/
+            - "*.pyc"
+            - "*.pyo"
+            - "*.pyd"
+            - .venv/
+            - venv/
+        - action: rebuild
+          path: ./pipelines/pyproject.toml
+        - action: sync+restart
+          path: ./pipelines/_scripts/pipeline_entrypoint.sh
+          target: /app/pipelines/_scripts/pipeline_entrypoint.sh
+    volumes:
+      - ../config:/workspace/config
+      - ../.local:/workspace/.local
+      - ../datasets:/workspace/datasets
 volumes:
   graphcap_server_db:
 

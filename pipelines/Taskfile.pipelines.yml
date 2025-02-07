@@ -1,0 +1,32 @@
+version: "3"
+
+tasks:
+  build:
+    cmds:
+      - docker-compose -f ./config/docker-compose.yml build gcap_pipelines
+
+
+
+  up:
+    cmds:
+      - docker-compose -f ./config/docker-compose.yml up gcap_pipelines
+
+
+  down:
+    cmds:
+      - docker-compose -f ./config/docker-compose.yml down gcap_pipelines
+
+
+  dev:
+    cmds:
+      - docker-compose -f ./config/docker-compose.yml up --watch --build gcap_pipelines
+  
+
+  stop:
+    cmds:
+      - docker-compose -f ./config/docker-compose.yml stop gcap_pipelines
+
+
+  logs:
+    cmds:
+      - docker-compose -f ./config/docker-compose.yml logs -f  gcap_pipelines 

@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "graphcap-pipelines"
+version = "0.1.0"
+description = "Pipeline component for graphcap"
+requires-python = ">=3.11"
+dependencies = [
+    "dagster-webserver>=1.9.11",
+    "dagster>=1.9.11",
+]
+
+[project.optional-dependencies]
+dev = [
+    "dagster-webserver>=1.9.11",
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+]
+
+[tool.dagster]
+module_name = "pipelines.definitions"
+project_name = "pipelines"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pipelines"]
+
+[tool.hatch.build]
+packages = ["pipelines"]
+include = [
+    "pipelines/**/*.py",
+]
+
+[tool.uv.sources]
+graphcap = { workspace = true }

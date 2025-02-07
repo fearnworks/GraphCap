@@ -5,7 +5,8 @@ dotenv: ['.env', '{{.ENV}}/.env', '{{.HOME}}/.env']
 includes:
   server: ./server/Taskfile.server.yml
   models: ./config/Taskfile.models.yml
-  
+  pipelines: ./pipelines/Taskfile.pipelines.yml
+
 tasks:
   install:
     desc: Install development dependencies
