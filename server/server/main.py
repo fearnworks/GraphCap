@@ -14,9 +14,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import init_app_db
-from .features.workflows.loader import load_stock_workflows
 from .providers.router import router as provider_router
-from .routers import job_router, workflow_router
 from .utils.logger import logger
 
 
@@ -101,9 +99,9 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(workflow_router)
+# app.include_router(workflow_router)
 app.include_router(provider_router)
-app.include_router(job_router)
+# app.include_router(job_router)
 
 
 @app.get("/health")

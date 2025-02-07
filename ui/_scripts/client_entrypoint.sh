@@ -1,6 +1,10 @@
 #!/bin/sh
 # SPDX-License-Identifier: Apache-2.0
 
+# Ensure logs directory exists and redirect all output to the log file in the mounted log volume
+mkdir -p /workspace/logs
+exec > >(tee -a /workspace/logs/ui_client.log) 2>&1
+
 set -e  # Exit on error
 
 echo "🚀 Starting UI client entrypoint script..."

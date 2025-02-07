@@ -17,6 +17,7 @@ dependencies = [
     "pydantic-settings>=2.7.1",
     "sqlalchemy[asyncio]>=2.0.37",
     "uvicorn>=0.34.0",
+    "dagster-postgres>=0.25.11",
 ]
 
 [project.optional-dependencies]

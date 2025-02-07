@@ -13,6 +13,16 @@ error() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] ❌ ERROR: $1" >&2
 }
 
+# Function to wait for postgres
+wait_for_postgres() {
+    log "Waiting for PostgreSQL..."
+    until PGPASSWORD=graphcap psql -h gcap_postgres -U graphcap -d graphcap -c '\q'; do
+        log "PostgreSQL is unavailable - sleeping"
+        sleep 1
+    done
+    log "PostgreSQL is up"
+}
+
 # Function to check if dependencies need updating
 check_dependencies() {
     # Only check dependencies if we're in development mode
@@ -71,22 +81,38 @@ main() {
     # Check dependencies only in development
     check_dependencies || exit 1
     
-    # Wait for services to initialize
-    log "Waiting for services..."
-    sleep 5
+    # Wait for postgres
+    wait_for_postgres
     
     # Set Dagster home if not set
     if [ -z "$DAGSTER_HOME" ]; then
-        export DAGSTER_HOME="/app/pipelines/.dagster"
+        export DAGSTER_HOME="/workspace/.local/.dagster"
         log "Setting DAGSTER_HOME to $DAGSTER_HOME"
     fi
     
     # Ensure Dagster directory exists
     mkdir -p "$DAGSTER_HOME"
+    chmod -R 777 "$DAGSTER_HOME"
+
+    # Copy config file if it doesn't exist
+    if [ ! -f "$DAGSTER_HOME/dagster.yaml" ]; then
+        cp /app/pipelines/dagster.example.yml "$DAGSTER_HOME/dagster.yaml"
+    fi
+    log "Copied dagster config file"
+
     PORT=$DAGSTER_PORT
     log "Starting Dagster webserver..."
     cd /app/pipelines
-    exec python -m dagster dev -h 0.0.0.0 -p $PORT
+    
+    # Ensure logs directory exists
+    mkdir -p /workspace/logs
+    
+    # Start the Dagster server with proper environment
+    export DAGSTER_CURRENT_IMAGE="gcap_pipelines"
+    export PYTHONPATH="/app:${PYTHONPATH}"
+    
+    exec > >(tee -a /workspace/logs/dagster_pipeline.log) 2>&1
+    exec dagster dev -h 0.0.0.0 -p $PORT --python-file /app/pipelines/pipelines/definitions.py
 }
 
 # Trap errors

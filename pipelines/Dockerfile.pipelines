@@ -4,12 +4,13 @@ FROM python:3.11-slim-bookworm AS base
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Install system dependencies
+# Install system dependencies including PostgreSQL client
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl \
         build-essential \
-        git && \
+        git \
+        postgresql-client && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -21,25 +22,18 @@ RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copy pyproject.toml files first
-COPY pyproject.toml /app/pipelines/pyproject.toml
+COPY . /app/pipelines/
 
 # Install dependencies using uv
 RUN uv pip install --upgrade pip && \
     cd /app/pipelines && \
-    uv pip install -r ./pyproject.toml
+    uv pip install -e ".[dev]"
 
-
-# Copy configuration and application code
-COPY ./dagster.example.yml /app/pipelines/.dagster/dagster.yml
-COPY . /app/pipelines
-
-# Make entrypoint script executable
-COPY ./_scripts/pipeline_entrypoint.sh /app/pipelines/_scripts/pipeline_entrypoint.sh
-RUN chmod +x /app/pipelines/_scripts/pipeline_entrypoint.sh
-
+ENV DAGSTER_RELOAD_TRIGGER_FILE_PATTERN="/app/pipelines/**/*.py"
+ENV PYTHONPATH=/app
 
 # Expose the port on which the Dagster development server listens
-EXPOSE 11000
+EXPOSE 32300
 
 # Set the entrypoint command
 ENTRYPOINT ["/bin/bash", "/app/pipelines/_scripts/pipeline_entrypoint.sh"]

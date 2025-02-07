@@ -1,6 +1,10 @@
 #!/bin/bash
 # SPDX-License-Identifier: Apache-2.0
 
+# Ensure logs directory exists and redirect all output to the log file in the mounted log volume
+mkdir -p /workspace/logs
+exec > >(tee -a /workspace/logs/uvicorn_server.log) 2>&1
+
 set -e  # Exit on error
 
 # Function to log with timestamp
@@ -82,27 +86,27 @@ main() {
     # Run database migrations
     log "Running database migrations..."
     cd /app/server
-    uv run --active alembic upgrade head || {
-        error "Migration failed with status $?"
-        log "Checking database connection..."
-        uv run --active python -c "
-import asyncio
-import asyncpg
-async def test_db():
-    try:
-        conn = await asyncpg.connect('$DATABASE_URL')
-        await conn.close()
-        print('Database connection successful')
-    except Exception as e:
-        print(f'Database connection failed: {e}')
-asyncio.run(test_db())
-"
-        exit 1
-    }
+#     uv run --active alembic upgrade head || {
+#         error "Migration failed with status $?"
+#         log "Checking database connection..."
+#         uv run --active python -c "
+# import asyncio
+# import asyncpg
+# async def test_db():
+#     try:
+#         conn = await asyncpg.connect('$DATABASE_URL')
+#         await conn.close()
+#         print('Database connection successful')
+#     except Exception as e:
+#         print(f'Database connection failed: {e}')
+# asyncio.run(test_db())
+# "
+#         exit 1
+#     }
     
     # Start the FastAPI server
     log "🚀 Starting uvicorn server..."
-    uv run --active python -m uvicorn server.main:app \
+    exec uv run --active python -m uvicorn server.main:app \
         --host 0.0.0.0 \
         --port 32100 \
         --reload \

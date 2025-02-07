@@ -459,6 +459,19 @@ wheels = [
 ]
 
 [[package]]
+name = "dagster-postgres"
+version = "0.25.11"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "dagster" },
+    { name = "psycopg2-binary" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8f/72/943f032a270bead1cad5eb7c8dfc385b7d8f7e2b39738d3cedc6611e8d9c/dagster-postgres-0.25.11.tar.gz", hash = "sha256:84ffa8d5dbaec711afecf3ecb2dfff7bb2fe6c853b851a63fd02a7d06d8c1610", size = 15310 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7e/7a/b20e358205f488542eedc020c9bf199b636119948ab7b73d0b390fe22890/dagster_postgres-0.25.11-py3-none-any.whl", hash = "sha256:5d28f44867b2fcfaba1d1e8e886a3affb5126aea254cf701cff19780153a74eb", size = 21368 },
+]
+
+[[package]]
 name = "datasets"
 version = "3.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -723,6 +736,7 @@ version = "0.0.2"
 source = { editable = "server" }
 dependencies = [
     { name = "asyncpg" },
+    { name = "dagster-postgres" },
     { name = "fastapi" },
     { name = "graphcap" },
     { name = "gunicorn" },
@@ -742,6 +756,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "asyncpg", specifier = ">=0.30.0" },
+    { name = "dagster-postgres", specifier = ">=0.25.11" },
     { name = "fastapi", specifier = ">=0.115.8" },
     { name = "graphcap", editable = "lib" },
     { name = "gunicorn", specifier = ">=23.0.0" },

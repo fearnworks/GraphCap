@@ -8,4 +8,4 @@ DAGSTER_HOME=os.getenv("DAGSTER_HOME")
 print(f"DAGSTER_HOME: {DAGSTER_HOME}")
 # launch dagster dev command
 # run the command "dagster dev" in the terminal"
-os.system(f"dagster dev -h 0.0.0.0 -p 11000")
+os.system(f"dagster dev -h 0.0.0.0 -p 32300")

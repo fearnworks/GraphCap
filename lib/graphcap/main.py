@@ -7,8 +7,6 @@ import click
 from dotenv import load_dotenv
 from loguru import logger
 
-from .dag.dag import DAG
-from .node_index import NODE_CLASS_MAPPINGS
 
 load_dotenv()
 

@@ -14,6 +14,7 @@ services:
       - ../config:/workspace/config
       - ../.local:/workspace/.local
       - ../datasets:/workspace/datasets
+      - ../.local/logs/gcap_server:/workspace/logs
     environment:
       - HOST_PLATFORM=${HOST_PLATFORM:-linux}
       - PYTHONPATH=/app/server
@@ -39,6 +40,13 @@ services:
     depends_on:
       gcap_postgres:
         condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        tag: "{{.Name}}"
+        labels: "com.docker.compose.project,com.docker.compose.service"
 
   gcap_postgres:
     image: postgres:17
@@ -73,7 +81,8 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
-
+    volumes:
+      - ../.local/logs/gcap_ui:/workspace/logs
     develop:
       watch:
         - action: sync
@@ -99,46 +108,47 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - VITE_API_URL=http://localhost:32100/api
       - VITE_WORKSPACE_PATH=/workspace/.local
-      
-
     networks:
       - graphcap
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        tag: "{{.Name}}"
+        labels: "com.docker.compose.project,com.docker.compose.service"
+
   gcap_pipelines:
     build:
       context: ../pipelines
       dockerfile: Dockerfile.pipelines
-
     container_name: gcap_pipelines
-
+    volumes:
+      - ../pipelines:/app/pipelines:ro
+      - /workspace/logs:/workspace/logs
+      - /workspace/.local:/workspace/.local
+      - /workspace/datasets:/workspace/datasets
     environment:
+      - DAGSTER_HOME=/workspace/.local/.dagster
       - DAGSTER_PORT=32300
-      - ENVIRONMENT=DEVELOPMENT
+      - DAGSTER_POSTGRES_USER=graphcap
+      - DAGSTER_POSTGRES_PASSWORD=graphcap
+      - DAGSTER_POSTGRES_DB=graphcap
+      - PYTHONPATH=/app
     ports:
       - "32300:32300"
     networks:
       - graphcap
-    develop:
-      watch:
-        - action: sync
+    depends_on:
+      - gcap_postgres
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        tag: "{{.Name}}"
+        labels: "com.docker.compose.project,com.docker.compose.service"
 
-          path: ./pipelines
-          target: /app/pipelines
-          ignore:
-            - __pycache__/
-            - "*.pyc"
-            - "*.pyo"
-            - "*.pyd"
-            - .venv/
-            - venv/
-        - action: rebuild
-          path: ./pipelines/pyproject.toml
-        - action: sync+restart
-          path: ./pipelines/_scripts/pipeline_entrypoint.sh
-          target: /app/pipelines/_scripts/pipeline_entrypoint.sh
-    volumes:
-      - ../config:/workspace/config
-      - ../.local:/workspace/.local
-      - ../datasets:/workspace/datasets
 volumes:
   graphcap_server_db:
 

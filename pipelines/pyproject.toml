@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Pipeline component for graphcap"
 requires-python = ">=3.11"
 dependencies = [
+    "dagster-postgres>=0.25.11",
     "dagster-webserver>=1.9.11",
     "dagster>=1.9.11",
 ]
