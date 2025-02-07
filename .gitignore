@@ -91,3 +91,4 @@ test-results/
 provider.config.toml
 test_logs.jsonl
 outputs
+title=*
