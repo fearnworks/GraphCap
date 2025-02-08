@@ -8,7 +8,6 @@ import dagster as dg
 
 from ..common.logging import write_caption_results
 from ..common.resources import ProviderConfigFile
-from ..perspectives.perspectives import ArtCriticProcessor, GraphCaptionProcessor
 from ..providers.clients import (
     BaseClient,
     GeminiClient,
@@ -17,6 +16,7 @@ from ..providers.clients import (
     OpenRouterClient,
     VLLMClient,
 )
+from .perspective_library import ArtCriticProcessor, GraphCaptionProcessor
 
 
 @dg.asset(group_name="perspectives", compute_kind="python")
