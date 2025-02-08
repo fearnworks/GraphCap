@@ -89,4 +89,11 @@ async def perspective_caption(
             except Exception as e:
                 context.log.error(f"Error generating caption for {image} with {perspective}: {e}")
     write_caption_results(all_results)
+    metadata = {
+        "num_images": len(image_list),
+        "perspectives": str(perspective_list),
+        "default_provider": default_provider,
+        "caption_results_location": "/workspace/logs/gcap_pipelines",
+    }
+    context.add_output_metadata(metadata)
     return results
