@@ -40,13 +40,6 @@ services:
     depends_on:
       gcap_postgres:
         condition: service_healthy
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "5"
-        tag: "{{.Name}}"
-        labels: "com.docker.compose.project,com.docker.compose.service"
 
   gcap_postgres:
     image: postgres:17
@@ -110,13 +103,6 @@ services:
       - VITE_WORKSPACE_PATH=/workspace/.local
     networks:
       - graphcap
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "5"
-        tag: "{{.Name}}"
-        labels: "com.docker.compose.project,com.docker.compose.service"
 
   gcap_pipelines:
     build:
@@ -141,13 +127,8 @@ services:
       - graphcap
     depends_on:
       - gcap_postgres
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "5"
-        tag: "{{.Name}}"
-        labels: "com.docker.compose.project,com.docker.compose.service"
+    env_file:
+      - ../.env
 
 volumes:
   graphcap_server_db:

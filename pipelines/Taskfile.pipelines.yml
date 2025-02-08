@@ -30,3 +30,9 @@ tasks:
   logs:
     cmds:
       - docker-compose -f ./config/docker-compose.yml logs -f  gcap_pipelines 
+
+  
+  
+  update-config:
+    cmds:
+      - bash -c "cp ./pipelines/dagster.example.yml ./.local/.dagster/dagster.yaml"

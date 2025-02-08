@@ -5,30 +5,6 @@ scheduler:
   module: dagster.core.scheduler
   class: DagsterDaemonScheduler
 
-run_coordinator:
-  module: dagster.core.run_coordinator
-  class: QueuedRunCoordinator
-  config:
-    max_concurrent_runs: 5
-    tag_concurrency_limits:
-      - key: operation
-        value: example
-        limit: 5
-
-run_launcher:
-  module: dagster_docker
-  class: DockerRunLauncher
-  config:
-    env_vars:
-      - DAGSTER_POSTGRES_USER
-      - DAGSTER_POSTGRES_PASSWORD
-      - DAGSTER_POSTGRES_DB
-    network: docker_network
-    container_kwargs:
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-        - /tmp/io_manager_storage:/tmp/io_manager_storage
-
 run_storage:
   module: dagster_postgres.run_storage
   class: PostgresRunStorage
@@ -61,3 +37,4 @@ event_log_storage:
       password: graphcap
       db_name: graphcap
       port: 5432
+

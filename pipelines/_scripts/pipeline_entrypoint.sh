@@ -71,6 +71,16 @@ check_environment() {
     pip list
 }
 
+# Function to check the environment variables
+environment_check() {
+    log "🔍 Checking environment variables..."
+    if [ -z "$HUGGING_FACE_HUB_TOKEN" ]; then
+        log "HUGGING_FACE_HUB_TOKEN: Not set"
+    else
+        log "HUGGING_FACE_HUB_TOKEN: Set"
+    fi
+}
+
 # Function to setup Dagster environment
 setup_dagster() {
     # Set Dagster home if not set
@@ -83,11 +93,9 @@ setup_dagster() {
     mkdir -p "$DAGSTER_HOME"
     chmod -R 777 "$DAGSTER_HOME"
 
-    # Copy config file if it doesn't exist
-    if [ ! -f "$DAGSTER_HOME/dagster.yaml" ]; then
-        cp /app/pipelines/dagster.example.yml "$DAGSTER_HOME/dagster.yaml"
-        log "Copied dagster config file"
-    fi
+    # Copy the dagster config file to the Dagster home directory
+    cp /app/pipelines/dagster.example.yml "$DAGSTER_HOME/dagster.yaml"
+    log "Copied dagster config file"
 
     # Create workspace directory for Unix sockets
     mkdir -p /tmp/dagster_grpc
@@ -97,6 +105,9 @@ setup_dagster() {
 # Main startup sequence
 main() {
     log "🚀 Starting pipeline service..."
+
+    # Check environment variables
+    environment_check
 
     # Check environment, dependencies, wait for Postgres, and setup Dagster
     check_environment
@@ -113,7 +124,8 @@ main() {
     export PYTHONPATH="/app/pipelines:${PYTHONPATH}"
     export DAGSTER_GRPC_SOCKET_DIR="/tmp/dagster_grpc"
     
-    exec > >(tee -a /workspace/logs/dagster_pipeline.log) 2>&1
+    # Redirect output to pipeline_startup.log
+    exec > >(tee -a /workspace/logs/gcap_pipelines/startup.log) 2>&1
     exec uv run --active dagster dev -h 0.0.0.0 -p $PORT -m pipelines.definitions
 }
 
