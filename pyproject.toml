@@ -9,7 +9,11 @@ version = "0.0.2"
 description = "graphcap workspace root"
 requires-python = ">=3.11"
 dependencies = [
+    "click>=8.1.8",
     "dagster>=1.9.11",
+    "rich>=13.9.4",
+    "termcolor>=2.5.0",
+    "toml>=0.10.2",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -89,8 +93,4 @@ members = ["lib", "server"]
 graphcap = { path = "." }
 graphcap-server = { path = "server" }
 
-[tool.hatch.build]
-packages = ["graphcap"]
-include = [
-    "graphcap/**/*.py",
-]
+

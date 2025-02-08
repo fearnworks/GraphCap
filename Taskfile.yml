@@ -8,6 +8,20 @@ includes:
   pipelines: ./pipelines/Taskfile.pipelines.yml
 
 tasks:
+  bootstrap:
+    desc: Bootstrap the project
+    cmds:
+      - task: clean
+      - task: install
+      - uv run lib/setup.py
+      
+  bootstrap-config:
+    desc: Bootstrap the project configuration
+    cmds:
+      - uv run lib/setup.py
+
+
+
   install:
     desc: Install development dependencies
     cmds:

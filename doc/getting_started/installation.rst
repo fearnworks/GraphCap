@@ -29,7 +29,7 @@ Setup Instructions
 
    .. code-block:: bash
 
-      task install
+      task bootstrap
 
 3. **Configure Environment Variables**
 
