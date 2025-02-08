@@ -1,7 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 """Custom logging setup for Dagster pipelines."""
 
+import json
 import logging
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List
 
 
 def configure_loggers():
@@ -25,3 +29,17 @@ def configure_loggers():
     dagster_logger.addHandler(error_handler)
 
     return {"custom_logger": dagster_logger}
+
+
+def write_caption_results(results: List[Dict[str, Any]]):
+    """Writes caption results to a JSON file in the log directory."""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_dir = Path("/workspace/logs/gcap_pipelines")
+    results_file = log_dir / f"caption_results_{timestamp}.json"
+
+    try:
+        with results_file.open("w") as f:
+            json.dump(results, f, indent=2)
+        logging.getLogger("dagster").info(f"Caption results written to {results_file}")
+    except Exception as e:
+        logging.getLogger("dagster").error(f"Failed to write caption results: {e}")

@@ -1,6 +1,7 @@
 from .client import huggingface_client
 from .dataset_export import dataset_export_manifest, dataset_metadata, huggingface_upload_manifest
 from .dataset_import import dataset_download, dataset_import_manifest
+from .types import DatasetMetadata
 
 ASSETS = [
     dataset_metadata,
@@ -21,4 +22,5 @@ __all__ = [
     "ASSETS",
     "OPS",
     "huggingface_client",
+    "DatasetMetadata",
 ]

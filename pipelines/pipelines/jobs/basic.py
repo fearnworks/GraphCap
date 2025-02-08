@@ -37,13 +37,9 @@ Orchestrates the perspective-based image captioning pipeline for OMI datasets.
 
 import dagster as dg
 
-omi_perspective_pipeline_job = dg.define_asset_job(
-    name="omi_perspective_pipeline",
+basic_caption_pipeline = dg.define_asset_job(
+    name="basic_caption_pipeline",
     selection=[
         "perspective_caption",
-        "dataset_metadata",
-        "dataset_export_manifest",
-        "huggingface_upload_manifest",
-        "default_provider",
     ],
 )

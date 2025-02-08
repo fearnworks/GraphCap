@@ -15,6 +15,7 @@ Key features:
 from .huggingface import ASSETS as HUGGINGFACE_ASSETS
 from .io import ASSETS as IO_ASSETS
 from .perspectives import ASSETS as PERSPECTIVES
+from .providers import ASSETS as PROVIDERS
 
 # Re-export all assets
 assets = [
@@ -24,4 +25,6 @@ assets = [
     *PERSPECTIVES,
     # Dataset management
     *HUGGINGFACE_ASSETS,
+    # Provider management
+    *PROVIDERS,
 ]
