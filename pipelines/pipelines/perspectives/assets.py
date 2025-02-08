@@ -8,7 +8,6 @@ import dagster as dg
 
 from ..common.logging import write_caption_results
 from ..common.resources import ProviderConfigFile
-from ..perspectives.perspectives import ArtCriticProcessor, GraphCaptionProcessor
 from ..providers.clients import (
     BaseClient,
     GeminiClient,
@@ -17,6 +16,7 @@ from ..providers.clients import (
     OpenRouterClient,
     VLLMClient,
 )
+from .perspective_library import ArtCriticProcessor, GraphCaptionProcessor
 
 
 @dg.asset(group_name="perspectives", compute_kind="python")
@@ -89,4 +89,11 @@ async def perspective_caption(
             except Exception as e:
                 context.log.error(f"Error generating caption for {image} with {perspective}: {e}")
     write_caption_results(all_results)
+    metadata = {
+        "num_images": len(image_list),
+        "perspectives": str(perspective_list),
+        "default_provider": default_provider,
+        "caption_results_location": "/workspace/logs/gcap_pipelines",
+    }
+    context.add_output_metadata(metadata)
     return results

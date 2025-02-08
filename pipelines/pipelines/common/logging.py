@@ -13,10 +13,14 @@ def configure_loggers():
     dagster_logger = logging.getLogger("dagster")
     dagster_logger.setLevel(logging.DEBUG)  # Set default Dagster logger level
 
+    # Ensure the log directory exists
+    log_dir = Path("/workspace/logs/gcap_pipelines")
+    log_dir.mkdir(parents=True, exist_ok=True)
+
     # Create handlers for different log levels
-    debug_handler = logging.FileHandler("/workspace/logs/gcap_pipelines/debug.log")
+    debug_handler = logging.FileHandler(log_dir / "debug.log")
     debug_handler.setLevel(logging.DEBUG)
-    error_handler = logging.FileHandler("/workspace/logs/gcap_pipelines/error.log")
+    error_handler = logging.FileHandler(log_dir / "error.log")
     error_handler.setLevel(logging.ERROR)
 
     # Define formatters
