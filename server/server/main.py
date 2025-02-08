@@ -51,11 +51,7 @@ async def lifespan(app: FastAPI):
                 await init_app_db(app)
                 logger.info("Database initialized")
 
-                # Load stock workflows
-                async with app.state.db_session() as session:
-                    await load_stock_workflows(session)
-                    logger.info("Stock workflows loaded")
-                break
+
             except GracefulExit:
                 logger.info("Received shutdown signal during startup")
                 raise

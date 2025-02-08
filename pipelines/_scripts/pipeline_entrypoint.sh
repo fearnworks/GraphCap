@@ -97,34 +97,24 @@ setup_dagster() {
 # Main startup sequence
 main() {
     log "🚀 Starting pipeline service..."
-    
-    # Check environment
+
+    # Check environment, dependencies, wait for Postgres, and setup Dagster
     check_environment
-    
-    # Check dependencies only in development
     check_dependencies || exit 1
-    
-    # Wait for postgres
     wait_for_postgres
-    
-    # Setup Dagster environment
     setup_dagster
-    
-    # Ensure logs directory exists
-    mkdir -p /workspace/logs
-    chmod -R 777 /workspace/logs
-    
+    mkdir -p /workspace/logs && chmod -R 777 /workspace/logs
+
     PORT=$DAGSTER_PORT
     log "Starting Dagster webserver..."
-    cd /app/pipelines
-    
-    # Set environment variables for Dagster
+
+    # Do not change directory so that the PYTHONPATH remains correct.
     export DAGSTER_CURRENT_IMAGE="gcap_pipelines"
-    export PYTHONPATH="/app:${PYTHONPATH}"
+    export PYTHONPATH="/app/pipelines:${PYTHONPATH}"
     export DAGSTER_GRPC_SOCKET_DIR="/tmp/dagster_grpc"
     
     exec > >(tee -a /workspace/logs/dagster_pipeline.log) 2>&1
-    exec dagster dev -h 0.0.0.0 -p $PORT --python-file /app/pipelines/pipelines/definitions.py
+    exec uv run --active dagster dev -h 0.0.0.0 -p $PORT -m pipelines.definitions
 }
 
 # Trap errors

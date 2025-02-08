@@ -124,10 +124,10 @@ services:
       dockerfile: Dockerfile.pipelines
     container_name: gcap_pipelines
     volumes:
-      - ../pipelines:/app/pipelines:ro
-      - /workspace/logs:/workspace/logs
-      - /workspace/.local:/workspace/.local
-      - /workspace/datasets:/workspace/datasets
+      - ../pipelines:/app/pipelines
+      - ../.local/logs:/workspace/logs
+      - ../.local:/workspace/.local
+      - ../datasets:/workspace/datasets
     environment:
       - DAGSTER_HOME=/workspace/.local/.dagster
       - DAGSTER_PORT=32300

@@ -18,11 +18,12 @@ WORKDIR /app
 
 # Create venv in a standard location
 ENV VIRTUAL_ENV=/opt/venv
-RUN python -m venv $VIRTUAL_ENV
+RUN uv venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copy pyproject.toml files first
 COPY . /app/pipelines/
+RUN chmod -R 777 /app/pipelines/
 
 # Install dependencies using uv
 RUN uv pip install --upgrade pip && \

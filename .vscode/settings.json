@@ -20,6 +20,10 @@
             "database": "graphcap",
             "username": "graphcap"
         }
-    ]
+    ],
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.pytest_cache": true
+    }
     
 }
