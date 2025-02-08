@@ -8,6 +8,9 @@ name = "graphcap-workspace"
 version = "0.0.2"
 description = "graphcap workspace root"
 requires-python = ">=3.11"
+dependencies = [
+    "dagster>=1.9.11",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["graphcap"]

@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+/* Theme configuration */
+@theme {
+  /* Core colors */
+  --color-background: 255, 255, 255;
+  --color-text: 17, 24, 39;
+  
+  /* Semantic colors */
+  --color-primary: var(--color-blue-500);
+  --color-error: var(--color-red-500);
+  --color-success: var(--color-green-500);
+  
+  /* Transitions */
+  --transition-duration: 200ms;
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark mode overrides */
+.dark {
+  --color-background: 17, 24, 39;
+  --color-text: 229, 231, 235;
+}
+
+/* Base styles */
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -8,7 +31,7 @@
   height: 100%;
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: rgb(var(--color-background));
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -29,6 +52,8 @@ body {
   margin: 0;
   width: 100%;
   height: 100%;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: rgb(var(--color-text));
 }
 
 h1 {
@@ -68,7 +93,8 @@ button:focus-visible {
   }
 }
 
-/* Add smooth transitions for theme changes */
+/* Transitions */
 * {
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color var(--transition-duration) var(--transition-timing),
+              color var(--transition-duration) var(--transition-timing);
 }

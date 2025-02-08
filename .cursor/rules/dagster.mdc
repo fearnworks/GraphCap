@@ -1,0 +1,1374 @@
+---
+description: Dagster
+globs: ./pipelines/*/**
+---
+# Dagster Pipelines
+## Assets
+An asset is an object in persistent storage, such as a table, file, or persisted machine learning model. An asset definition is a description, in code, of an asset that should exist and how to produce and update that asset.
+
+Asset definitions enable a declarative approach to data management, in which code is the source of truth on what data assets should exist and how those assets are computed. To learn how to define assets in code, see "Defining assets".
+
+Materializing an asset is the act of running its function and saving the results to persistent storage. You can materialize assets from the Dagster UI or by invoking Python APIs.
+
+## Partitioning assets
+In Dagster, partitioning is a powerful technique for managing large datasets, improving pipeline performance, and enabling incremental processing. This guide will help you understand how to implement data partitioning in your Dagster projects.
+
+There are several ways to partition your data in Dagster:
+
+Time-based partitioning, for processing data in specific time intervals
+Static partitioning, for dividing data based on predefined categories
+Two-dimensional partitioning, for partitioning data along two different axes simultaneously
+Dynamic partitioning, for creating partitions based on runtime information
+
+## Ops
+The computational core of an asset definition is an op. Collections of ops can also be assembled to create a graph. It is not necessary to use ops to use Dagster; most Dagster users will never need to create ops directly. For more information about ops, including op definition and configuration, op events, op hooks, and op retries, see the legacy Dagster documentation.
+
+An individual op should perform relatively simple tasks, such as:
+
+Deriving a dataset from other datasets
+Executing a database query
+Initiating a Spark job in a remote cluster
+Querying an API and storing the result in a data warehouse
+Sending an email or Slack message
+
+## Jobs
+Jobs are the main unit of execution and monitoring in Dagster. They allow you to execute a portion of a graph of asset definitions or ops based on a schedule or an external trigger.
+
+When a job begins, it kicks off a run. A run is a single execution of a job in Dagster. Runs can be launched and viewed in the Dagster UI.
+
+Benefits
+With jobs, you can
+
+View and launch runs of jobs in the Dagster UI
+Automate the execution of your Dagster pipelines with schedules and sensors.
+Attach information using metadata and tags
+Apply custom prioritization rules to how job runs are prioritized and executed if you are using a run queue
+Make your pipelines more efficient if you apply concurrency limits to job runs. For more information, see "Managing concurrency of Dagster assets, jobs, and Dagster instances".
+
+
+## Graphs
+A graph is a set of interconnected ops or sub-graphs. While individual ops typically perform simple tasks, ops can be assembled into a graph to accomplish complex tasks.
+
+It is not necessary to use graphs to use Dagster; most Dagster users will never need to create graphs directly. For more information on graphs, including op graphs, nesting op graphs, and dynamic op graphs, see the legacy Dagster documentation.
+
+### Backfilling data
+Backfilling is the process of running partitions for assets that either don't exist or updating existing records. Dagster supports backfills for each partition or a subset of partitions.
+
+After defining a partition, you can launch a backfill that will submit runs to fill in multiple partitions at the same time.
+
+Backfills are common when setting up a pipeline for the first time. The assets you want to materialize might have historical data that needs to be materialized to get the assets up to date. Another common reason to run a backfill is when you've changed the logic for an asset and need to update historical data with the new logic.
+
+## External resources
+Dagster resources are objects that provide access to external systems, databases, or services. Resources are used to manage connections to external systems, and are used by Dagster assets and ops. For example, a simple ETL (Extract Transform Load) pipeline fetches data from an API, ingests it into a database, and updates a dashboard. External tools and services this pipeline uses could be:
+
+The API the data is fetched from
+The AWS S3 bucket where the API's response is stored
+The Snowflake/Databricks/BigQuery account the data is ingested into
+The BI tool the dashboard was made in
+Using Dagster resources, you can standardize connections and integrations to these tools across Dagster definitions like asset definitions, schedules, sensors, and jobs.
+
+Resources allow you to:
+
+Plug in different implementations in different environments - If you have a heavy external dependency that you want to use in production but avoid using in testing, you can accomplish this by providing different resources in each environment.
+Surface configuration in the Dagster UI - Resources and their configuration are surfaced in the UI, making it easy to see where resources are used and how they're configured.
+Share configuration across multiple assets or ops - Resources are configurable and shared, so configuration can be supplied in one place instead of individually.
+Share implementations across multiple assets or ops - When multiple assets access the same external services, resources provide a standard way to structure your code to share the implementations.
+Relevant APIs
+Name	Description
+ConfigurableResource	The base class extended to define resources. Under the hood, implements ResourceDefinition.
+ResourceParam	An annotation used to specify that a plain Python object parameter for an asset or op is a resource.
+ResourceDefinition	Class for resource definitions. You almost never want to use initialize this class directly. Instead, you should extend the ConfigurableResource class which implements ResourceDefinition.
+InitResourceContext	The context object provided to a resource during initialization. This object contains required resources, config, and other run information.
+build_init_resource_context	Function for building an InitResourceContext outside of execution, intended to be used when testing a resource.
+build_resources	Function for initializing a set of resources outside of the context of a job's execution.
+with_resources	Advanced API for providing resources to a specific set of asset definitions, overriding those provided to Definitions.
+
+## I/O managers
+I/O managers in Dagster allow you to keep the code for data processing separate from the code for reading and writing data. This reduces repetitive code and makes it easier to change where your data is stored.
+
+In many Dagster pipelines, assets can be broken down as the following steps:
+
+Reading data a some data store into memory
+Applying in-memory transform
+Writing the transformed data to a data store
+For assets that follow this pattern, an I/O manager can streamline the code that handles reading and writing data to and from a source.
+
+note
+This article assumes familiarity with: assets and resources
+
+Before you begin
+I/O managers aren't required to use Dagster, nor are they the best option in all scenarios. If you find yourself writing the same code at the start and end of each asset to load and store data, an I/O manager may be useful. For example:
+
+You have assets that are stored in the same location and follow a consistent set of rules to determine the storage path
+You have assets that are stored differently in local, staging, and production environments
+You have assets that load upstream dependencies into memory to do the computation
+I/O managers may not be the best fit if:
+
+You want to run SQL queries that create or update a table in a database
+Your pipeline manages I/O on its own by using other libraries/tools that write to storage
+Your assets won't fit in memory, such as a database table with billions of rows
+As a general rule, if your pipeline becomes more complicated in order to use I/O managers, it's likely that I/O managers aren't a good fit. In these cases you should use deps to define dependencies.
+
+Using I/O managers in assets
+Consider the following example, which contains assets that construct a DuckDB connection object, read data from an upstream table, apply some in-memory transform, and write the result to a new table in DuckDB:
+
+import pandas as pd
+from dagster_duckdb import DuckDBResource
+
+import dagster as dg
+
+raw_sales_data = dg.AssetSpec("raw_sales_data")
+
+
+@dg.asset
+def raw_sales_data(duckdb: DuckDBResource) -> None:
+    # Read data from a CSV
+    raw_df = pd.read_csv(
+        "https://raw.githubusercontent.com/dagster-io/dagster/master/docs/next/public/assets/raw_sales_data.csv"
+    )
+    # Construct DuckDB connection
+    with duckdb.get_connection() as conn:
+        # Use the data from the CSV to create or update a table
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS raw_sales_data AS SELECT * FROM raw_df"
+        )
+        if not conn.fetchall():
+            conn.execute("INSERT INTO raw_sales_data SELECT * FROM raw_df")
+
+
+# Asset dependent on `raw_sales_data` asset
+@dg.asset(deps=[raw_sales_data])
+def clean_sales_data(duckdb: DuckDBResource) -> None:
+    # Construct DuckDB connection
+    with duckdb.get_connection() as conn:
+        # Select data from table
+        df = conn.execute("SELECT * FROM raw_sales_data").fetch_df()
+
+        # Apply transform
+        clean_df = df.fillna({"amount": 0.0})
+
+        # Use transformed result to create or update a table
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS clean_sales_data AS SELECT * FROM clean_df"
+        )
+        if not conn.fetchall():
+            conn.execute("INSERT INTO clean_sales_data SELECT * FROM clean_df")
+
+
+# Asset dependent on `clean_sales_data` asset
+@dg.asset(deps=[clean_sales_data])
+def sales_summary(duckdb: DuckDBResource) -> None:
+    # Construct DuckDB connection
+    with duckdb.get_connection() as conn:
+        # Select data from table
+        df = conn.execute("SELECT * FROM clean_sales_data").fetch_df()
+
+        # Apply transform
+        summary = df.groupby(["owner"])["amount"].sum().reset_index()
+
+        # Use transformed result to create or update a table
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS sales_summary AS SELECT * from summary"
+        )
+        if not conn.fetchall():
+            conn.execute("INSERT INTO sales_summary SELECT * from summary")
+
+
+defs = dg.Definitions(
+    assets=[raw_sales_data, clean_sales_data, sales_summary],
+    resources={"duckdb": DuckDBResource(database="sales.duckdb", schema="public")},
+)
+
+Using an I/O manager would remove the code that reads and writes data from the assets themselves, instead delegating it to the I/O manager. The assets would be left only with the code that applies transformations or retrieves the initial CSV file.
+
+import pandas as pd
+from dagster_duckdb_pandas import DuckDBPandasIOManager
+
+import dagster as dg
+
+
+@dg.asset
+def raw_sales_data() -> pd.DataFrame:
+    return pd.read_csv(
+        "https://raw.githubusercontent.com/dagster-io/dagster/master/docs/next/public/assets/raw_sales_data.csv"
+    )
+
+
+@dg.asset
+# Load the upstream `raw_sales_data` asset as input & specify the returned data type (`pd.DataFrame`)
+def clean_sales_data(raw_sales_data: pd.DataFrame) -> pd.DataFrame:
+    # Storing data with an I/O manager requires returning the data
+    return raw_sales_data.fillna({"amount": 0.0})
+
+
+@dg.asset
+def sales_summary(clean_sales_data: pd.DataFrame) -> pd.DataFrame:
+    return clean_sales_data.groupby(["owner"])["amount"].sum().reset_index()
+
+
+defs = dg.Definitions(
+    assets=[raw_sales_data, clean_sales_data, sales_summary],
+    # Define the I/O manager and pass it to `Definitions`
+    resources={
+        "io_manager": DuckDBPandasIOManager(database="sales.duckdb", schema="public")
+    },
+)
+
+To load upstream assets using an I/O manager, specify the asset as an input parameter to the asset function. In this example, the DuckDBPandasIOManager I/O manager will read the DuckDB table with the same name as the upstream asset (raw_sales_data) and pass the data to clean_sales_data as a Pandas DataFrame.
+
+To store data using an I/O manager, return the data in the asset function. The returned data must be a valid type. This example uses Pandas DataFrames, which the DuckDBPandasIOManager will write to a DuckDB table with the same name as the asset.
+
+Refer to the individual I/O manager documentation for details on valid types and how they store data.
+
+Swapping data stores
+With I/O managers, swapping data stores consists of changing the implementation of the I/O manager. The asset definitions, which only contain transformational logic, won't need to change.
+
+In the following example, a Snowflake I/O manager replaced the DuckDB I/O manager.
+
+import pandas as pd
+from dagster_snowflake_pandas import SnowflakePandasIOManager
+
+import dagster as dg
+
+
+@dg.asset
+def raw_sales_data() -> pd.DataFrame:
+    return pd.read_csv(
+        "https://raw.githubusercontent.com/dagster-io/dagster/master/docs/next/public/assets/raw_sales_data.csv"
+    )
+
+
+@dg.asset
+def clean_sales_data(raw_sales_data: pd.DataFrame) -> pd.DataFrame:
+    return raw_sales_data.fillna({"amount": 0.0})
+
+
+@dg.asset
+def sales_summary(clean_sales_data: pd.DataFrame) -> pd.DataFrame:
+    return clean_sales_data.groupby(["owner"])["amount"].sum().reset_index()
+
+
+defs = dg.Definitions(
+    assets=[raw_sales_data, clean_sales_data, sales_summary],
+    resources={
+        # Swap in a Snowflake I/O manager
+        "io_manager": SnowflakePandasIOManager(
+            database=dg.EnvVar("SNOWFLAKE_DATABASE"),
+            account=dg.EnvVar("SNOWFLAKE_ACCOUNT"),
+            user=dg.EnvVar("SNOWFLAKE_USER"),
+            password=dg.EnvVar("SNOWFLAKE_PASSWORD"),
+        )
+    },
+)
+
+### Defining a custom I/O manager
+If you have specific requirements for where and how your outputs should be stored and retrieved, you can define a custom I/O manager. This boils down to implementing two functions: one that stores outputs and one that loads inputs.
+
+To define an I/O manager, extend the IOManager class. Often, you will want to extend the ConfigurableIOManager class (which subclasses IOManager) to attach a config schema to your I/O manager.
+
+Here, we define a simple I/O manager that reads and writes CSV values to the filesystem. It takes an optional prefix path through config.
+
+from dagster import ConfigurableIOManager, InputContext, OutputContext
+
+
+class MyIOManager(ConfigurableIOManager):
+    # specifies an optional string list input, via config system
+    path_prefix: list[str] = []
+
+    def _get_path(self, context) -> str:
+        return "/".join(self.path_prefix + context.asset_key.path)
+
+    def handle_output(self, context: OutputContext, obj):
+        write_csv(self._get_path(context), obj)
+
+    def load_input(self, context: InputContext):
+        return read_csv(self._get_path(context))
+
+
+The provided context argument for handle_output is an OutputContext. The provided context argument for load_input is an InputContext. The linked API documentation lists all the fields that are available on these objects.
+
+Using an I/O manager factory
+If your I/O manager is more complex, or needs to manage internal state, it may make sense to split out the I/O manager definition from its configuration. In this case, you can use ConfigurableIOManagerFactory, which specifies config schema and implements a factory function that takes the config and returns an I/O manager.
+
+In this case, we implement a stateful I/O manager which maintains a cache.
+
+
+from dagster import IOManager, ConfigurableIOManagerFactory, OutputContext, InputContext
+import requests
+
+
+class ExternalIOManager(IOManager):
+    def __init__(self, api_token):
+        self._api_token = api_token
+        # setup stateful cache
+        self._cache = {}
+
+    def handle_output(self, context: OutputContext, obj): ...
+
+    def load_input(self, context: InputContext):
+        if context.asset_key in self._cache:
+            return self._cache[context.asset_key]
+        ...
+
+
+class ConfigurableExternalIOManager(ConfigurableIOManagerFactory):
+    api_token: str
+
+    def create_io_manager(self, context) -> ExternalIOManager:
+        return ExternalIOManager(self.api_token)
+
+
+Defining Pythonic I/O managers
+Pythonic I/O managers are defined as subclasses of ConfigurableIOManager, and similarly to Pythonic resources specify any configuration fields as attributes. Each subclass must implement a handle_output and load_input method, which are called by Dagster at runtime to handle the storing and loading of data.
+
+
+    from dagster import (
+        Definitions,
+        AssetKey,
+        OutputContext,
+        InputContext,
+        ConfigurableIOManager,
+    )
+
+    class MyIOManager(ConfigurableIOManager):
+        root_path: str
+
+        def _get_path(self, asset_key: AssetKey) -> str:
+            return self.root_path + "/".join(asset_key.path)
+
+        def handle_output(self, context: OutputContext, obj):
+            write_csv(self._get_path(context.asset_key), obj)
+
+        def load_input(self, context: InputContext):
+            return read_csv(self._get_path(context.asset_key))
+
+    defs = Definitions(
+        assets=...,
+        resources={"io_manager": MyIOManager(root_path="/tmp/")},
+    )
+
+Handling partitioned assets
+I/O managers can be written to handle partitioned assets. For a partitioned asset, each invocation of handle_output will (over)write a single partition, and each invocation of load_input will load one or more partitions. When the I/O manager is backed by a filesystem or object store, then each partition will typically correspond to a file or object. When it's backed by a database, then each partition will typically correspond to a range of rows in a table that fall within a particular window.
+
+The default I/O manager has support for loading a partitioned upstream asset for a downstream asset with matching partitions out of the box (see the section below for loading multiple partitions). The UPathIOManager can be used to handle partitions in custom filesystem-based I/O managers.
+
+To handle partitions in an custom I/O manager, you'll need to determine which partition you're dealing with when you're storing an output or loading an input. For this, OutputContext and InputContext have a asset_partition_key property:
+
+class MyPartitionedIOManager(IOManager):
+    def _get_path(self, context) -> str:
+        if context.has_partition_key:
+            return "/".join(context.asset_key.path + [context.asset_partition_key])
+        else:
+            return "/".join(context.asset_key.path)
+
+    def handle_output(self, context: OutputContext, obj):
+        write_csv(self._get_path(context), obj)
+
+    def load_input(self, context: InputContext):
+        return read_csv(self._get_path(context))
+
+
+If you're working with time window partitions, you can also use the asset_partitions_time_window property, which will return a TimeWindow object.
+
+Handling partition mappings
+A single partition of one asset might depend on a range of partitions of an upstream asset.
+
+The default I/O manager has support for loading multiple upstream partitions. In this case, the downstream asset should use Dict[str, ...] (or leave it blank) type for the upstream DagsterType. Here is an example of loading multiple upstream partitions using the default partition mapping:
+
+from datetime import datetime
+from typing import Dict  
+
+import pandas as pd
+
+from dagster import (
+    AssetExecutionContext,
+    DailyPartitionsDefinition,
+    HourlyPartitionsDefinition,
+    asset,
+    materialize,
+)
+
+start = datetime(2022, 1, 1)
+
+hourly_partitions = HourlyPartitionsDefinition(start_date=f"{start:%Y-%m-%d-%H:%M}")
+daily_partitions = DailyPartitionsDefinition(start_date=f"{start:%Y-%m-%d}")
+
+
+@asset(partitions_def=hourly_partitions)
+def upstream_asset(context: AssetExecutionContext) -> pd.DataFrame:
+    return pd.DataFrame({"date": [context.partition_key]})
+
+
+@asset(
+    partitions_def=daily_partitions,
+)
+def downstream_asset(upstream_asset: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    return pd.concat(list(upstream_asset.values()))
+
+
+result = materialize(
+    [*upstream_asset.to_source_assets(), downstream_asset],
+    partition_key=start.strftime(daily_partitions.fmt),
+)
+downstream_asset_data = result.output_for_node("downstream_asset", "result")
+assert (
+    len(downstream_asset_data) == 24
+), "downstream day should map to upstream 24 hours"
+
+The upstream_asset becomes a mapping from partition keys to partition values. This is a property of the default I/O manager or any I/O manager inheriting from the UPathIOManager.
+
+A PartitionMapping can be provided to AssetIn to configure the mapped upstream partitions.
+
+When writing a custom I/O manager for loading multiple upstream partitions, the mapped keys can be accessed using InputContext, InputContext, or InputContext.
+
+Writing a per-input I/O manager
+In some cases you may find that you need to load an input in a way other than the load_input function of the corresponding output's I/O manager. For example, let's say Team A has an op that returns an output as a Pandas DataFrame and specifies an I/O manager that knows how to store and load Pandas DataFrames. Your team is interested in using this output for a new op, but you are required to use PySpark to analyze the data. Unfortunately, you don't have permission to modify Team A's I/O manager to support this case. Instead, you can specify an input manager on your op that will override some of the behavior of Team A's I/O manager.
+
+Since the method for loading an input is directly affected by the way the corresponding output was stored, we recommend defining your input managers as subclasses of existing I/O managers and just updating the load_input method. In this example, we load an input as a NumPy array rather than a Pandas DataFrame by writing the following:
+
+
+
+# in this case PandasIOManager is an existing IO Manager
+class MyNumpyLoader(PandasIOManager):
+    def load_input(self, context: InputContext) -> np.ndarray:
+        file_path = "path/to/dataframe"
+        array = np.genfromtxt(file_path, delimiter=",", dtype=None)
+        return array
+
+
+@op(ins={"np_array_input": In(input_manager_key="numpy_manager")})
+def analyze_as_numpy(np_array_input: np.ndarray):
+    assert isinstance(np_array_input, np.ndarray)
+
+
+@job(resource_defs={"numpy_manager": MyNumpyLoader(), "io_manager": PandasIOManager()})
+def my_job():
+    df = produce_pandas_output()
+    analyze_as_numpy(df)
+
+
+This may quickly run into issues if the owner of PandasIOManager changes the path at which they store outputs. We recommend splitting out path defining logic (or other computations shared by handle_output and load_input) into new methods that are called when needed.
+
+
+
+# this IO Manager is owned by a different team
+class BetterPandasIOManager(ConfigurableIOManager):
+    def _get_path(self, output_context):
+        return os.path.join(
+            self.base_dir,
+            "storage",
+            f"{output_context.step_key}_{output_context.name}.csv",
+        )
+
+    def handle_output(self, context: OutputContext, obj: pd.DataFrame):
+        file_path = self._get_path(context)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        if obj is not None:
+            obj.to_csv(file_path, index=False)
+
+    def load_input(self, context: InputContext) -> pd.DataFrame:
+        return pd.read_csv(self._get_path(context.upstream_output))
+
+
+# write a subclass that uses _get_path for your custom loading logic
+class MyBetterNumpyLoader(BetterPandasIOManager):
+    def load_input(self, context: InputContext) -> np.ndarray:
+        file_path = self._get_path(context.upstream_output)
+        array = np.genfromtxt(file_path, delimiter=",", dtype=None)
+        return array
+
+
+@op(ins={"np_array_input": In(input_manager_key="better_numpy_manager")})
+def better_analyze_as_numpy(np_array_input: np.ndarray):
+    assert isinstance(np_array_input, np.ndarray)
+
+
+@job(
+    resource_defs={
+        "numpy_manager": MyBetterNumpyLoader(),
+        "io_manager": BetterPandasIOManager(),
+    }
+)
+def my_better_job():
+    df = produce_pandas_output()
+    better_analyze_as_numpy(df)
+
+## ML Models
+Managing machine learning models with Dagster
+This guide reviews ways to manage and maintain your machine learning (ML) models in Dagster.
+
+Machine learning models are highly dependent on data at a point in time and must be managed to ensure they produce the same results as when you were in the development phase. In this guide, you'll learn how to:
+
+Automate training of your model when new data is available or when you want to use your model for predictions
+Integrate metadata about your model into the Dagster UI to display info about your model's performance
+note
+Before proceeding, we recommend reviewing "Building machine learning pipelines with Dagster", which provides background on using Dagster's assets for machine learning.
+
+Machine learning operations (MLOps)
+You might have thought about your data sources, feature sets, and the best model for your use case. Inevitably, you start thinking about how to make this process sustainable and operational and deploy it to production. You want to make the machine learning pipeline self-sufficient and have confidence that the model you built is performing the way you expect. Thinking about machine learning operations, or MLOps, is the process of making your model maintainable and repeatable for a production use case.
+
+Automating ML model maintenance
+Whether you have a large or small model, Dagster can help automate data refreshes and model training based on your business needs.
+
+Declarative Automation can be used to update a machine learning model when the upstream data is updated. This can be done by setting the AutomationCondition to eager, which means that our machine learning model asset will be refreshed anytime our data asset is updated.
+
+
+from dagster import AutomationCondition, asset
+
+
+@asset
+def my_data(): ...
+
+
+@asset(automation_condition=AutomationCondition.eager())
+def my_ml_model(my_data): ...
+
+
+Some machine learning models might be more cumbersome to retrain; it also might be less important to update them as soon as new data arrives. For this, the on_cron condition may be used, which will cause the asset to be updated on a given cron schedule, but only after all of its upstream dependencies have been updated.
+
+
+from dagster import AutoMaterializePolicy, asset, FreshnessPolicy
+
+
+@asset
+def my_other_data(): ...
+
+
+@asset(automation_condition=AutomationCondition.on_cron("0 9 * * *"))
+def my_other_ml_model(my_other_data): ...
+
+
+Monitoring
+Integrating your machine learning models into Dagster allows you to see when the model and its data dependencies were refreshed, or when a refresh process has failed. By using Dagster to monitor performance changes and process failures on your ML model, it becomes possible to set up remediation paths, such as automated model retraining, that can help resolve issues like model drift.
+
+In this example, the model is being evaluated against the previous model’s accuracy. If the model’s accuracy has improved, the model is returned for use in downstream steps, such as inference or deploying to production.
+
+
+from sklearn import linear_model
+from dagster import asset, Output, AssetKey, AssetExecutionContext
+import numpy as np
+from sklearn.model_selection import train_test_split
+
+
+@asset(output_required=False)
+def conditional_machine_learning_model(context: AssetExecutionContext):
+    X, y = np.random.randint(5000, size=(5000, 2)), range(5000)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.33, random_state=42
+    )
+    reg = linear_model.LinearRegression()
+    reg.fit(X_train, y_train)
+
+    # Get the model accuracy from metadata of the previous materilization of this machine learning model
+    instance = context.instance
+    materialization = instance.get_latest_materialization_event(
+        AssetKey(["conditional_machine_learning_model"])
+    )
+    if materialization is None:
+        yield Output(reg, metadata={"model_accuracy": float(reg.score(X_test, y_test))})
+
+    else:
+        previous_model_accuracy = None
+        if materialization.asset_materialization and isinstance(
+            materialization.asset_materialization.metadata["model_accuracy"].value,
+            float,
+        ):
+            previous_model_accuracy = float(
+                materialization.asset_materialization.metadata["model_accuracy"].value
+            )
+        new_model_accuracy = reg.score(X_test, y_test)
+        if (
+            previous_model_accuracy is None
+            or new_model_accuracy > previous_model_accuracy
+        ):
+            yield Output(reg, metadata={"model_accuracy": float(new_model_accuracy)})
+
+
+A sensor can be set up that triggers if an asset fails to materialize. Alerts can be customized and sent through e-mail or natively through Slack. In this example, a Slack message is sent anytime the ml_job fails.
+
+
+import os
+from dagster import define_asset_job
+from dagster_slack import make_slack_on_run_failure_sensor
+
+ml_job = define_asset_job("ml_training_job", selection=[ml_model])
+
+slack_on_run_failure = make_slack_on_run_failure_sensor(
+    channel="#ml_monitor_channel",
+    slack_token=slack_token,
+    monitored_jobs=([ml_job]),
+)
+
+Enhancing the Dagster UI with metadata
+Understanding the performance of your ML model is critical to both the model development process and production. Metadata can significantly enhance the usability of the Dagster UI to show what’s going on in a specific asset. Using metadata in Dagster is flexible, can be used for tracking evaluation metrics, and viewing the training accuracy progress over training iterations as a graph.
+
+One of the easiest ways to utilize Dagster’s metadata is by using a dictionary to track different metrics that are relevant for an ML model.
+
+Another way is to store relevant data for a single training iteration as a graph that you can view directly from the Dagster UI. In this example, a function is defined that uses data produced by a machine learning model to plot an evaluation metric as the model goes through the training process and render that in the Dagster UI.
+
+Dagster’s MetadataValue types enable types such as tables, URLs, notebooks, Markdown, etc. In the following example, the Markdown metadata type is used to generate plots. Each plot will show a specific evaluation metric’s performance throughout each training iteration also known as an epoch during the training cycle.
+
+from dagster import MetadataValue
+import seaborn
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
+
+
+def make_plot(eval_metric):
+    plt.clf()
+    training_plot = seaborn.lineplot(eval_metric)
+    fig = training_plot.get_figure()
+    buffer = BytesIO()
+    fig.savefig(buffer)
+    image_data = base64.b64encode(buffer.getvalue())
+    return MetadataValue.md(f"![img](mdc:data:image/png;base64,{image_data.decode()})")
+
+
+In this example, a dictionary is used called metadata to store the Markdown plots and the score value in Dagster.
+
+
+from dagster import asset
+import xgboost as xgb
+from sklearn.metrics import mean_absolute_error
+
+
+@asset
+def xgboost_comments_model(transformed_training_data, transformed_test_data):
+    transformed_X_train, transformed_y_train = transformed_training_data
+    transformed_X_test, transformed_y_test = transformed_test_data
+    # Train XGBoost model, which is a highly efficient and flexible model
+    xgb_r = xgb.XGBRegressor(
+        objective="reg:squarederror", eval_metric=mean_absolute_error, n_estimators=20
+    )
+    xgb_r.fit(
+        transformed_X_train,
+        transformed_y_train,
+        eval_set=[(transformed_X_test, transformed_y_test)],
+    )
+
+    ## plot the mean absolute error values as the training progressed
+    metadata = {}
+    for eval_metric in xgb_r.evals_result()["validation_0"].keys():
+        metadata[f"{eval_metric} plot"] = make_plot(
+            xgb_r.evals_result_["validation_0"][eval_metric]
+        )
+    # keep track of the score
+    metadata["score (mean_absolute_error)"] = xgb_r.evals_result_["validation_0"][
+        "mean_absolute_error"
+    ][-1]
+
+    return Output(xgb_r, metadata=metadata)
+
+
+In the Dagster UI, the xgboost_comments_model has the metadata rendered. Numerical values, such as the score (mean_absolute_error) will be logged and plotted for each materialization, which can be useful to understand the score over time for machine learning models.
+
+Managing ML in the UI
+
+The Markdown plots are also available to inspect the evaluation metrics during the training cycle by clicking on [Show Markdown]:
+
+Markdown plot in the UI
+
+Tracking model history
+Viewing previous versions of a machine learning model can be useful to understand the evaluation history or referencing a model that was used for inference. Using Dagster will enable you to understand:
+
+What data was used to train the model
+When the model was refreshed
+The code version and ML model version was used to generate the predictions used for predicted values
+In Dagster, each time an asset is materialized, the metadata and model are stored. Dagster registers the code version, data version and source data for each asset, so understanding what data was used to train a model is linked.
+
+In the screenshot below, each materialization of xgboost_comments_model and the path for where each iteration of the model is stored.
+
+Asset materialization for xgboost_components_model
+
+Any plots generated through the asset's metadata can be viewed in the metadata section. In this example, the plots of score (mean_absolute_error) are available for analysis.
+
+Metadata plot
+
+### Building machine learning pipelines with Dagster
+In this guide, we’ll walk you through how to take your machine learning models and deploy and maintain them in production using Dagster, reliably and efficiently.
+
+We will work through building a machine learning pipeline, including using assets for different elements, how to automate model training, and monitoring your model's drift.
+
+Before you begin
+This guide assumes you have familiarity with machine learning concepts and several Dagster concepts, including asset definitions and jobs.
+
+Benefits of building machine learning pipelines in Dagster
+Dagster makes iterating on machine learning models and testing easy, and it is designed to use during the development process.
+Dagster has a lightweight execution model means you can access the benefits of an orchestrator, like re-executing from the middle of a pipeline and parallelizing steps while you're experimenting.
+Dagster models data assets, not just tasks, so it understands the upstream and downstream data dependencies.
+Dagster is a one-stop shop for both the data transformations and the models that depend on the data transformations.
+Machine learning development
+If you are already using Dagster for your ETL pipelines, it is a natural progression to build out and test your models in Dagster.
+
+For this guide, we will be using Hacker News data. The machine learning model we will walk through takes the Hacker News stories and uses the titles to predict the number of comments that a story will generate. This will be a supervised model since we have the number of comments for all the previous stories.
+
+The assets graph will look like this at the end of this guide (click to expand):
+
+ML asset DAG
+
+Ingesting data
+First, we will create an asset that retrieves the most recent Hacker News records.
+
+import requests
+from dagster import asset
+import pandas as pd
+
+
+@asset
+def hackernews_stories():
+    # Get the max ID number from hacker news
+    latest_item = requests.get(
+        "https://hacker-news.firebaseio.com/v0/maxitem.json"
+    ).json()
+    # Get items based on story ids from the HackerNews items endpoint
+    results = []
+    scope = range(latest_item - 1000, latest_item)
+    for item_id in scope:
+        item = requests.get(
+            f"https://hacker-news.firebaseio.com/v0/item/{item_id}.json"
+        ).json()
+        results.append(item)
+    # Store the results in a dataframe and filter on stories with valid titles
+    df = pd.DataFrame(results)
+    if len(df) > 0:
+        df = df[df.type == "story"]
+        df = df[~df.title.isna()]
+
+    return df
+
+
+Transforming data
+Now that we have a dataframe with all valid stories, we want to transform that data into something our machine learning model will be able to use.
+
+The first step is taking the dataframe and splitting it into a training and test set. In some of your models, you also might choose to have an additional split for a validation set. The reason we split the data is so that we can have a test and/or a validation dataset that is independent of the training set. We can then use that dataset to see how well our model did.
+
+
+from sklearn.model_selection import train_test_split
+from dagster import multi_asset, AssetOut
+
+
+@multi_asset(outs={"training_data": AssetOut(), "test_data": AssetOut()})
+def training_test_data(hackernews_stories):
+    X = hackernews_stories.title
+    y = hackernews_stories.descendants
+    # Split the dataset to reserve 20% of records as the test set
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    return (X_train, y_train), (X_test, y_test)
+
+
+Next, we will take both the training and test data subsets and tokenize the titles e.g. take the words and turn them into columns with the frequency of terms for each record to create features for the data. To do this, we will be using the training set to fit the tokenizer. In this case, we are using TfidfVectorizer and then transforming both the training and test set based on that tokenizer.
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
+
+
+@multi_asset(
+    outs={"tfidf_vectorizer": AssetOut(), "transformed_training_data": AssetOut()}
+)
+def transformed_train_data(training_data):
+    X_train, y_train = training_data
+    # Initiate and fit the tokenizer on the training data and transform the training dataset
+    vectorizer = TfidfVectorizer()
+    transformed_X_train = vectorizer.fit_transform(X_train)
+    transformed_X_train = transformed_X_train.toarray()
+    y_train = y_train.fillna(0)
+    transformed_y_train = np.array(y_train)
+    return vectorizer, (transformed_X_train, transformed_y_train)
+
+
+@asset
+def transformed_test_data(test_data, tfidf_vectorizer):
+    X_test, y_test = test_data
+    # Use the fitted tokenizer to transform the test dataset
+    transformed_X_test = tfidf_vectorizer.transform(X_test)
+    y_test = y_test.fillna(0)
+    transformed_y_test = np.array(y_test)
+    return transformed_X_test, transformed_y_test
+
+
+We also transformed the dataframes into NumPy arrays and removed nan values to prepare the data for training.
+
+Training the model
+At this point, we have X_train, y_train, X_test, and y_test ready to go for our model. To train our model, we can use any number of models from libraries like sklearn, TensorFlow, and PyTorch.
+
+In our example, we will train an XGBoost model to predict a numerical value.
+
+
+import xgboost as xg
+from sklearn.metrics import mean_absolute_error
+
+
+@asset
+def xgboost_comments_model(transformed_training_data):
+    transformed_X_train, transformed_y_train = transformed_training_data
+    # Train XGBoost model, which is a highly efficient and flexible model
+    xgb_r = xg.XGBRegressor(
+        objective="reg:squarederror", eval_metric=mean_absolute_error, n_estimators=20
+    )
+    xgb_r.fit(transformed_X_train, transformed_y_train)
+    return xgb_r
+
+
+@asset
+def comments_model_test_set_r_squared(transformed_test_data, xgboost_comments_model):
+    transformed_X_test, transformed_y_test = transformed_test_data
+    # Use the test set data to get a score of the XGBoost model
+    score = xgboost_comments_model.score(transformed_X_test, transformed_y_test)
+    return score
+
+
+Evaluating our results
+In our model assets, we evaluated each of the models on the test data and in this case, got the score derived from comparing the predicted to actual results. Next, to predict the results, we'll create another asset that runs inference on the model more frequently than the model is re-trained.
+
+@asset
+def latest_story_comment_predictions(xgboost_comments_model, tfidf_vectorizer):
+    # Get the max ID number from hacker news
+    latest_item = requests.get(
+        "https://hacker-news.firebaseio.com/v0/maxitem.json"
+    ).json()
+    # Get items based on story ids from the HackerNews items endpoint
+    results = []
+    scope = range(latest_item - 100, latest_item)
+    for item_id in scope:
+        item = requests.get(
+            f"https://hacker-news.firebaseio.com/v0/item/{item_id}.json"
+        ).json()
+        results.append(item)
+
+    df = pd.DataFrame(results)
+    if len(df) > 0:
+        df = df[df.type == "story"]
+        df = df[~df.title.isna()]
+    inference_x = df.title
+    # Transform the new story titles using the existing vectorizer
+    inference_x = tfidf_vectorizer.transform(inference_x)
+    return xgboost_comments_model.predict(inference_x)
+
+
+Depending on what the objective of your ML model is, you can use this data to set alerts, save model performance history, and trigger retraining.
+
+Where to go from here
+Managing machine learning models with Dagster - This guide reviews ways to manage and maintain your machine learning (ML) models in Dagster
+Dagster integrates with MLflow that can be used to keep track of your models
+Dagster integrates with Weights & Biases. For an example that demonstrates how to use W&B's artifacts with Dagster, see the Dagster repository.
+
+## Schedules
+Schedules enable automated execution of jobs at specified intervals. These intervals can range from common frequencies like hourly, daily, or weekly, to more intricate patterns defined using cron expressions.
+
+Prerequisites
+Basic schedule
+A basic schedule is defined by a JobDefinition and a cron_schedule using the ScheduleDefinition class. A job can be thought of as a selection of assets or operations executed together.
+
+import dagster as dg
+
+
+@dg.asset
+def customer_data(): ...
+
+
+@dg.asset
+def sales_report(): ...
+
+
+daily_refresh_job = dg.define_asset_job(
+    "daily_refresh", selection=["customer_data", "sales_report"]
+)
+
+daily_schedule = dg.ScheduleDefinition(
+    job=daily_refresh_job,
+    cron_schedule="0 0 * * *",  # Runs at midnight daily
+)
+
+defs = dg.Definitions(
+    assets=[customer_data, sales_report],
+    jobs=[daily_refresh_job],
+    schedules=[daily_schedule],
+)
+
+Run schedules in a different timezone
+By default, schedules without a timezone will run in Coordinated Universal Time (UTC). To run a schedule in a different timezone, set the timezone parameter:
+
+daily_schedule = ScheduleDefinition(
+    job=daily_refresh_job,
+    cron_schedule="0 0 * * *",
+    timezone="America/Los_Angeles",
+)
+
+For more information, see "Customizing a schedule's execution timezone".
+
+Create schedules from partitions
+If using partitions and jobs, you can create a schedule using the partition with build_schedule_from_partitioned_job. The schedule will execute at the same cadence specified by the partition definition.
+
+Assets
+Ops
+If you have a partitioned asset and job:
+
+import dagster as dg
+
+# Daily partition
+daily_partition = dg.DailyPartitionsDefinition(start_date="2024-05-20")
+
+
+@dg.asset(partitions_def=daily_partition)
+def daily_asset(): ...
+
+
+# Define the asset job
+partitioned_asset_job = dg.define_asset_job("partitioned_job", selection=[daily_asset])
+
+# This schedule will run daily
+asset_partitioned_schedule = dg.build_schedule_from_partitioned_job(
+    partitioned_asset_job,
+)
+
+### Declarative Automation
+Declarative Automation is a framework that allows you to access information about events that impact the status of your assets, and the dependencies between them, in order to:
+
+Ensure you're working with the most up-to-date data.
+Optimize resource usage by only materializing assets or executing checks when needed.
+Precisely define when specific assets should be updated based on the state of other assets.
+Declarative Automation has two components:
+
+An automation condition, set on an asset or asset check, which represents when an individual asset or check should be executed.
+An automation condition sensor, which evaluates automation conditions and launches runs in response to their statuses.
+Using Declarative Automation
+To use Declarative Automation, you must:
+
+Set automation conditions on assets or asset checks in your code.
+Enable the automation condition sensor in the Dagster UI:
+Navigate to Automation.
+Locate the desired code location.
+Toggle on the default_automation_condition_sensor sensor.
+Automation conditions
+An AutomationCondition on an asset or asset check describe the conditions under which work should be executed.
+
+Dagster provides a few pre-built automation conditions to handle common use cases:
+
+Name	Condition	Useful for
+AutomationCondition.on_cron(cron_schedule)	This condition will materialize an asset on a provided cron_schedule, after all of its dependencies have been updated.	Regularly updating an asset without worrying about the specifics of how its dependencies update.
+AutomationCondition.on_missing()	This condition will materialize an asset if all its dependencies have been updated, but the asset itself has not.	Filling in partitioned assets as soon as upstream data is available.
+AutomationCondition.eager()	This condition will materialize an asset:
+If the asset has never been materialized before, or
+When the asset's dependencies update, as long as none of the dependencies are currently missing or have an update in progress.
+Automatically propagating changes through the asset graph.
+
+Ensuring assets remain up to date.
+Setting automation conditions on assets and asset checks
+You can set automation conditions on the @dg.asset decorator or on an AssetSpec object:
+
+import dagster as dg
+
+@dg.asset(automation_condition=dg.AutomationCondition.eager())
+def my_eager_asset(): ...
+
+AssetSpec("my_cron_asset", automation_condition=AutomationCondition.on_cron("@daily"))
+
+You can also set automation conditions on the @dg.asset_check decorator or on an AssetCheckSpec object:
+
+@dg.asset_check(asset=dg.AssetKey("orders"), automation_condition=dg.AutomationCondition.on_cron("@daily"))
+def my_eager_check() -> dg.AssetCheckResult:
+    return dg.AssetCheckResult(passed=True)
+
+
+dg.AssetCheckSpec(
+    "my_cron_check",
+    asset=dg.AssetKey("orders"),
+    automation_condition=dg.AutomationCondition.on_cron("@daily"),
+)
+
+Customizing automation conditions
+If the pre-built automation conditions don't fit your needs, you can build your own. For more information, see "Customizing automation conditions".
+
+Automation condition sensors
+The default_automation_conditition_sensor monitors all assets and asset checks in a code location in which it is enabled. When automation conditions for an asset or asset check in that code location are met, the sensor will execute a run in response.
+
+The sensor's evaluation history will be visible in the UI:
+
+Default automation sensor evaluations in the Dagster UI
+
+You can also view a detailed history of each asset's evaluations on the asset's Asset Details page. This allows you to see why an asset was or wasn't materialized at different points in time:
+
+Automation condition evaluations in the Asset Details page
+
+To use multiple sensors or change the properties of the default sensor, see the AutomationConditionSensorDefinition API documentation.
+
+## Sensors
+Sensors enable you to take action in response to events that occur either internally within Dagster or in external systems. They check for events at regular intervals and either perform an action or provide an explanation for why the action was skipped.
+
+Examples of events include:
+
+a run completes in Dagster
+a run fails in Dagster
+a job materializes a specific asset
+a file appears in an s3 bucket
+an external system is down
+Examples of actions include:
+
+launching a run
+sending a Slack message
+inserting a row into a database
+tip
+An alternative to polling with sensors is to push events to Dagster using the Dagster API.
+
+Prerequisites
+Basic sensor
+Sensors are defined with the @sensor decorator. The following example includes a check_for_new_files function that simulates finding new files. In a real scenario, this function would check an actual system or directory.
+
+If the sensor finds new files, it starts a run of my_job. If not, it skips the run and logs No new files found in the Dagster UI.
+
+import random
+from typing import List  
+
+import dagster as dg
+
+
+# Define the asset
+@dg.asset
+def my_asset(context: dg.AssetExecutionContext):
+    context.log.info("Hello, world!")
+
+
+# Define asset job
+my_job = dg.define_asset_job("my_job", selection=[my_asset])
+
+
+# Define file check
+def check_for_new_files() -> list[str]:
+    if random.random() > 0.5:
+        return ["file1", "file2"]
+    return []
+
+
+# Define the sensor
+@dg.sensor(
+    job=my_job,
+    minimum_interval_seconds=5,
+    default_status=dg.DefaultSensorStatus.RUNNING,  # Sensor is turned on by default
+)
+def new_file_sensor():
+    new_files = check_for_new_files()
+    # New files, run `my_job`
+    if new_files:
+        for filename in new_files:
+            yield dg.RunRequest(run_key=filename)
+    # No new files, skip the run and log the reason
+    else:
+        yield dg.SkipReason("No new files found")
+
+
+defs = dg.Definitions(assets=[my_asset], jobs=[my_job], sensors=[new_file_sensor])
+
+
+tip
+Unless a sensor has a default_status of DefaultSensorStatus.RUNNING, it won't be enabled when first deployed to a Dagster instance. To find and enable the sensor, click Automation > Sensors in the Dagster UI.
+
+Customizing intervals between evaluations
+The minimum_interval_seconds argument allows you to specify the minimum number of seconds that will elapse between sensor evaluations. This means that the sensor won't be evaluated more frequently than the specified interval.
+
+It's important to note that this interval represents a minimum interval between runs of the sensor and not the exact frequency the sensor runs. If a sensor takes longer to complete than the specified interval, the next evaluation will be delayed accordingly.
+
+# Sensor will be evaluated at least every 30 seconds
+@dg.sensor(job=my_job, minimum_interval_seconds=30)
+def new_file_sensor():
+  ...
+
+In this example, if the new_file_sensor's evaluation function takes less than a second to run, you can expect the sensor to run consistently around every 30 seconds. However, if the evaluation function takes longer, the interval between evaluations will be longer.
+
+Preventing duplicate runs
+To prevent duplicate runs, you can use run keys to uniquely identify each RunRequest. In the previous example, the RunRequest was constructed with a run_key:
+
+yield dg.RunRequest(run_key=filename)
+
+For a given sensor, a single run is created for each RunRequest with a unique run_key. Dagster will skip processing requests with previously used run keys, ensuring that duplicate runs won't be created.
+
+Cursors and high volume events
+When dealing with a large number of events, you may want to implement a cursor to optimize sensor performance. Unlike run keys, cursors allow you to implement custom logic that manages state.
+
+The following example demonstrates how you might use a cursor to only create RunRequests for files in a directory that have been updated since the last time the sensor ran.
+
+import os
+
+import dagster as dg
+
+MY_DIRECTORY = "data"
+
+
+@dg.asset
+def my_asset(context: dg.AssetExecutionContext):
+    context.log.info("Hello, world!")
+
+
+my_job = dg.define_asset_job("my_job", selection=[my_asset])
+
+
+@dg.sensor(
+    job=my_job,
+    minimum_interval_seconds=5,
+    default_status=dg.DefaultSensorStatus.RUNNING,
+)
+# Enable sensor context
+def updated_file_sensor(context):
+    # Get current cursor value from sensor context
+    last_mtime = float(context.cursor) if context.cursor else 0
+
+    max_mtime = last_mtime
+
+    # Loop through directory
+    for filename in os.listdir(MY_DIRECTORY):
+        filepath = os.path.join(MY_DIRECTORY, filename)
+        if os.path.isfile(filepath):
+            # Get the file's last modification time (st_mtime)
+            fstats = os.stat(filepath)
+            file_mtime = fstats.st_mtime
+
+            # If the file was updated since the last eval time, continue
+            if file_mtime <= last_mtime:
+                continue
+
+            # Construct the RunRequest with run_key and config
+            run_key = f"{filename}:{file_mtime}"
+            run_config = {"ops": {"my_asset": {"config": {"filename": filename}}}}
+            yield dg.RunRequest(run_key=run_key, run_config=run_config)
+
+            # Keep the larger value of max_mtime and file last updated
+            max_mtime = max(max_mtime, file_mtime)
+
+    # Update the cursor
+    context.update_cursor(str(max_mtime))
+
+
+defs = dg.Definitions(assets=[my_asset], jobs=[my_job], sensors=[updated_file_sensor])
+
+For sensors that consume multiple event streams, you may need to serialize and deserialize a more complex data structure in and out of the cursor string to keep track of the sensor's progress over the multiple streams.
+
+note
+The preceding example uses both a run_key and a cursor, which means that if the cursor is reset but the files don't change, new runs won't be launched. This is because the run keys associated with the files won't change.
+
+If you want to be able to reset a sensor's cursor, don't set run_keys on RunRequests.
+
+Next steps
+By understanding and effectively using these automation methods, you can build more efficient data pipelines that respond to your specific needs and constraints.
+
+Run pipelines on a schedule
+Trigger cross-job dependencies with asset sensors
+Explore Declarative Automation as an alternative to sensors
+
+## Asset sensors
+Asset sensors in Dagster provide a powerful mechanism for monitoring asset materializations and triggering downstream computations or notifications based on those events.
+
+This guide covers the most common use cases for asset sensors, such as defining cross-job and cross-code location dependencies.
+
+note
+This documentation assumes familiarity with assets and jobs
+
+Getting started
+Asset sensors monitor an asset for new materialization events and target a job when a new materialization occurs.
+
+Typically, asset sensors return a RunRequest when a new job is to be triggered. However, they may provide a SkipReason if the asset materialization doesn't trigger a job.
+
+For example, you may wish to monitor an asset that's materialized daily, but don't want to trigger jobs on holidays.
+
+Cross-job and cross-code location dependencies
+Asset sensors enable dependencies across different jobs and different code locations. This flexibility allows for modular and decoupled workflows.
+
+CodeLocationB
+
+CodeLocationA
+
+AssetToWatch
+
+AssetSensor
+
+Job
+
+Asset1
+
+Asset1
+
+This is an example of an asset sensor that triggers a job when an asset is materialized. The daily_sales_data asset is in the same code location as the job and other asset for this example, but the same pattern can be applied to assets in different code locations.
+
+import dagster as dg
+
+
+@dg.asset
+def daily_sales_data(context: dg.AssetExecutionContext):
+    context.log.info("Asset to watch")
+
+
+@dg.asset
+def weekly_report(context: dg.AssetExecutionContext):
+    context.log.info("Asset to trigger")
+
+
+# Job that materializes the `weekly_report` asset
+my_job = dg.define_asset_job("my_job", [weekly_report])
+
+
+# Trigger `my_job` when the `daily_sales_data` asset is materialized
+@dg.asset_sensor(asset_key=dg.AssetKey("daily_sales_data"), job_name="my_job")
+def daily_sales_data_sensor():
+    return dg.RunRequest()
+
+
+defs = dg.Definitions(
+    assets=[daily_sales_data, weekly_report],
+    jobs=[my_job],
+    sensors=[daily_sales_data_sensor],
+)
+
+Customizing the evaluation function of an asset sensor
+You can customize the evaluation function of an asset sensor to include specific logic for deciding when to trigger a run. This allows for fine-grained control over the conditions under which downstream jobs are executed.
+
+AssetMaterialization
+
+User Evaluation Function
+
+RunRequest
+
+SkipReason
+
+In the following example, the @asset_sensor decorator defines a custom evaluation function that returns a RunRequest object when the asset is materialized and certain metadata is present, otherwise it skips the run.
+
+import dagster as dg
+
+
+@dg.asset
+def daily_sales_data(context: dg.AssetExecutionContext):
+    context.log.info("Asset to watch, perhaps some function sets metadata here")
+    yield dg.MaterializeResult(metadata={"specific_property": "value"})
+
+
+@dg.asset
+def weekly_report(context: dg.AssetExecutionContext):
+    context.log.info("Running weekly report")
+
+
+my_job = dg.define_asset_job("my_job", [weekly_report])
+
+
+@dg.asset_sensor(asset_key=dg.AssetKey("daily_sales_data"), job=my_job)
+def daily_sales_data_sensor(context: dg.SensorEvaluationContext, asset_event):
+    # Provide a type hint on the underlying event
+    materialization: dg.AssetMaterialization = (
+        asset_event.dagster_event.event_specific_data.materialization
+    )
+
+    # Example custom logic: Check if the asset metadata has a specific property
+    if "specific_property" in materialization.metadata:
+        context.log.info("Triggering job based on custom evaluation logic")
+        yield dg.RunRequest(run_key=context.cursor)
+    else:
+        yield dg.SkipReason("Asset materialization does not have the required property")
+
+
+defs = dg.Definitions(
+    assets=[daily_sales_data, weekly_report],
+    jobs=[my_job],
+    sensors=[daily_sales_data_sensor],
+)
+
+Triggering a job with custom configuration
+By providing a configuration to the RunRequest object, you can trigger a job with a specific configuration. This is useful when you want to trigger a job with custom parameters based on custom logic you define.
+
+For example, you might use a sensor to trigger a job when an asset is materialized, but also pass metadata about that materialization to the job:
+
+import dagster as dg
+
+
+class MyConfig(dg.Config):
+    param1: str
+
+
+@dg.asset
+def daily_sales_data(context: dg.AssetExecutionContext):
+    context.log.info("Asset to watch")
+    # Materialization metadata
+    yield dg.MaterializeResult(metadata={"specific_property": "value"})
+
+
+@dg.asset
+def weekly_report(context: dg.AssetExecutionContext, config: MyConfig):
+    context.log.info(f"Running weekly report with param1: {config.param1}")
+
+
+my_job = dg.define_asset_job(
+    "my_job",
+    [weekly_report],
+    config=dg.RunConfig(ops={"weekly_report": MyConfig(param1="value")}),
+)
+
+
+@dg.asset_sensor(asset_key=dg.AssetKey("daily_sales_data"), job=my_job)
+def daily_sales_data_sensor(context: dg.SensorEvaluationContext, asset_event):
+    materialization: dg.AssetMaterialization = (
+        asset_event.dagster_event.event_specific_data.materialization
+    )
+
+    # Custom logic that checks if the asset metadata has a specific property
+    if "specific_property" in materialization.metadata:
+        yield dg.RunRequest(
+            run_key=context.cursor,
+            run_config=dg.RunConfig(
+                ops={
+                    "weekly_report": MyConfig(
+                        param1=str(materialization.metadata.get("specific_property"))
+                    )
+                }
+            ),
+        )
+
+
+defs = dg.Definitions(
+    assets=[daily_sales_data, weekly_report],
+    jobs=[my_job],
+    sensors=[daily_sales_data_sensor],
+)
+
+Monitoring multiple assets
+note
+The experimental @multi_asset_sensor has been marked as deprecated, but will not be removed from the codebase until Dagster 2.0 is released, meaning it will continue to function as it currently does for the foreseeable future. Its functionality has been largely superseded by the AutomationCondition system. For more information, see the Declarative Automation documentation.
+
+When building a pipeline, you may want to monitor multiple assets with a single sensor. This can be accomplished with a multi-asset sensor.
+
+The following example uses a @multi_asset_sensor to monitor multiple assets and trigger a job when any of the assets are materialized:
+
+import dagster as dg
+
+
+@dg.asset
+def asset_a():
+    return [1, 2, 3]
+
+
+@dg.asset
+def asset_b():
+    return [5, 6, 7]
+
+
+@dg.asset
+def asset_c():
+    return [8, 9, 10]
+
+
+asset_job = dg.define_asset_job(
+    "asset_b_job",
+    selection=[dg.AssetKey("asset_a"), dg.AssetKey("asset_b"), dg.AssetKey("asset_c")],
+)
+
+
+@dg.multi_asset_sensor(
+    monitored_assets=[dg.AssetKey("asset_a"), dg.AssetKey("asset_b")],
+    job=asset_job,
+)
+def asset_a_and_b_sensor(context):
+    asset_events = context.latest_materialization_records_by_key()
+    if all(asset_events.values()):
+        context.advance_all_cursors()
+        return dg.RunRequest(run_key=context.cursor, run_config={})
+    return None
+
+
+defs = dg.Definitions(
+    assets=[asset_a, asset_b, asset_c], jobs=[asset_job], sensors=[asset_a_and_b_sensor]
+)

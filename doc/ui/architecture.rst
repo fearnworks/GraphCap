@@ -15,6 +15,7 @@ The UI codebase is organized into the following key directories:
    ├── app/           # Application initialization and global config
    ├── features/      # Feature-specific modules
    ├── common/        # Shared components and utilities  
+   ├── routes/        # Route-specific modules for tanstack router
    └── services/      # Application-wide services
 
 Core Principles

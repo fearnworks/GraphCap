@@ -9,6 +9,9 @@ WORKDIR /app
 # Copy package files first
 COPY package*.json pnpm-lock.yaml ./
 
+# Install dependencies at build time
+RUN pnpm install --frozen-lockfile
+
 # Copy entrypoint script and make it executable
 COPY _scripts/client_entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/client_entrypoint.sh

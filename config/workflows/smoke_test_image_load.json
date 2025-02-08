@@ -3,7 +3,7 @@
     "workflow_metadata": {
         "name": "Image Loading Smoke Test",
         "description": "Test the image loading and sampling functionality",
-        "version": "0.2.0"
+        "version": "0.4.0"
     },
     "nodes": [
         {
@@ -27,6 +27,11 @@
                     "temperature": 0.8,
                     "top_p": 0.9,
                     "max_concurrent": 2
+                },
+                "output": {
+                    "directory": "/workspace/.local/output/dags/smoke",
+                    "store_logs": true,
+                    "copy_images": true
                 }
             },
             "dependencies": ["image_loader"]
@@ -42,6 +47,11 @@
                     "temperature": 0.8,
                     "top_p": 0.9,
                     "max_concurrent": 2
+                },
+                "output": {
+                    "directory": "/workspace/.local/output/dags/smoke",
+                    "store_logs": true,
+                    "copy_images": true
                 }
             },
             "dependencies": ["image_loader"]
@@ -52,7 +62,6 @@
             "config": {
                 "output": {
                     "directory": "/workspace/.local/output/dags/smoke",
-                    "formats": ["html", "formal"],
                     "store_logs": true,
                     "copy_images": true
                 },
@@ -66,7 +75,6 @@
             "config": {
                 "output": {
                     "directory": "/workspace/.local/output/dags/smoke",
-                    "formats": ["html", "formal"],
                     "store_logs": true,
                     "copy_images": false
                 },
@@ -102,6 +110,13 @@
             "id": "dataset_export",
             "type": "DatasetExportNode",
             "config": {
+                "perspective_results": {
+                    "$concat": [
+                        {"$ref": "art_analysis.perspective_results"},
+                        {"$ref": "graph_analysis.perspective_results"}
+                    ]
+                },
+                "batch_dir": "/workspace/.local/output/dags/smoke/batch",
                 "dataset_config": {
                     "name": "graphcap-smoke-test",
                     "description": "Smoke test dataset with art and graph analysis",

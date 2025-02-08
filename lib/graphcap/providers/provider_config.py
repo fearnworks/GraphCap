@@ -65,7 +65,7 @@ def parse_provider_config(config_data: dict[str, Any]) -> ProviderConfig:
     """Parse a provider's configuration data into a ProviderConfig object"""
     # Get models list and default model
     models: list[str] = config_data.get("models", [])
-    default_model: str = config_data.get("default_model")
+    default_model: str = config_data.get("default_model", "")
     fetch_models: bool = config_data.get("fetch_models", False)
 
     kind: str = config_data["kind"]

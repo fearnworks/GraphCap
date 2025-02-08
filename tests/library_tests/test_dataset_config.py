@@ -166,10 +166,16 @@ async def test_export_jsonl_relative_paths(test_dataset_manager, test_captions, 
     # Export captions
     result_path = await test_dataset_manager.export_to_jsonl(test_data, output_path=output_path)
 
-    # Read exported file
+    # Read exported file and verify contents
+    exported_captions = []
     with result_path.open() as f:
-        exported_captions = [json.loads(line) for line in f]
+        for line in f:
+            exported_captions.append(json.loads(line))
 
     # Verify paths are relative to JSONL file location
+    assert len(exported_captions) == 2
+    assert isinstance(exported_captions[0], dict)
+    assert "filename" in exported_captions[0]
+    assert "filename" in exported_captions[1]
     assert exported_captions[0]["filename"] == "./images/new-york-7781184_640.jpg"
     assert exported_captions[1]["filename"] == "./images/image.jpg"

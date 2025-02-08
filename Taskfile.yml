@@ -5,7 +5,8 @@ dotenv: ['.env', '{{.ENV}}/.env', '{{.HOME}}/.env']
 includes:
   server: ./server/Taskfile.server.yml
   models: ./config/Taskfile.models.yml
-  
+  pipelines: ./pipelines/Taskfile.pipelines.yml
+
 tasks:
   install:
     desc: Install development dependencies
@@ -21,6 +22,11 @@ tasks:
     desc: Watch the server for changes
     cmds:
       - docker compose -f ./config/docker-compose.yml up  --watch
+
+  build:
+    desc: Build the server
+    cmds:
+      - docker compose -f ./config/docker-compose.yml build
 
   dev:server:
     desc: Run the server in development mode with Docker

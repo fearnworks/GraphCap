@@ -14,6 +14,7 @@ services:
       - ../config:/workspace/config
       - ../.local:/workspace/.local
       - ../datasets:/workspace/datasets
+      - ../.local/logs/gcap_server:/workspace/logs
     environment:
       - HOST_PLATFORM=${HOST_PLATFORM:-linux}
       - PYTHONPATH=/app/server
@@ -73,7 +74,8 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
-
+    volumes:
+      - ../.local/logs/gcap_ui:/workspace/logs
     develop:
       watch:
         - action: sync
@@ -98,9 +100,36 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - VITE_API_URL=http://localhost:32100/api
-
+      - VITE_WORKSPACE_PATH=/workspace/.local
     networks:
       - graphcap
+
+  gcap_pipelines:
+    build:
+      context: ../pipelines
+      dockerfile: Dockerfile.pipelines
+    container_name: gcap_pipelines
+    volumes:
+      - ../pipelines:/app/pipelines
+      - ../.local/logs:/workspace/logs
+      - ../.local:/workspace/.local
+      - ../datasets:/workspace/datasets
+      - ../config:/workspace/config
+    environment:
+      - DAGSTER_HOME=/workspace/.local/.dagster
+      - DAGSTER_PORT=32300
+      - DAGSTER_POSTGRES_USER=graphcap
+      - DAGSTER_POSTGRES_PASSWORD=graphcap
+      - DAGSTER_POSTGRES_DB=graphcap
+      - PYTHONPATH=/app
+    ports:
+      - "32300:32300"
+    networks:
+      - graphcap
+    depends_on:
+      - gcap_postgres
+    env_file:
+      - ../.env
 
 volumes:
   graphcap_server_db:

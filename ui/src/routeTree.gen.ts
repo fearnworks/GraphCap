@@ -11,6 +11,7 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as GalleryImport } from './routes/gallery'
 import { Route as DebugImport } from './routes/debug'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
@@ -21,6 +22,12 @@ import { Route as WorkflowsWorkflowIdJobsIndexImport } from './routes/workflows/
 import { Route as WorkflowsWorkflowIdJobsJobIdIndexImport } from './routes/workflows/$workflowId/jobs/$jobId/index'
 
 // Create/Update Routes
+
+const GalleryRoute = GalleryImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const DebugRoute = DebugImport.update({
   id: '/debug',
@@ -97,6 +104,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DebugImport
       parentRoute: typeof rootRoute
     }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryImport
+      parentRoute: typeof rootRoute
+    }
     '/workflows/$workflowId': {
       id: '/workflows/$workflowId'
       path: '/workflows/$workflowId'
@@ -157,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/debug': typeof DebugRoute
+  '/gallery': typeof GalleryRoute
   '/workflows/$workflowId': typeof WorkflowsWorkflowIdRouteWithChildren
   '/workflows': typeof WorkflowsIndexRoute
   '/workflows/$workflowId/': typeof WorkflowsWorkflowIdIndexRoute
@@ -168,6 +183,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/debug': typeof DebugRoute
+  '/gallery': typeof GalleryRoute
   '/workflows': typeof WorkflowsIndexRoute
   '/workflows/$workflowId': typeof WorkflowsWorkflowIdIndexRoute
   '/workflows/$workflowId/jobs': typeof WorkflowsWorkflowIdJobsIndexRoute
@@ -179,6 +195,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/debug': typeof DebugRoute
+  '/gallery': typeof GalleryRoute
   '/workflows/$workflowId': typeof WorkflowsWorkflowIdRouteWithChildren
   '/workflows/': typeof WorkflowsIndexRoute
   '/workflows/$workflowId/': typeof WorkflowsWorkflowIdIndexRoute
@@ -192,6 +209,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/debug'
+    | '/gallery'
     | '/workflows/$workflowId'
     | '/workflows'
     | '/workflows/$workflowId/'
@@ -202,6 +220,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/debug'
+    | '/gallery'
     | '/workflows'
     | '/workflows/$workflowId'
     | '/workflows/$workflowId/jobs'
@@ -211,6 +230,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/debug'
+    | '/gallery'
     | '/workflows/$workflowId'
     | '/workflows/'
     | '/workflows/$workflowId/'
@@ -223,6 +243,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   DebugRoute: typeof DebugRoute
+  GalleryRoute: typeof GalleryRoute
   WorkflowsWorkflowIdRoute: typeof WorkflowsWorkflowIdRouteWithChildren
   WorkflowsIndexRoute: typeof WorkflowsIndexRoute
 }
@@ -231,6 +252,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   DebugRoute: DebugRoute,
+  GalleryRoute: GalleryRoute,
   WorkflowsWorkflowIdRoute: WorkflowsWorkflowIdRouteWithChildren,
   WorkflowsIndexRoute: WorkflowsIndexRoute,
 }
@@ -248,6 +270,7 @@ export const routeTree = rootRoute
         "/",
         "/about",
         "/debug",
+        "/gallery",
         "/workflows/$workflowId",
         "/workflows/"
       ]
@@ -260,6 +283,9 @@ export const routeTree = rootRoute
     },
     "/debug": {
       "filePath": "debug.tsx"
+    },
+    "/gallery": {
+      "filePath": "gallery.tsx"
     },
     "/workflows/$workflowId": {
       "filePath": "workflows/$workflowId.tsx",

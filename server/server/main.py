@@ -14,9 +14,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import init_app_db
-from .features.workflows.loader import load_stock_workflows
 from .providers.router import router as provider_router
-from .routers import job_router, workflow_router
 from .utils.logger import logger
 
 
@@ -53,11 +51,7 @@ async def lifespan(app: FastAPI):
                 await init_app_db(app)
                 logger.info("Database initialized")
 
-                # Load stock workflows
-                async with app.state.db_session() as session:
-                    await load_stock_workflows(session)
-                    logger.info("Stock workflows loaded")
-                break
+
             except GracefulExit:
                 logger.info("Received shutdown signal during startup")
                 raise
@@ -101,9 +95,9 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(workflow_router)
+# app.include_router(workflow_router)
 app.include_router(provider_router)
-app.include_router(job_router)
+# app.include_router(job_router)
 
 
 @app.get("/health")

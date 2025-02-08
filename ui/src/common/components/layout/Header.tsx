@@ -28,9 +28,18 @@ export function Header() {
           >
             Gallery
           </Link>
+          <a 
+            href="http://localhost:32300" 
+            className="px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            Pipelines
+          </a>
           <Link 
             to="/workflows" 
             className="px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+
           >
             Workflows
           </Link>
