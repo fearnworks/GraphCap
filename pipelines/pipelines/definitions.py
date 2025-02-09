@@ -36,7 +36,7 @@ defs = dg.Definitions(
         "fs_io_manager": SimpleFileSystemIOManager(),
         "huggingface_client": huggingface_client,
         "provider_config_file": ProviderConfigFile.configure_at_launch(),
-        "config": HfUploadManifestConfig.configure_at_launch(),
+        "config": HfUploadManifestConfig,
         **loggers,  # Integrate custom loggers into resources
     },
     jobs=[*JOBS],
