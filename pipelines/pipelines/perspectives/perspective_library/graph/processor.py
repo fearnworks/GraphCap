@@ -145,14 +145,24 @@ class GraphCaptionProcessor(BasePerspective):
     @override
     def to_table(self, caption_data: Dict[str, Any]) -> Dict[str, Any]:
         """Convert graph caption data to a flat dictionary."""
-        result = caption_data["parsed"]
-        tags_list = result["tags_list"]
-        tags_str = ", ".join([f"{tag['tag']} ({tag['category']}: {tag['confidence']:.2f})" for tag in tags_list])
+        result = caption_data.get("parsed", {})  # Use .get() to handle missing "parsed" key
+
+        # Check for error key and return error message if present
+        if "error" in result:
+            return {"filename": caption_data.get("filename", "unknown"), "error": result["error"]}
+
+        tags_list = result.get("tags_list", [])
+        tags_str = ", ".join(
+            [
+                f"{tag.get('tag', 'N/A')} ({tag.get('category', 'N/A')}: {tag.get('confidence', 'N/A'):.2f})"
+                for tag in tags_list
+            ]
+        )
 
         return {
-            "filename": caption_data["filename"],
-            "short_caption": result["short_caption"],
+            "filename": caption_data.get("filename", "unknown"),
+            "short_caption": result.get("short_caption", ""),
             "tags": tags_str,
-            "verification": result["verification"],
-            "dense_caption": result["dense_caption"],
+            "verification": result.get("verification", ""),
+            "dense_caption": result.get("dense_caption", ""),
         }

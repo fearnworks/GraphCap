@@ -17,6 +17,7 @@ from loguru import logger
 from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
+from tenacity import retry, stop_after_attempt, wait_exponential
 from tqdm.asyncio import tqdm_asyncio
 
 from ..providers.clients.base_client import BaseClient
@@ -290,6 +291,11 @@ class BaseCaptionProcessor(ABC):
         processed_count = 0
         failed_count = 0
 
+        @retry(
+            stop=stop_after_attempt(3),
+            wait=wait_exponential(multiplier=1, min=4, max=10),
+            reraise=True,
+        )
         async def process_with_semaphore(path: Path) -> Dict[str, Any]:
             nonlocal active_requests, processed_count, failed_count
 

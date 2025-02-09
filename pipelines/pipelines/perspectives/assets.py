@@ -139,8 +139,11 @@ def caption_output_files(
 
     # Create a dictionary to hold DataFrames for each perspective
     perspective_dataframes: Dict[str, pd.DataFrame] = {}
+    total_items = len(perspective_caption)
+    processed = 0
 
     for perspective in perspective_list:
+        context.log.info(f"Processing {perspective} perspective...")
         perspective_data = [item for item in perspective_caption if item["perspective"] == perspective]
         table_data = []
 
@@ -155,15 +158,18 @@ def caption_output_files(
         for item in perspective_data:
             image_filename = item["image_filename"]
             caption_data = item["caption_data"]
+            processed += 1
+            context.log.debug(f"Processing {image_filename} ({processed}/{total_items})")
 
             # Convert to table format
             table_row = processor.to_table(caption_data)
-            table_row["image_filename"] = image_filename  # Add image filename to the row
+            table_row["image_filename"] = image_filename
             table_data.append(table_row)
 
         # Create DataFrame for the current perspective
         df = pd.DataFrame(table_data)
         perspective_dataframes[perspective] = df
+        context.log.info(f"Completed {perspective} perspective with {len(table_data)} entries")
 
     # Write to Excel (each perspective to a separate sheet)
     with pd.ExcelWriter(excel_path) as writer:
