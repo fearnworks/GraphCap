@@ -110,12 +110,17 @@ class ArtCriticProcessor(BasePerspective):
     @override
     def to_table(self, caption_data: Dict[str, Any]) -> Dict[str, Any]:
         """Convert art critic data to a flat dictionary."""
-        result = caption_data["parsed"]
+        result = caption_data.get("parsed", {})  # Use .get() to handle missing "parsed" key
+
+        # Check for error key and return error message if present
+        if "error" in result:
+            return {"filename": caption_data.get("filename", "unknown"), "error": result["error"]}
+
         return {
-            "filename": caption_data["filename"],
-            "visual_elements": ", ".join(result["visual_elements"]),
-            "technical_elements": ", ".join(result["technical_elements"]),
-            "style_elements": ", ".join(result["style_elements"]),
-            "formal_tags": ", ".join(result["formal_tags"]),
-            "formal_analysis": result["formal_analysis"],
+            "filename": caption_data.get("filename", "unknown"),
+            "visual_elements": ", ".join(result.get("visual_elements", [])),
+            "technical_elements": ", ".join(result.get("technical_elements", [])),
+            "style_elements": ", ".join(result.get("style_elements", [])),
+            "formal_tags": ", ".join(result.get("formal_tags", [])),
+            "formal_analysis": result.get("formal_analysis", ""),
         }
