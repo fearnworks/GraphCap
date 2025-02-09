@@ -8,7 +8,7 @@ concrete visual elements, following ArtCoT methodology for reduced hallucination
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
 from loguru import logger
 from rich.table import Table
@@ -106,3 +106,16 @@ class ArtCriticProcessor(BasePerspective):
                 indent=2,
             )
             f.write("\n")  # Add newline between entries
+
+    @override
+    def to_table(self, caption_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert art critic data to a flat dictionary."""
+        result = caption_data["parsed"]
+        return {
+            "filename": caption_data["filename"],
+            "visual_elements": ", ".join(result["visual_elements"]),
+            "technical_elements": ", ".join(result["technical_elements"]),
+            "style_elements": ", ".join(result["style_elements"]),
+            "formal_tags": ", ".join(result["formal_tags"]),
+            "formal_analysis": result["formal_analysis"],
+        }

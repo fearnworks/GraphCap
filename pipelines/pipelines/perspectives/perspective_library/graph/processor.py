@@ -7,7 +7,7 @@ Implements structured analysis of images with categorized tags and descriptions.
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
 from loguru import logger
 from rich.table import Table
@@ -141,3 +141,18 @@ class GraphCaptionProcessor(BasePerspective):
                 indent=2,
             )
             f.write("\n")  # Add newline between entries
+
+    @override
+    def to_table(self, caption_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert graph caption data to a flat dictionary."""
+        result = caption_data["parsed"]
+        tags_list = result["tags_list"]
+        tags_str = ", ".join([f"{tag['tag']} ({tag['category']}: {tag['confidence']:.2f})" for tag in tags_list])
+
+        return {
+            "filename": caption_data["filename"],
+            "short_caption": result["short_caption"],
+            "tags": tags_str,
+            "verification": result["verification"],
+            "dense_caption": result["dense_caption"],
+        }

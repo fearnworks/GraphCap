@@ -388,3 +388,16 @@ class BaseCaptionProcessor(ABC):
         console.print(summary_table)
 
         return results
+
+    @abstractmethod
+    def to_table(self, caption_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Convert caption data to a flat dictionary suitable for tabular representation.
+
+        Args:
+            caption_data: The caption data to format
+
+        Returns:
+            Dict[str, Any]: Flattened dictionary for tabular representation
+        """
+        pass

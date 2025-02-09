@@ -1,4 +1,3 @@
-import enum
 import os
 import random
 import shutil
@@ -6,39 +5,8 @@ import shutil
 import dagster as dg
 from dagster import asset
 from PIL import Image
-from pydantic import Field
 
-
-class SamplingStrategy(str, enum.Enum):
-    """Enum for sampling strategies."""
-
-    INCREMENT = "increment"
-    DECREMENT = "decrement"
-    RANDOM = "random"
-
-
-class SortingStrategy(str, enum.Enum):
-    """Enum for sorting strategies."""
-
-    NAME = "name"
-    SIZE = "size"
-    MODIFIED = "modified"
-
-
-class DatasetConfig(dg.Config):
-    """Configuration for dataset operations."""
-
-    dataset_name: str = Field(default="graphcap_dataset", description="The name of the dataset.")
-    input_dir: str = Field(default="/workspace/datasets/os_img", description="The input directory for the dataset.")
-    output_dir: str = Field(
-        default="/workspace/.local/output/os_img", description="The output directory for the dataset."
-    )
-    copy_images: bool = Field(default=True, description="Whether to copy images to the output directory.")
-    sampling_strategy: SamplingStrategy = Field(
-        default=SamplingStrategy.INCREMENT, description="The sampling strategy to use."
-    )
-    num_samples: int | None = Field(default=None, description="The number of samples to take.")
-    sorting_strategy: SortingStrategy | None = Field(default=None, description="The sorting strategy to use.")
+from .types import DatasetIOConfig, SamplingStrategy, SortingStrategy
 
 
 def is_image_file(filename: str) -> bool:
@@ -125,8 +93,8 @@ def copy_images(context: dg.AssetExecutionContext, image_paths: list[str], outpu
     return new_image_paths
 
 
-@asset(group_name="image_load")
-def image_list(context: dg.AssetExecutionContext, config: DatasetConfig) -> list[str]:
+@asset(group_name="image_load", compute_kind="python")
+def image_list(context: dg.AssetExecutionContext, image_dataset_config: DatasetIOConfig) -> list[str]:
     """
     Load raw images from directory.
 
@@ -136,16 +104,16 @@ def image_list(context: dg.AssetExecutionContext, config: DatasetConfig) -> list
     Returns:
         list[str]: A list of image paths.
     """
-    context.log.info(f"Loading image list for dataset {config.dataset_name}")
+    context.log.info(f"Loading image list for dataset {image_dataset_config.dataset_name}")
 
     image_files = get_image_list(
         context=context,
-        image_dir=config.input_dir,
-        sorting_strategy=config.sorting_strategy,
-        sampling_strategy=config.sampling_strategy,
-        num_samples=config.num_samples,
+        image_dir=image_dataset_config.input_dir,
+        sorting_strategy=image_dataset_config.sorting_strategy,
+        sampling_strategy=image_dataset_config.sampling_strategy,
+        num_samples=image_dataset_config.num_samples,
     )
-    copied_image_files: list[str] = copy_images(context, image_files, config.output_dir)
+    copied_image_files: list[str] = copy_images(context, image_files, image_dataset_config.output_dir)
     return copied_image_files
 
 
@@ -163,3 +131,10 @@ def load_pil_images_op(context: dg.AssetExecutionContext, image_paths: list[str]
             context.log.error(f"Error loading image {path}: {e}")
 
     return pil_images
+
+
+@asset(group_name="image_load", compute_kind="python")
+def image_dataset_config(context: dg.AssetExecutionContext, config: DatasetIOConfig) -> DatasetIOConfig:
+    """Load image dataset configuration."""
+    context.log.info(f"Loading image dataset configuration: {config.dataset_name}")
+    return config

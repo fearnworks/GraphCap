@@ -779,6 +779,7 @@ dependencies = [
     { name = "rich" },
     { name = "termcolor" },
     { name = "toml" },
+    { name = "tqdm" },
 ]
 
 [package.optional-dependencies]
@@ -802,6 +803,7 @@ requires-dist = [
     { name = "rich", specifier = ">=13.9.4" },
     { name = "termcolor", specifier = ">=2.5.0" },
     { name = "toml", specifier = ">=0.10.2" },
+    { name = "tqdm", specifier = ">=4.67.1" },
 ]
 
 [[package]]

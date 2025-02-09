@@ -23,7 +23,6 @@ tasks:
         --max-model-len 24000
         --enable-auto-tool-choice
         --served-model-name vision-worker
-        --quantization awq
   stop-vllm-pixtral:
     cmds:
       - docker stop vllm-pixtral
