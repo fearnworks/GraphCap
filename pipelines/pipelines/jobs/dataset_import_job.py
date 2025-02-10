@@ -41,6 +41,7 @@ dataset_import_job = dg.define_asset_job(
     selection=[
         "dataset_download",
         "dataset_parse",
+        "dataset_download_urls",
     ],
     description="Downloads and parses a dataset from the Hugging Face Hub.",
 )

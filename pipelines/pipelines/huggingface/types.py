@@ -11,9 +11,11 @@ Classes:
     HfUploadManifestConfig: Configuration for uploading a manifest to the Hugging Face Hub.
     DatasetImportConfig: Configuration for importing datasets from the Hugging Face Hub.
     DatasetParseConfig: Configuration for parsing downloaded datasets.
+    DatasetParquetUrlDownloadConfig: Configuration for downloading URLs from a parquet dataset.
 """
 
-from typing import List
+from dataclasses import dataclass
+from typing import Any, List, Optional
 
 import dagster as dg
 from pydantic import BaseModel, Field
@@ -139,4 +141,92 @@ class DatasetParseConfig(dg.Config):
     output_dir: str = Field(
         default="/workspace/.local/output/dataset",
         description="The directory to save the parsed dataset.",
+    )
+
+
+@dataclass
+class DatasetAnnotation:
+    """Annotation in the dataset."""
+
+    id: str
+    content: str
+    annotation: dict
+    manuallyAdjusted: bool
+    embedding: Optional[Any]
+    fromUser: str
+    fromTeam: str
+    createdAt: str
+    updatedAt: str
+    overallRating: Optional[Any]
+
+
+@dataclass
+class DatasetRow:
+    """Schema for a row in the dataset."""
+
+    id: str
+    type: str
+    hash: str
+    phash: str
+    urls: List[str]
+    status: str
+    flags: int
+    meta: dict
+    fromUser: str
+    fromTeam: str
+    embeddings: List[Any]
+    createdAt: str
+    updatedAt: str
+    name: Optional[str]
+    width: Optional[int]
+    height: Optional[int]
+    format: Optional[str]
+    license: Optional[str]
+    licenseUrl: Optional[str]
+    contentAuthor: Optional[str]
+    annotations: List[DatasetAnnotation]
+    image_column: Optional[str]
+
+
+class DatasetParquetUrlDownloadConfig(dg.Config):
+    """
+    Configuration for downloading URLs from parquet datasets.
+
+    Attributes:
+        parquet_dir: Directory containing parquet files relative to dataset root
+        url_column: Name of the column containing URLs (defaults to 'urls')
+        output_dir: Directory to save downloaded files
+        max_workers: Maximum number of concurrent downloads
+        overwrite_existing: Whether to overwrite existing files
+        default_extension: Default file extension when none can be determined from URL
+        request_delay: Delay between requests in seconds
+    """
+
+    parquet_dir: str = Field(
+        default="data",
+        description="Directory containing parquet files relative to dataset root",
+    )
+    url_column: str = Field(
+        default="urls",
+        description="Name of the column containing URLs",
+    )
+    output_dir: str = Field(
+        default="/workspace/.local/output/dataset/downloads",
+        description="Directory to save downloaded files",
+    )
+    max_workers: int = Field(
+        default=2,  # Reduced default for rate limiting
+        description="Maximum number of concurrent downloads",
+    )
+    overwrite_existing: bool = Field(
+        default=False,
+        description="Whether to overwrite existing files",
+    )
+    default_extension: str = Field(
+        default="jpg",
+        description="Default file extension when none can be determined from URL",
+    )
+    request_delay: float = Field(
+        default=1.0,
+        description="Delay between requests in seconds",
     )

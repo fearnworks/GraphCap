@@ -15,13 +15,19 @@ Assets:
 
 import json
 import subprocess
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Any, List
 
 import dagster as dg
+import pandas as pd
+import requests
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download
+from tqdm import tqdm
 
-from .types import DatasetImportConfig, DatasetParseConfig
+from .types import DatasetImportConfig, DatasetParquetUrlDownloadConfig, DatasetParseConfig
 
 
 def _clone_with_git_lfs(
@@ -165,3 +171,187 @@ def dataset_parse(context: dg.AssetExecutionContext, dataset_download: str, conf
         json.dump(manifest, f, indent=2)
 
     context.log.info(f"Created dataset manifest at {manifest_file}")
+
+
+def _extract_urls(urls_data: Any) -> List[str]:
+    """
+    Extract URLs from various data types (numpy array, list, str).
+
+    Args:
+        urls_data: URLs in various formats
+
+    Returns:
+        List[str]: List of valid URLs
+    """
+    if isinstance(urls_data, (list, str)):
+        urls = [urls_data] if isinstance(urls_data, str) else urls_data
+    else:
+        # Handle numpy arrays and other sequence types
+        try:
+            urls = urls_data.tolist() if hasattr(urls_data, "tolist") else list(urls_data)
+        except Exception:
+            return []
+
+    # Filter and clean URLs
+    return [str(url) for url in urls if url]
+
+
+def _download_url(url: str, output_path: Path, context: dg.AssetExecutionContext) -> bool:
+    """
+    Downloads a file from a URL to the specified path.
+
+    Args:
+        url: URL to download from
+        output_path: Path to save the downloaded file
+        context: Dagster execution context for logging
+
+    Returns:
+        bool: True if download was successful, False otherwise
+    """
+    try:
+        # Add delay for rate limiting
+        time.sleep(0.3)  # 1 request per second max
+
+        response = requests.get(url, stream=True, timeout=30)
+        response.raise_for_status()
+
+        with open(output_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        return True
+    except Exception as e:
+        context.log.warning(f"Failed to download {url}: {e}")
+        return False
+
+
+@dg.asset(
+    group_name="dataset_import",
+    compute_kind="python",
+    deps=[dataset_download],
+)
+def dataset_download_urls(
+    context: dg.AssetExecutionContext,
+    dataset_download: str,
+    config: DatasetParquetUrlDownloadConfig,
+) -> None:
+    """
+    Downloads files from URLs found in parquet datasets.
+
+    Args:
+        context: Dagster execution context
+        dataset_download: Path to the downloaded dataset
+        config: Configuration for URL downloading
+    """
+    input_dir = Path(dataset_download) / config.parquet_dir
+    if not input_dir.exists():
+        raise ValueError(f"Parquet directory not found at {input_dir}")
+
+    # Find all parquet files
+    parquet_files = list(input_dir.glob("*.parquet"))
+    if not parquet_files:
+        raise ValueError(f"No parquet files found in {input_dir}")
+
+    context.log.info(f"Found {len(parquet_files)} parquet files")
+
+    # Create output directory
+    output_dir = Path(config.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Track progress
+    successful_downloads = 0
+    failed_downloads = 0
+    total_urls = 0
+
+    # Process each parquet file
+    for parquet_file in parquet_files:
+        context.log.info(f"Processing {parquet_file}")
+        df = pd.read_parquet(parquet_file)
+
+        context.log.info(f"Loaded parquet file with {len(df)} rows")
+        context.log.info(f"Columns: {df.columns.tolist()}")
+
+        if config.url_column not in df.columns:
+            raise ValueError(
+                f"URL column '{config.url_column}' not found in {parquet_file}. "
+                f"Available columns: {df.columns.tolist()}"
+            )
+
+        # Process each row
+        with ThreadPoolExecutor(max_workers=config.max_workers) as executor:
+            future_to_url = {}
+
+            for idx, row in df.iterrows():
+                if idx % 1000 == 0:
+                    context.log.info(f"Processing row {idx}")
+
+                # Extract URLs using helper function
+                urls = _extract_urls(row[config.url_column])
+                if not urls:
+                    context.log.debug(f"Skipping row {idx}: no valid URLs")
+                    continue
+
+                # Use row ID as base filename
+                base_filename = row["id"]
+                if not base_filename:
+                    context.log.warning(f"Skipping row {idx}: no ID")
+                    continue
+
+                for i, url in enumerate(urls):
+                    # Generate unique filename for each URL
+                    filename = f"{base_filename}_{i}.{config.default_extension}"
+                    output_path = output_dir / filename
+
+                    # Skip if file exists and no overwrite
+                    if output_path.exists() and not config.overwrite_existing:
+                        context.log.debug(f"Skipping existing file: {output_path}")
+                        continue
+
+                    # Limit batch size for rate limiting
+                    if len(future_to_url) >= config.max_workers * 2:
+                        # Wait for some downloads to complete before adding more
+                        successful_downloads, failed_downloads = _process_completed_downloads(
+                            future_to_url, context, successful_downloads, failed_downloads
+                        )
+                        future_to_url = {}
+
+                    # Submit download task
+                    future = executor.submit(_download_url, url, output_path, context)
+                    future_to_url[future] = (url, output_path)
+                    total_urls += 1
+
+            # Process remaining downloads
+            if future_to_url:
+                successful_downloads, failed_downloads = _process_completed_downloads(
+                    future_to_url, context, successful_downloads, failed_downloads
+                )
+
+    # Log summary
+    context.log.info(
+        f"Download complete. Successful: {successful_downloads}, Failed: {failed_downloads}, Total: {total_urls}"
+    )
+
+
+def _process_completed_downloads(
+    future_to_url: dict,
+    context: dg.AssetExecutionContext,
+    successful_downloads: int,
+    failed_downloads: int,
+) -> tuple[int, int]:
+    """Process completed downloads and update counters."""
+    with tqdm(total=len(future_to_url), desc="Downloading files") as pbar:
+        for future in as_completed(future_to_url):
+            url, output_path = future_to_url[future]
+            try:
+                success = future.result()
+                if success:
+                    successful_downloads += 1
+                    context.log.debug(f"Successfully downloaded {url} to {output_path}")
+                else:
+                    failed_downloads += 1
+                    context.log.warning(f"Failed to download {url}")
+            except Exception as e:
+                context.log.error(f"Error downloading {url}: {e}")
+                failed_downloads += 1
+            pbar.update(1)
+
+    return successful_downloads, failed_downloads
