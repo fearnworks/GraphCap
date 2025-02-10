@@ -108,11 +108,6 @@ class BaseCaptionProcessor(ABC):
         """
         pass
 
-    @property
-    def supported_formats(self) -> List[str]:
-        """List of supported output formats for this processor."""
-        return []
-
     def write_format(self, format_name: str, job_dir: Path, caption_data: Dict[str, Any]) -> None:
         """
         Write caption data in a specific format.
