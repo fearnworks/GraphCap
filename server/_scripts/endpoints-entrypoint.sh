@@ -110,9 +110,7 @@ main() {
         --host 0.0.0.0 \
         --port 32100 \
         --reload \
-        --reload-dir /app/server/server \
-        --reload-dir /app/lib \
-        --reload-dir /workspace/config/workflows
+        --reload-dir /app/server/server 
 }
 
 # Trap errors

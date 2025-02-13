@@ -10,6 +10,7 @@ description = "graphcap workspace root"
 requires-python = ">=3.11"
 dependencies = [
     "click>=8.1.8",
+    "dagster-graphql>=1.9.11",
     "dagster>=1.9.11",
     "rich>=13.9.4",
     "termcolor>=2.5.0",
@@ -93,5 +94,11 @@ members = ["lib", "server"]
 [tool.uv.sources]
 graphcap = { path = "." }
 graphcap-server = { path = "server" }
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.5",
+]
 
 

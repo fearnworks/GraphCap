@@ -1,3 +1,4 @@
+# Not currently functioning on 8.6 / 8.9 - patch needed from vllm 
 uv venv --python 3.12.8
 source .venv/bin/activate
 uv pip install vllm # ---> Now there is no need to install from source because of the latest release

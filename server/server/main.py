@@ -14,7 +14,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import init_app_db
-from .providers.router import router as provider_router
+from .routers import main_router
 from .utils.logger import logger
 
 
@@ -50,7 +50,6 @@ async def lifespan(app: FastAPI):
                 # Initialize database
                 await init_app_db(app)
                 logger.info("Database initialized")
-
 
             except GracefulExit:
                 logger.info("Received shutdown signal during startup")
@@ -94,10 +93,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-# app.include_router(workflow_router)
-app.include_router(provider_router)
-# app.include_router(job_router)
+app.include_router(main_router, prefix="/api/v1")
 
 
 @app.get("/health")

@@ -1,4 +1,13 @@
-from server.features.job import router as job_router
-from server.features.workflows import router as workflow_router
+from fastapi import APIRouter
 
-__all__ = ["job_router", "workflow_router"]
+from .features.jobs.router import router as dagster_job_router
+from .providers.router import router as provider_router
+
+routers = [dagster_job_router, provider_router]
+
+main_router = APIRouter()
+
+for router in routers:
+    main_router.include_router(router)
+
+__all__ = ["main_router"]
