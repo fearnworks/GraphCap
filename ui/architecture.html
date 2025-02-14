@@ -1,0 +1,611 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>UI Architecture &#8212; graphcap  0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'ui/architecture';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">graphcap  0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../overview.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../core/index.html">
+    Core
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../server/index.html">
+    Server
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="index.html">
+    UI Documentation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../overview.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../core/index.html">
+    Core
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../server/index.html">
+    Server
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    UI Documentation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">UI Architecture</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="ui-architecture">
+<h1>UI Architecture<a class="headerlink" href="#ui-architecture" title="Link to this heading">#</a></h1>
+<p>graphcap Studio’s UI architecture follows a hybrid modular pattern that emphasizes separation of concerns, reusability, and maintainability.</p>
+<section id="directory-structure">
+<h2>Directory Structure<a class="headerlink" href="#directory-structure" title="Link to this heading">#</a></h2>
+<p>The UI codebase is organized into the following key directories:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ui/src/
+├── app/           # Application initialization and global config
+├── features/      # Feature-specific modules
+├── common/        # Shared components and utilities
+├── routes/        # Route-specific modules for tanstack router
+└── services/      # Application-wide services
+</pre></div>
+</div>
+</section>
+<section id="core-principles">
+<h2>Core Principles<a class="headerlink" href="#core-principles" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Modular Organization</strong>: Code is organized by feature and responsibility</p></li>
+<li><p><strong>Component Separation</strong>: Clear distinction between presentational and container components</p></li>
+<li><p><strong>Code Reusability</strong>: Common utilities and components are centralized</p></li>
+<li><p><strong>Service Isolation</strong>: Business logic is separated from UI concerns</p></li>
+</ol>
+</section>
+<section id="key-directories">
+<h2>Key Directories<a class="headerlink" href="#key-directories" title="Link to this heading">#</a></h2>
+<section id="app">
+<h3>app/<a class="headerlink" href="#app" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">app/</span></code> directory contains core application initialization code and global configuration:</p>
+<ul class="simple">
+<li><p>Entry point (<code class="docutils literal notranslate"><span class="pre">main.tsx</span></code>)</p></li>
+<li><p>Global providers (Theme, Auth, etc.)</p></li>
+<li><p>High-level routing logic</p></li>
+<li><p>Global styling and configuration</p></li>
+</ul>
+</section>
+<section id="features">
+<h3>features/<a class="headerlink" href="#features" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">features/</span></code> directory contains domain-specific code organized into feature modules. Each feature has:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">components/</span></code>: Presentational UI components</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">containers/</span></code>: Logic-heavy components with state management</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hooks/</span></code>: Feature-specific custom hooks</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">services/</span></code>: (Optional) Feature-specific business logic</p></li>
+</ul>
+<p>Example feature structure:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>features/gallery/
+├── components/     # &quot;Dumb&quot; UI components
+├── containers/     # &quot;Smart&quot; components with logic
+├── hooks/         # Feature-specific hooks
+└── services/      # Gallery-specific services
+</pre></div>
+</div>
+</section>
+<section id="common">
+<h3>common/<a class="headerlink" href="#common" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">common/</span></code> directory contains reusable code shared across features:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">components/</span></code>: Generic UI components (buttons, forms, etc.)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hooks/</span></code>: Shared custom hooks</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">utils/</span></code>: Utility functions and constants</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">styles/</span></code>: Global styling assets and Tailwind configuration</p></li>
+</ul>
+</section>
+<section id="services">
+<h3>services/<a class="headerlink" href="#services" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">services/</span></code> directory contains application-wide business logic and integrations:</p>
+<ul class="simple">
+<li><p>API clients</p></li>
+<li><p>Data transformation services</p></li>
+<li><p>Shared business logic</p></li>
+<li><p>External integrations</p></li>
+</ul>
+</section>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading">#</a></h2>
+<section id="component-architecture">
+<h3>Component Architecture<a class="headerlink" href="#component-architecture" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Separate presentational and container components</p></li>
+<li><p>Keep components focused and single-purpose</p></li>
+<li><p>Use TypeScript for type safety</p></li>
+<li><p>Follow Tailwind CSS conventions for styling</p></li>
+</ul>
+</section>
+<section id="code-organization">
+<h3>Code Organization<a class="headerlink" href="#code-organization" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Place feature-specific code in appropriate feature directory</p></li>
+<li><p>Move reusable code to <code class="docutils literal notranslate"><span class="pre">common/</span></code></p></li>
+<li><p>Keep services stateless when possible</p></li>
+<li><p>Document complex logic and APIs</p></li>
+</ul>
+</section>
+<section id="state-management">
+<h3>State Management<a class="headerlink" href="#state-management" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Use React hooks for local state</p></li>
+<li><p>Implement container components for complex state</p></li>
+<li><p>Keep state close to where it’s used</p></li>
+<li><p>Document state management patterns</p></li>
+</ul>
+</section>
+<section id="testing">
+<h3>Testing<a class="headerlink" href="#testing" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Write unit tests for services</p></li>
+<li><p>Test components in isolation</p></li>
+<li><p>Document testing patterns and expectations</p></li>
+<li><p>Use TypeScript to catch type-related issues early</p></li>
+</ul>
+</section>
+</section>
+<section id="development-workflow">
+<h2>Development Workflow<a class="headerlink" href="#development-workflow" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Feature Development</strong>:
+- Create new feature directory if needed
+- Implement components and logic
+- Write tests and documentation</p></li>
+<li><p><strong>Common Code</strong>:
+- Identify reusable patterns
+- Move shared code to <code class="docutils literal notranslate"><span class="pre">common/</span></code>
+- Update documentation</p></li>
+<li><p><strong>Services</strong>:
+- Implement business logic in services
+- Keep services focused and testable
+- Document APIs and interfaces</p></li>
+<li><p><strong>Integration</strong>:
+- Connect components to services
+- Test integrations
+- Update documentation</p></li>
+</ol>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>This architecture promotes:</p>
+<ul class="simple">
+<li><p>Clear separation of concerns</p></li>
+<li><p>Code reusability</p></li>
+<li><p>Maintainable codebase</p></li>
+<li><p>Scalable feature development</p></li>
+<li><p>Consistent development patterns</p></li>
+</ul>
+<p>The modular approach allows teams to work independently on features while maintaining consistency through shared components and services.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#directory-structure">Directory Structure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-principles">Core Principles</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#key-directories">Key Directories</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#app">app/</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#features">features/</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common">common/</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#services">services/</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#best-practices">Best Practices</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#component-architecture">Component Architecture</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#code-organization">Code Organization</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#state-management">State Management</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#testing">Testing</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#development-workflow">Development Workflow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/ui/architecture.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, graphcap Contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

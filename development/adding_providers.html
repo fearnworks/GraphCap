@@ -1,0 +1,609 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Adding a New Provider Integration &#8212; graphcap  0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'development/adding_providers';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Release and Packaging Architecture" href="packaging.html" />
+    <link rel="prev" title="Adding New Nodes to the graphcap DAG System" href="adding_nodes.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">graphcap  0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../overview.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../core/index.html">
+    Core
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../server/index.html">
+    Server
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Development
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../ui/index.html">
+    UI Documentation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../overview.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../core/index.html">
+    Core
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../server/index.html">
+    Server
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ui/index.html">
+    UI Documentation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="adding_nodes.html">Adding New Nodes to the graphcap DAG System</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Adding a New Provider Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="packaging.html">Release and Packaging Architecture</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Development</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Adding a New Provider Integration</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="adding-a-new-provider-integration">
+<h1>Adding a New Provider Integration<a class="headerlink" href="#adding-a-new-provider-integration" title="Link to this heading">#</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>This guide explains how to add a new provider integration into graphcap . The process
+involves the following steps:</p>
+<ul class="simple">
+<li><p>Adding a provider configuration example in the configuration file.</p></li>
+<li><p>Implementing or updating a provider client (if necessary).</p></li>
+<li><p>Adding integration tests to verify the provider’s functionality.</p></li>
+<li><p>Updating the provider manager if your provider requires custom initialization logic.</p></li>
+</ul>
+</section>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
+<p>Before you begin, ensure you have the following:
+- A clear understanding of the new provider’s API, credentials, and requirements.
+- Familiarity with the graphcap configuration structure (TOML) and provider client design.
+- A working development environment with Python 3.11+ and all required dependencies installed.</p>
+</section>
+<section id="step-1-add-provider-configuration-example">
+<h2>Step 1: Add Provider Configuration Example<a class="headerlink" href="#step-1-add-provider-configuration-example" title="Link to this heading">#</a></h2>
+<p>Update the <code class="docutils literal notranslate"><span class="pre">provider.example.config.toml</span></code> file with a sample configuration for your new provider.
+This file serves as a template for users when configuring credentials, API keys, and other provider-specific settings.</p>
+<p>For example, add a new section similar to the following:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[newprovider]</span>
+<span class="n">kind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;newprovider&quot;</span>
+<span class="n">environment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;cloud&quot;</span><span class="w">            </span><span class="c1"># Use &quot;local&quot; if the provider is self-hosted</span>
+<span class="n">env_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;NEWPROVIDER_API_KEY&quot;</span><span class="w">    </span><span class="c1"># Environment variable storing the API key</span>
+<span class="n">base_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://api.newprovider.com/v1&quot;</span>
+<span class="n">models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;newmodel-basic&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;newmodel-advanced&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">default_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;newmodel-basic&quot;</span>
+<span class="n">fetch_models</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<span class="c1"># Optional rate limits configuration</span>
+<span class="k">[newprovider.rate_limits]</span>
+<span class="n">requests_per_minute</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">15</span>
+<span class="n">tokens_per_minute</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">500000</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-implement-or-update-the-provider-client">
+<h2>Step 2: Implement or Update the Provider Client<a class="headerlink" href="#step-2-implement-or-update-the-provider-client" title="Link to this heading">#</a></h2>
+<p>If the new provider requires a unique client implementation, create or update the corresponding file in
+<a href="#id1"><span class="problematic" id="id2">:dir:`lib/graphcap/providers/clients/`</span></a>. Ensure your new client:</p>
+<ul class="simple">
+<li><p>Adheres to Python 3.11+ standards and strong typing.</p></li>
+<li><p>Follows the same structure and style as existing clients (e.g., <code class="file docutils literal notranslate"><span class="pre">openai_client.py</span></code> or <code class="file docutils literal notranslate"><span class="pre">gemini_client.py</span></code>).</p></li>
+<li><p>Implements any required endpoints and validations, such as model listing and chat completions.</p></li>
+</ul>
+<p>If your provider uses an existing client template, you may only need to adjust endpoint URLs and method implementations.</p>
+</section>
+<section id="step-3-update-the-provider-manager-if-necessary">
+<h2>Step 3: Update the Provider Manager (if necessary)<a class="headerlink" href="#step-3-update-the-provider-manager-if-necessary" title="Link to this heading">#</a></h2>
+<p>The provider manager located in <code class="file docutils literal notranslate"><span class="pre">lib/graphcap/providers/provider_manager.py</span></code> automatically loads
+provider configurations (either from a config file or environment variables) and instantiates provider clients.</p>
+<p>If your provider requires custom initialization logic, update the <code class="docutils literal notranslate"><span class="pre">get_client()</span></code> method to ensure:</p>
+<ul class="simple">
+<li><p>The new provider is recognized based on its <code class="docutils literal notranslate"><span class="pre">kind</span></code>.</p></li>
+<li><p>Any additional configuration (for example, rate limits) is applied to the client.</p></li>
+</ul>
+</section>
+<section id="step-4-add-integration-tests">
+<h2>Step 4: Add Integration Tests<a class="headerlink" href="#step-4-add-integration-tests" title="Link to this heading">#</a></h2>
+<p>Integration tests help ensure the new provider works correctly and adheres to expected behaviors.
+Add tests to the <a href="#id3"><span class="problematic" id="id4">:dir:`tests/library_tests/provider_tests/`</span></a> directory. These tests should cover:</p>
+<ul class="simple">
+<li><p>Client initialization and configuration validation.</p></li>
+<li><p>API key detection and error handling.</p></li>
+<li><p>Basic API calls (e.g., listing models, executing chat completions, and structured vision analysis).</p></li>
+</ul>
+<p>For example, you might add tests resembling the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">graphcap.providers.clients</span><span class="w"> </span><span class="kn">import</span> <span class="n">NewProviderClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">graphcap.providers.provider_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProviderManager</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">integration</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_newprovider_list_models</span><span class="p">():</span>
+    <span class="c1"># Ensure the environment variable is set for testing</span>
+    <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;NEWPROVIDER_API_KEY&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">api_key</span><span class="p">:</span>
+        <span class="n">pytest</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">&quot;NEWPROVIDER_API_KEY not set, skipping test.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Instantiate the client with test configuration</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">NewProviderClient</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;newprovider&quot;</span><span class="p">,</span>
+        <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;newprovider&quot;</span><span class="p">,</span>
+        <span class="n">environment</span><span class="o">=</span><span class="s2">&quot;cloud&quot;</span><span class="p">,</span>
+        <span class="n">env_var</span><span class="o">=</span><span class="s2">&quot;NEWPROVIDER_API_KEY&quot;</span><span class="p">,</span>
+        <span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;https://api.newprovider.com/v1&quot;</span><span class="p">,</span>
+        <span class="n">default_model</span><span class="o">=</span><span class="s2">&quot;newmodel-basic&quot;</span>
+    <span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">),</span> <span class="s2">&quot;Response should have a &#39;data&#39; attribute&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="s2">&quot;&#39;data&#39; must be a list&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;List of models should not be empty&quot;</span>
+</pre></div>
+</div>
+<p>Review your tests by running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/library_tests/provider_tests/<span class="w"> </span>-v<span class="w"> </span>--maxfail<span class="o">=</span><span class="m">1</span><span class="w"> </span>--disable-warnings
+</pre></div>
+</div>
+</section>
+<section id="additional-considerations">
+<h2>Additional Considerations<a class="headerlink" href="#additional-considerations" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>Documentation Update:</strong> Update the provider documentation in <code class="file docutils literal notranslate"><span class="pre">lib/graphcap/providers/README.md</span></code> if necessary.</p></li>
+<li><p><strong>Configuration Validation:</strong> Leverage <code class="xref py py-mod docutils literal notranslate"><span class="pre">pydantic</span></code> in your provider config classes to ensure robust validation.</p></li>
+<li><p><strong>Community Feedback:</strong> Engage with collaborators via pull requests and code reviews to further refine your provider integration.</p></li>
+</ul>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>Following this guide will help you add a new provider integration to graphcap while maintaining consistency with
+existing project standards. Be sure to thoroughly test your integration and update all related documentation.</p>
+<p>Happy coding!</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="adding_nodes.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Adding New Nodes to the graphcap DAG System</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="packaging.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Release and Packaging Architecture</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-add-provider-configuration-example">Step 1: Add Provider Configuration Example</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-implement-or-update-the-provider-client">Step 2: Implement or Update the Provider Client</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-update-the-provider-manager-if-necessary">Step 3: Update the Provider Manager (if necessary)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-add-integration-tests">Step 4: Add Integration Tests</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-considerations">Additional Considerations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/development/adding_providers.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, graphcap Contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

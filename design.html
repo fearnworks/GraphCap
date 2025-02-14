@@ -1,0 +1,748 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>graphcap System Design &#8212; graphcap  0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'design';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">graphcap  0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="overview.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="core/index.html">
+    Core
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="server/index.html">
+    Server
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="development/index.html">
+    Development
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="ui/index.html">
+    UI Documentation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="overview.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="core/index.html">
+    Core
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="server/index.html">
+    Server
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="ui/index.html">
+    UI Documentation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">graphcap System Design</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="graphcap-system-design">
+<h1>graphcap System Design<a class="headerlink" href="#graphcap-system-design" title="Link to this heading">#</a></h1>
+<p><img alt="design" src="_images/component_design.png" /></p>
+<section id="introduction">
+<h2>1. Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
+<p>**graphcap ** is a system for generating <em>structured image captions</em> (e.g., scene graphs, art critiques, attribute listings) by orchestrating image‐processing pipelines. It provides:</p>
+<ul class="simple">
+<li><p>A <strong>DAG-driven workflow engine</strong> for orchestrating steps such as image loading, caption generation, and dataset export.</p></li>
+<li><p><strong>Pluggable model providers</strong>, allowing you to call into OpenAI, Gemini, or local LLMs for caption generation.</p></li>
+<li><p>Multiple interfaces:</p>
+<ul>
+<li><p><strong>CLI</strong> for local usage,</p></li>
+<li><p><strong>REST API</strong> for server usage via FastAPI,</p></li>
+<li><p><strong>UI</strong> for visual, user‐friendly interactions.</p></li>
+</ul>
+</li>
+</ul>
+<p>Its outputs are typically structured JSON data and HTML reports, optionally assembled into datasets that can be shared or uploaded to external repositories such as Hugging Face.</p>
+</section>
+<hr class="docutils" />
+<section id="system-overview">
+<h2>2. System Overview<a class="headerlink" href="#system-overview" title="Link to this heading">#</a></h2>
+<section id="components">
+<h3>2.1 Components<a class="headerlink" href="#components" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>graphcap Library (<code class="docutils literal notranslate"><span class="pre">graphcap</span></code>)</strong></p>
+<ul class="simple">
+<li><p>Core Python code for DAG execution, node definitions, and specialized <em>perspectives</em> (like scene graphs or art critic analyses).</p></li>
+<li><p>Provides a CLI (<code class="docutils literal notranslate"><span class="pre">dag-validate</span></code>, <code class="docutils literal notranslate"><span class="pre">dag-run</span></code>) and can run locally with only Python.</p></li>
+</ul>
+</li>
+<li><p><strong>Server (<code class="docutils literal notranslate"><span class="pre">server</span></code>)</strong></p>
+<ul class="simple">
+<li><p>A FastAPI application exposing graphcap functionalities over HTTP.</p></li>
+<li><p>Handles orchestration, multi‐user workflows, and session management.</p></li>
+<li><p>Allows remote systems or UIs to invoke the same pipelines exposed by the library CLI.</p></li>
+</ul>
+</li>
+<li><p><strong>Core UI</strong></p>
+<ul class="simple">
+<li><p>A (not fully shown here) front‐end interface that calls the server’s REST endpoints.</p></li>
+<li><p>Used for dataset management, pipeline configuration, and interactive usage without coding.</p></li>
+</ul>
+</li>
+<li><p><strong>Agentic Systems</strong></p>
+<ul class="simple">
+<li><p>Downstream consumers that can call the server or library for AI‐powered tasks.</p></li>
+<li><p>May automate dataset creation by orchestrating pipelines programmatically.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="perspectives">
+<h3>Perspectives<a class="headerlink" href="#perspectives" title="Link to this heading">#</a></h3>
+<p>Perspectives are a core feature of the graphcap system, providing different analytical views on images. Each perspective is implemented as a node in the DAG workflow, allowing for flexible and modular image processing.</p>
+<ul class="simple">
+<li><p><strong>GraphCaption</strong>: Structured analysis with tags and descriptions.</p></li>
+<li><p><strong>ArtCritic</strong>: Artistic analysis focusing on composition and technique.</p></li>
+</ul>
+<p>These perspectives enable the system to produce diverse outputs, catering to various use cases and requirements.</p>
+</section>
+<section id="typical-flow">
+<h3>2.2 Typical Flow<a class="headerlink" href="#typical-flow" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Developers</strong> publish the library to PyPI and container images to a Docker registry.</p></li>
+<li><p><strong>Users</strong> interact with either the CLI or the UI to configure and execute pipelines:</p>
+<ul class="simple">
+<li><p>For local usage, the CLI triggers the DAG inside the Python environment.</p></li>
+<li><p>For remote usage, the UI (or external systems) calls the REST API, which runs the same DAG logic on the server.</p></li>
+</ul>
+</li>
+<li><p>The <em>Agentic Systems</em> layer can also programmatically integrate with the server if advanced automation is needed.</p></li>
+</ol>
+</section>
+<section id="dag-example">
+<h3>2.3 DAG Example<a class="headerlink" href="#dag-example" title="Link to this heading">#</a></h3>
+<p>Below is an example of a dag (produced by a meta node during execution) for the current system.</p>
+<p><img alt="dag" src="_images/dag.png" /></p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="core-library-graphcap">
+<h2>3. Core Library (<code class="docutils literal notranslate"><span class="pre">graphcap</span></code>)<a class="headerlink" href="#core-library-graphcap" title="Link to this heading">#</a></h2>
+<section id="main-cli-entry-point">
+<h3>3.1 Main CLI Entry Point<a class="headerlink" href="#main-cli-entry-point" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">main.py</span></code></strong></p>
+<ul>
+<li><p>Declares a <code class="docutils literal notranslate"><span class="pre">click</span></code>‐based CLI with commands:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">dag-validate</span></code> for checking DAG correctness,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dag-run</span></code> for executing a DAG pipeline.</p></li>
+</ul>
+</li>
+<li><p>Uses <code class="docutils literal notranslate"><span class="pre">asyncio</span></code> to manage asynchronous DAG runs.</p></li>
+<li><p>Discovers node classes (e.g., <code class="docutils literal notranslate"><span class="pre">ImageSamplingNode</span></code>, <code class="docutils literal notranslate"><span class="pre">PerspectiveNode</span></code>) from a registry so that the DAG JSON can reference them by name.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="dag-and-node-infrastructure">
+<h3>3.2 DAG and Node Infrastructure<a class="headerlink" href="#dag-and-node-infrastructure" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">dag/dag.py</span></code></strong></p>
+<ul>
+<li><p>Defines a DAG class that reads JSON, ensures no cycles, topologically sorts nodes, and executes them in sequence.</p></li>
+</ul>
+</li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">dag/node.py</span></code></strong></p>
+<ul>
+<li><p>Base class for a node in the pipeline (with ID, dependencies, configuration, <code class="docutils literal notranslate"><span class="pre">execute</span></code> method, etc.).</p></li>
+</ul>
+</li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">dag/nodes/</span></code></strong></p>
+<ul>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">meta.py</span></code> has a <code class="docutils literal notranslate"><span class="pre">DAGVisualizerNode</span></code> that outputs a diagram of the DAG.</p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">visualizer.py</span></code> is another approach to produce DAG visualizations using NetworkX.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="caption-generation-and-perspectives">
+<h3>3.3 Caption Generation and Perspectives<a class="headerlink" href="#caption-generation-and-perspectives" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">graphcap.caption</span></code></strong></p>
+<ul>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">base_caption.py</span></code></strong>: Abstract base classes for caption processors; handles prompt structure, Pydantic schemas.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">batch_config.py</span></code></strong>: Tools for sampling images, applying model parameters, etc.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">perspectives/</span></code></strong>:</p>
+<ul>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">graph</span></code></strong>: <code class="docutils literal notranslate"><span class="pre">GraphCaptionProcessor</span></code> (scene graph style tags, relationships). Includes HTML “graph report” and network diagram features.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">art_critic</span></code></strong>: <code class="docutils literal notranslate"><span class="pre">ArtCriticProcessor</span></code> (formal analysis of images, e.g. lines, composition). Includes Jinja templates for “art_report”.</p></li>
+</ul>
+</li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">nodes/</span></code></strong>:</p>
+<ul>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">PerspectiveNode</span></code></strong>: Runs a chosen perspective (graph or art critic) on a set of images.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">PerspectiveOutputNode</span></code></strong>: Organizes outputs (logs, copying images, final files).</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="dataset-handling">
+<h3>3.4 Dataset Handling<a class="headerlink" href="#dataset-handling" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">dataset/</span></code></strong></p>
+<ul>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">dataset_manager.py</span></code></strong>: Class (<code class="docutils literal notranslate"><span class="pre">DatasetManager</span></code>) that takes caption outputs, optionally merges them into JSONL, and can push them to Hugging Face.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">nodes/export.py</span></code></strong>: <code class="docutils literal notranslate"><span class="pre">DatasetExportNode</span></code> for constructing a final dataset from pipeline outputs.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">file_handler.py</span></code>, <code class="docutils literal notranslate"><span class="pre">hf_client.py</span></code>, <code class="docutils literal notranslate"><span class="pre">metadata.py</span></code></strong>: Utilities for writing JSON, generating dataset “cards,” handling Hugging Face integration.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="i-o-nodes">
+<h3>3.5 I/O Nodes<a class="headerlink" href="#i-o-nodes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">io/</span></code></strong></p>
+<ul>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">ImageSamplingNode</span></code></strong>: Node that reads images from disk and samples them (random, latest, incremental). Frequently the pipeline’s starting point.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="provider-integrations">
+<h3>3.6 Provider Integrations<a class="headerlink" href="#provider-integrations" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">providers/</span></code></strong></p>
+<ul>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">clients/</span></code></strong>: Multiple Python clients offering an <em>OpenAI‐style</em> interface, but for various backends (OpenAI, Gemini, VLLM, Ollama, etc.).</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">provider_manager.py</span></code></strong>: Discovers configuration from environment variables or a TOML file, then yields the correct client for a pipeline node’s provider choice.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="server-component-server">
+<h2>4. Server Component (<code class="docutils literal notranslate"><span class="pre">server</span></code>)<a class="headerlink" href="#server-component-server" title="Link to this heading">#</a></h2>
+<p>While all functionality exists in <code class="docutils literal notranslate"><span class="pre">graphcap</span></code>, the <code class="docutils literal notranslate"><span class="pre">server</span></code> layer provides a <strong>FastAPI</strong> application for remote usage:</p>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">server/app.py</span></code></strong>:</p>
+<ul>
+<li><p>Builds the FastAPI app, configures CORS, and registers routers.</p></li>
+<li><p>Manages server lifespan events (startup, shutdown).</p></li>
+</ul>
+</li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">server/providers/router.py</span></code></strong>:</p>
+<ul>
+<li><p>Exposes endpoints to list or query available providers, do image analysis, or run pipeline tasks.</p></li>
+</ul>
+</li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">server/config/router.py</span></code></strong>:</p>
+<ul>
+<li><p>System endpoints (health checks, etc.).</p></li>
+</ul>
+</li>
+<li><p>The server can handle multi‐user sessions, queue jobs, and host pipelines in a more persistent environment.</p></li>
+</ul>
+<p>Thus, the <strong>Server</strong> offers an API that wraps the DAG mechanics and provider logic found in <code class="docutils literal notranslate"><span class="pre">graphcap</span></code>.</p>
+</section>
+<hr class="docutils" />
+<section id="core-ui-client-conceptual">
+<h2>5. Core UI Client (Conceptual)<a class="headerlink" href="#core-ui-client-conceptual" title="Link to this heading">#</a></h2>
+<p>The UI is intended to communicate with the <code class="docutils literal notranslate"><span class="pre">server</span></code> over REST:</p>
+<ol class="arabic simple">
+<li><p><strong>Image Management</strong></p>
+<ul class="simple">
+<li><p>Allows batch image uploads, drag‐and‐drop reordering, progress indicators.</p></li>
+</ul>
+</li>
+<li><p><strong>Caption Generation</strong></p>
+<ul class="simple">
+<li><p>Lets the user choose a provider/model, specify a perspective, then visualize or edit the resulting captions.</p></li>
+</ul>
+</li>
+<li><p><strong>Quality Control</strong></p>
+<ul class="simple">
+<li><p>Provides validation checks, review statuses, or editing controls for the generated captions.</p></li>
+</ul>
+</li>
+<li><p><strong>Dataset Export</strong></p>
+<ul class="simple">
+<li><p>Exports final caption sets to JSONL (or similar) and optionally pushes to Hugging Face.</p></li>
+</ul>
+</li>
+<li><p><strong>Configuration</strong></p>
+<ul class="simple">
+<li><p>Adjust provider settings, concurrency limits, sampling methods, etc.</p></li>
+</ul>
+</li>
+</ol>
+<p>This UI layer ensures a user-friendly experience without requiring direct CLI usage.</p>
+</section>
+<hr class="docutils" />
+<section id="endtoend-usage-flow">
+<h2>6. End‐to‐End Usage Flow<a class="headerlink" href="#endtoend-usage-flow" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Image Input</strong>:</p>
+<ul class="simple">
+<li><p>A user or system provides images. In a DAG, this is typically handled by <code class="docutils literal notranslate"><span class="pre">ImageSamplingNode</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>Caption Generation</strong>:</p>
+<ul class="simple">
+<li><p>Various nodes run perspectives like “ArtCritic” or “GraphCaption,” each producing structured JSON or HTML artifacts.</p></li>
+</ul>
+</li>
+<li><p><strong>Organization and Export</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PerspectiveOutputNode</span></code> consolidates logs and files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DatasetExportNode</span></code> can produce a final dataset or upload it to Hugging Face.</p></li>
+</ul>
+</li>
+<li><p><strong>Interfaces</strong>:</p>
+<ul class="simple">
+<li><p>CLI for local, scriptable usage,</p></li>
+<li><p>REST API for external or UI-driven usage,</p></li>
+<li><p>Optional UI front end.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="key-points-and-benefits">
+<h2>8. Key Points and Benefits<a class="headerlink" href="#key-points-and-benefits" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>DAG Execution</strong>:<br />
+Breaking the pipeline into nodes (sampling, calling vision models, formatting outputs) keeps it flexible and maintainable.</p></li>
+<li><p><strong>Multiple Perspectives</strong>:<br />
+The same image set can have different analysis perspectives (artistic, entity‐relationship, etc.) in parallel or sequentially.</p></li>
+<li><p><strong>Extensible Providers</strong>:<br />
+Thanks to the provider manager, new model endpoints or local inferencers can be integrated without changing caption logic.</p></li>
+<li><p><strong>Integrated Dataset Management</strong>:<br />
+Built‐in capabilities to compile results into structured JSON (JSONL), optionally pushing to Hugging Face.</p></li>
+<li><p><strong>CLI vs. REST</strong>:<br />
+Users can choose direct command‐line usage or a more scalable, multi‐tenant server approach.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">1. Introduction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#system-overview">2. System Overview</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#components">2.1 Components</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#perspectives">Perspectives</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#typical-flow">2.2 Typical Flow</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dag-example">2.3 DAG Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-library-graphcap">3. Core Library (<code class="docutils literal notranslate"><span class="pre">graphcap</span></code>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#main-cli-entry-point">3.1 Main CLI Entry Point</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dag-and-node-infrastructure">3.2 DAG and Node Infrastructure</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#caption-generation-and-perspectives">3.3 Caption Generation and Perspectives</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-handling">3.4 Dataset Handling</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#i-o-nodes">3.5 I/O Nodes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#provider-integrations">3.6 Provider Integrations</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-component-server">4. Server Component (<code class="docutils literal notranslate"><span class="pre">server</span></code>)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-ui-client-conceptual">5. Core UI Client (Conceptual)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#endtoend-usage-flow">6. End‐to‐End Usage Flow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#key-points-and-benefits">8. Key Points and Benefits</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/design.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, graphcap Contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

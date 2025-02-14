@@ -1,0 +1,614 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Release and Packaging Architecture &#8212; graphcap  0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'development/packaging';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="UI Documentation" href="../ui/index.html" />
+    <link rel="prev" title="Adding a New Provider Integration" href="adding_providers.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">graphcap  0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../overview.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../core/index.html">
+    Core
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../server/index.html">
+    Server
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Development
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../ui/index.html">
+    UI Documentation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../overview.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../core/index.html">
+    Core
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../server/index.html">
+    Server
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ui/index.html">
+    UI Documentation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="adding_nodes.html">Adding New Nodes to the graphcap DAG System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="adding_providers.html">Adding a New Provider Integration</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Release and Packaging Architecture</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Development</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Release and Packaging Architecture</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="release-and-packaging-architecture">
+<h1>Release and Packaging Architecture<a class="headerlink" href="#release-and-packaging-architecture" title="Link to this heading">#</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>graphcap uses modern Python packaging tools and practices to manage dependencies, testing, and distribution. The project is structured as a workspace with multiple components:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">graphcap</span></code> - Core library package</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">server</span></code> - FastAPI server package</p></li>
+<li><p>Additional workspace components (UI, etc.)</p></li>
+</ul>
+</section>
+<section id="build-system">
+<h2>1. Build System<a class="headerlink" href="#build-system" title="Link to this heading">#</a></h2>
+<section id="build-backend">
+<h3>1.1 Build Backend<a class="headerlink" href="#build-backend" title="Link to this heading">#</a></h3>
+<p>We use Hatchling as our build backend for its modern features and extensibility:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[build-system]</span>
+<span class="n">requires</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;hatchling&quot;</span><span class="p">]</span>
+<span class="n">build-backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;hatchling.build&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="project-structure">
+<h3>1.2 Project Structure<a class="headerlink" href="#project-structure" title="Link to this heading">#</a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>.cursor/rules/               # Context store for software agents
+.github/workflows/           # GitHub Actions workflows
+.venv/                      # Root local environment spawned by uv
+.env.caption.template       # Template for environment variables used in testing
+config/                     # Configuration directory
+├── docker-compose.yml              # Base docker compose config
+├── docker-compose.override.example.yml  # Override file example (copied w/ remove of .example)
+├── provider.example.config.toml    # Provider configuration example for inference providers
+├── Taskfile.models.yml            # Commands for example cookbook models
+└── batch_configs/                 # Default configurations and workflows
+
+datasets/                   # Working area for datasets, includes examples
+docs/                      # Project Documentation
+lib/graphcap/              # Main graphcap library
+pyproject.toml             # Project dependencies and build configuration
+
+
+server/                    # Server submodule
+├── Dockerfile.server      # Build image for server
+└── pyproject.toml         # Server-specific dependencies
+
+tests/                     # Test suite
+├── README.md              # Test documentation and guidelines
+├── .gitignore            # Test-specific ignore rules
+├── artifacts/            # Test artifacts and fixtures
+│   ├── dag_configs/      # DAG configuration test files
+│   ├── provider/         # Provider test configurations
+│   └── test_dataset/     # Test dataset files
+├── conftest.py           # pytest configuration and fixtures
+├── library_tests/        # Library component tests
+│   ├── node_tests/       # Node functionality tests
+│   └── provider_tests/   # Provider integration tests
+└── server_tests/         # Server integration tests
+
+Taskfile.yml              # Task runner configuration
+README.md                 # Project overview and documentation
+</pre></div>
+</div>
+</section>
+</section>
+<section id="ci-cd-workflows">
+<h2>2. CI/CD Workflows<a class="headerlink" href="#ci-cd-workflows" title="Link to this heading">#</a></h2>
+<p>The project uses GitHub Actions for continuous integration and deployment with three current workflows:</p>
+<section id="library-ci-library-ci-yml">
+<h3>2.1 Library CI (<cite>library-ci.yml</cite>)<a class="headerlink" href="#library-ci-library-ci-yml" title="Link to this heading">#</a></h3>
+<p>This workflow handles the core library package quality checks:</p>
+<ul class="simple">
+<li><p><strong>Trigger</strong>: Runs on pushes/PRs to <code class="docutils literal notranslate"><span class="pre">main</span></code> and <code class="docutils literal notranslate"><span class="pre">ci</span></code> branches that modify library code, tests, or package configs</p></li>
+<li><p><strong>Jobs</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">lint</span></code>: Runs Ruff for code style and quality checks</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test</span></code>: Executes library unit tests using pytest (excluding integration and server tests)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="pypi-release-pypi-publish-yml">
+<h3>2.2 PyPI Release (<cite>pypi-publish.yml</cite>)<a class="headerlink" href="#pypi-release-pypi-publish-yml" title="Link to this heading">#</a></h3>
+<p>Manages the publication of library releases to PyPI:</p>
+<ul class="simple">
+<li><p><strong>Trigger</strong>: Runs when a new GitHub release is published or manually</p></li>
+<li><p><strong>Jobs</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">verify</span></code>: Runs test suite to validate release</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">publish</span></code>: Builds and publishes package to PyPI using build and twine</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="server-ci-cd-server-build-yml">
+<h3>2.3 Server CI/CD (<cite>server-build.yml</cite>)<a class="headerlink" href="#server-ci-cd-server-build-yml" title="Link to this heading">#</a></h3>
+<p>Handles the FastAPI server component testing and deployment:</p>
+<ul class="simple">
+<li><p><strong>Trigger</strong>: Runs on pushes to <code class="docutils literal notranslate"><span class="pre">main</span></code>, <code class="docutils literal notranslate"><span class="pre">dev</span></code>, <code class="docutils literal notranslate"><span class="pre">feature/*</span></code>, and <code class="docutils literal notranslate"><span class="pre">ci</span></code> branches that modify server code or on version tags</p></li>
+<li><p><strong>Jobs</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">lint</span></code>: Runs Ruff checks on server code</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test</span></code>: Executes server-specific tests</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">deploy</span></code>: Builds and pushes Docker image to GitHub Container Registry (ghcr.io)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="documentation-documentation-yml">
+<h3>2.4 Documentation (<cite>documentation.yml</cite>)<a class="headerlink" href="#documentation-documentation-yml" title="Link to this heading">#</a></h3>
+<p>Builds and deploys the documentation to GitHub Pages:</p>
+<ul class="simple">
+<li><p><strong>Trigger</strong>: Runs on pushes, pull requests, and manual dispatch</p></li>
+<li><p><strong>Jobs</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">docs</span></code>: Builds the documentation using Sphinx and deploys it to GitHub Pages</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="adding_providers.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Adding a New Provider Integration</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../ui/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">UI Documentation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-system">1. Build System</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#build-backend">1.1 Build Backend</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#project-structure">1.2 Project Structure</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ci-cd-workflows">2. CI/CD Workflows</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#library-ci-library-ci-yml">2.1 Library CI (<cite>library-ci.yml</cite>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypi-release-pypi-publish-yml">2.2 PyPI Release (<cite>pypi-publish.yml</cite>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#server-ci-cd-server-build-yml">2.3 Server CI/CD (<cite>server-build.yml</cite>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation-documentation-yml">2.4 Documentation (<cite>documentation.yml</cite>)</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/development/packaging.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, graphcap Contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
